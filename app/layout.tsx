@@ -1,6 +1,5 @@
 
 import { Anuphan } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -26,15 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={anuphan.className}>
-      <body className="bg-gray-300 text-foreground">
-        <ThemeProvider>
-          <main className="min-h-screen flex flex-col items-center">
-           
-                {children}
-           
-          </main>
-        </ThemeProvider>
-      </body>
-    </html>
+  <body className="bg-gray-200 text-black">
+    <main className="min-h-screen flex flex-col items-center">
+      {children}
+    </main>
+  </body>
+</html>
   );
 }
