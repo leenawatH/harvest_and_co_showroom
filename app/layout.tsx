@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={anuphan.className}>
-  <body className="bg-gray-200 text-black">
+  <body className="bg-white text-black">
     <main className="min-h-screen flex flex-col items-center">
       {children}
     </main>

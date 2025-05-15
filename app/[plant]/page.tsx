@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -39,8 +38,6 @@ interface Pot {
 }
 
 export default function PlantDetail() {
-  const router = useRouter(); // Initialize router
-  const [startTouch, setStartTouch] = useState(0);
   const params = useParams();
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -51,7 +48,7 @@ export default function PlantDetail() {
   const [plant, setPlant] = useState<Plant | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pot, setPot] = useState<Pot[] | null>(null);
-  
+
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -71,7 +68,7 @@ export default function PlantDetail() {
       else setPot(potData);
 
       if (potData && potData.length > 0) {
-        setSelectedPotId(potData[0].id); 
+        setSelectedPotId(potData[0].id);
         const selectedPotImage = plantData.withpot_imgurl.find(item => item.pot_id === potData[0].id);
         if (selectedPotImage) {
           setAvailableColors(selectedPotImage.available_colors);
@@ -99,8 +96,11 @@ export default function PlantDetail() {
       if (plantError) setError(plantError.message);
       else {
         setPlant(plantData);
+        console.log(plant);
         setImageUrl(plantData.withpot_imgurl?.[0]?.available_colors?.[0]?.url || null);
         fetchDataPot(plantData);
+
+
       }
     };
 
@@ -121,30 +121,33 @@ export default function PlantDetail() {
   };
 
   const handleColorChange = (colorUrl: string) => {
-    setImageUrl(colorUrl); // Update image when color is clicked
-    setActiveColor(colorUrl); // Set active color to make it persist
+    setImageUrl(colorUrl);
+    setActiveColor(colorUrl); 
   };
 
   if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
   if (!plant) return <div className="p-6">Loading...</div>;
 
-  const name = plant.name.replace("-", " ");
-
   return (
-    <div className="p-6">
+    <div className="p-6 mx-4 px-4 w-full max-w-[400px] h-[400px] mx-auto">
+
       {imageUrl ? (
         <div className="relative">
-          {/* Display plant image */}
-          <img src={imageUrl} alt={plant.name} className="w-full h-auto max-w-[350px] sm:max-w-[400px] mx-auto object-contain mb-4 transition-transform duration-300" />
-          
-          {/* Display color selection buttons */}
-          <div className="absolute bottom-0 right-0 p-2 flex gap-2">
+          <div className="overflow-hidden mb-4">
+            <img
+              src={imageUrl}
+              alt={plant.name}
+              className={`w-full h-full object-top object-scale-down transition-transform duration-300 ${plant.height < 150 ? 'scale-125 sm:scale-110' : ''}`}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 mb-4">
             {availableColors?.map((color, index) => (
               <button
                 key={index}
                 onClick={() => handleColorChange(color.url)}
-                className={`w-8 h-8 rounded-full border-2 border-gray-400 transition-all duration-200 
-                  ${activeColor === color.url ? 'opacity-50' : ''} hover:opacity-70`} // Apply opacity when active or hovered
+                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 
+              ${activeColor === color.url ? 'border-blue-400' : 'border-gray-400'} hover:opacity-70`}
                 style={{ backgroundColor: color.color.toLowerCase() }}
                 title={color.color}
               />
@@ -154,32 +157,33 @@ export default function PlantDetail() {
       ) : (
         <div>No image available</div>
       )}
-      <h1 className="text-2xl font-bold mb-2">{name}</h1>
+
+      <h1 className="text-2xl font-bold mb-2">{plant.name.replace("-", " ")}</h1>
       <p>Height : {plant.height} cm</p>
       <p>Price : {plant.price} Baht</p>
+
       <div className="mt-6">
-        <div className="overflow-x-auto"> {/* Add scrollable container */}
-          <div className="flex gap-4"> {/* Flex for horizontal scroll */}
+        <div className="overflow-x-auto">
+          <div className="flex gap-4">
             {pot?.map((potItem) => (
               <div
                 key={potItem.id}
-                className={`p-4 border rounded-lg cursor-pointer relative 
-                  ${selectedPotId === potItem.id ? 'bg-white bg-opacity-50'  : ''} 
-                  hover:bg-white hover:bg-opacity-50 transition-all duration-300`} // Apply opacity change on hover and selected state
-                onClick={() => handlePotClick(potItem.id)} // Add onClick handler
+                className={`flex-[0_0_25%] aspect-square border rounded-lg cursor-pointer 
+              ${selectedPotId === potItem.id ? 'bg-gray-100' : ''} 
+              hover:bg-gray-100 transition-all duration-300 
+              flex flex-col items-center justify-center text-center px-1`}
+                onClick={() => handlePotClick(potItem.id)}
               >
-                {/* Add the white overlay effect on hover or selected */}
-                <div className="absolute inset-0 bg-white opacity-0 rounded-lg"></div>
                 {potItem.color?.[0]?.url ? (
                   <img
                     src={potItem.color[0].url}
                     alt={potItem.name}
-                    className="w-48 h-48 object-contain mt-2" // Adjust size of image
+                    className=" h-2/3 object-contain mb-1"
                   />
                 ) : (
-                  <div>No color available</div>
+                  <div className="text-[10px]">No image</div>
                 )}
-                <h4 className="font-bold text-lg mb-2 text-center">{potItem.name}</h4> {/* Center the name */}
+                <h4 className="text-[10px] font-medium leading-tight">{potItem.name}</h4>
               </div>
             ))}
           </div>
