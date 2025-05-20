@@ -42,6 +42,7 @@ export default function PlantDetail() {
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [selectedPotId, setSelectedPotId] = useState<string | null>(null);
+  const [heightWithSelectedPot, setheightWithSelectedPot] = useState<string | null>(null);
   const [availableColors, setAvailableColors] = useState<AvailableColor[] | null>(null);
   const [activeColor, setActiveColor] = useState<string | null>(null);
 
@@ -60,23 +61,28 @@ export default function PlantDetail() {
       const potIds = plantData.withpot_imgurl.map((item) => item.pot_id);
 
       const { data: potData, error: potError } = await supabase
-        .from('pot')
-        .select()
-        .in('id', potIds);
+      .from('pot')
+      .select()
+      .in('id', potIds);
 
-      if (potError) setError(potError.message);
-      else setPot(potData);
+      if (potError) {
+        setError(potError.message);
+      } else {
+       
+        const orderedPot = potIds.map(id => potData.find(p => p.id === id)).filter(Boolean);
+        setPot(orderedPot);
 
-      if (potData && potData.length > 0) {
-        setSelectedPotId(potData[0].id);
-        const selectedPotImage = plantData.withpot_imgurl.find(item => item.pot_id === potData[0].id);
-        if (selectedPotImage) {
-          setAvailableColors(selectedPotImage.available_colors);
-          setImageUrl(selectedPotImage.available_colors?.[0]?.url || null);
-        }
+        const selectedPotImage = plantData.withpot_imgurl[0];
+        setSelectedPotId(selectedPotImage.pot_id);
+        setAvailableColors(selectedPotImage.available_colors);
+        setImageUrl(selectedPotImage.available_colors?.[0]?.url || null);
+        setheightWithSelectedPot(plantData.withpot_imgurl[0].height_with_pot);
       }
 
+
     };
+
+    
 
     const fetchDataPlant = async () => {
       const slug = params?.plant as string;
@@ -116,6 +122,7 @@ export default function PlantDetail() {
       if (selectedPotImage) {
         setAvailableColors(selectedPotImage.available_colors);
         setImageUrl(selectedPotImage.available_colors?.[0]?.url || null);
+        setheightWithSelectedPot(selectedPotImage.height_with_pot);
       }
     }
   };
@@ -125,7 +132,23 @@ export default function PlantDetail() {
     setActiveColor(colorUrl); 
   };
 
-  if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
+const getTransformedImageUrl = (): string => {
+  if (!imageUrl || !plant) return imageUrl || "";
+
+
+  if (plant.height <= 150 && plant.height >= 100) {
+    return imageUrl.replace("/upload/", "/upload/c_crop,h_1100,g_south/");
+  }else if(plant.height < 100){
+    return imageUrl.replace("/upload/", "/upload/c_crop,h_900,g_south/c_crop,w_600,h_600/");
+  }else if(plant.height <= 200 && plant.height >= 150){
+    return imageUrl.replace("/upload/", "/upload/c_crop,h_1300,g_south/");
+  }
+
+  return imageUrl;
+};
+
+
+  if (error) return <div className="p-6">No data</div>;
   if (!plant) return <div className="p-6">Loading...</div>;
 
   return (
@@ -135,9 +158,9 @@ export default function PlantDetail() {
         <div className="relative">
           <div className="overflow-hidden mb-4">
             <img
-              src={imageUrl}
+              src={getTransformedImageUrl()}
               alt={plant.name}
-              className={`w-full h-full object-top object-scale-down transition-transform duration-300 ${plant.height < 150 ? 'scale-125 sm:scale-110' : ''}`}
+              className={`w-full h-full object-contain object-bottom object-scale-down transition-transform duration-300`}
             />
           </div>
 
@@ -157,12 +180,6 @@ export default function PlantDetail() {
       ) : (
         <div>No image available</div>
       )}
-
-      <h1 className="text-2xl font-bold mb-2">{plant.name.replace("-", " ")}</h1>
-      <p>Height : {plant.height} cm</p>
-      <p>Price : {plant.price} Baht</p>
-
-      <div className="mt-6">
         <div className="overflow-x-auto">
           <div className="flex gap-4">
             {pot?.map((potItem) => (
@@ -188,6 +205,10 @@ export default function PlantDetail() {
             ))}
           </div>
         </div>
+      <div>
+        <h1 className="text-2xl font-bold mt-4">{plant.name.replace("-", " ")}</h1>
+        <p>ความสูงต้นไม้ H: {plant.height} cm</p>
+        <p>ความสูงรวมกระถางในรูป H: {heightWithSelectedPot} cm</p>
       </div>
     </div>
   );

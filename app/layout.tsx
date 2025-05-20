@@ -2,6 +2,8 @@
 import { Anuphan } from "next/font/google";
 import "./globals.css";
 
+import Navbar from "@/components/Navbar/index";
+
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -26,9 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={anuphan.className}>
   <body className="bg-white text-black">
-    <main className="min-h-screen flex flex-col items-center">
-      {children}
-    </main>
+    <Navbar />
+      <main className="min-h-screen flex flex-col items-center">
+        {children}
+      </main>
   </body>
 </html>
   );
