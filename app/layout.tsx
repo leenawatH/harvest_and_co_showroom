@@ -29,11 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={anuphan.className}>
   <body className="bg-white text-black">
-    <Navbar />
-      <main className="min-h-screen flex flex-col items-center">
-        {children}
-      </main>
-    <Footer />
+    <div className="flex flex-col min-h-screen">
+        <Navbar />       
+        <main className="flex-1 mt-10">{children}</main>
+        <Footer />      
+      </div>
   </body>
 </html>
   );
