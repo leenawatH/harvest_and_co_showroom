@@ -46,12 +46,17 @@ export default function Navbar() {
 
   return (
     <Box
-      sx={{
+    sx={{
         display: 'flex',
         width: '100%',
         px: 1.5,
-        py: 2,
-      }}
+        py: 1,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 1100,
+        bgcolor: 'background.default',
+    }}
     >
         
         <Box className="mt-[5px]">
@@ -79,17 +84,5 @@ export default function Navbar() {
             </Link>
         </Box>
       </Box>  
-
-    // <nav className="py-5 flex justify-center items-center">
-    //   <Link href="/" className="flex items-center">
-    //     <Image
-    //       src="/logo/Logo H_C-01.png"
-    //       alt="Logo"
-    //       width={200}
-    //       height={200}
-    //       priority
-    //     />
-    //   </Link>
-    // </nav>
   );
 }
