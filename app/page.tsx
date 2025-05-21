@@ -24,12 +24,12 @@ export default function HomePage() {
             <div className="overflow-x-auto md:overflow-visible">
             <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-20 px-1 sm:px-2 md:px-0 w-[600px] sm:w-[700px] md:w-full">
                 {[1, 2, 3].map((i) => (
-                <Link key={i} href="/" className="flex-shrink-0 w-[50%] sm:w-[30%] md:w-full max-w-sm block h-full">
-                    <div className="rounded-xl p-4 shadow hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
+                <Link key={i} href="/" className="flex-shrink-0 w-[28%] sm:w-[28%] md:w-full max-w-sm block h-full">
+                    <div className="rounded-xl md:p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
                     <img
                         src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
                         alt="test"
-                        className="w-full h-40 object-contain mb-2"
+                        className="w-full h-40 object-contain md:mb-2"
                     />
                     <h2 className="flex items-center justify-center text-center">tester</h2>
                     </div>
@@ -60,12 +60,12 @@ export default function HomePage() {
             <div className="overflow-x-auto md:overflow-visible">
             <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-20 px-1 sm:px-2 md:px-0 w-[600px] sm:w-[700px] md:w-full">
                 {[1, 2, 3].map((i) => (
-                <Link key={i} href="/" className="flex-shrink-0 w-[50%] sm:w-[30%] md:w-full max-w-sm block h-full">
-                    <div className="rounded-xl p-4 shadow hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
+                <Link key={i} href="/" className="flex-shrink-0 w-[28%] sm:w-[28%] md:w-full max-w-sm block h-full">
+                    <div className="rounded-xl md:p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
                     <img
                         src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
                         alt="test"
-                        className="w-full h-40 object-contain mb-2"
+                        className="w-full h-40 object-contain md:mb-2"
                     />
                     <h2 className="flex items-center justify-center text-center">tester</h2>
                     </div>
@@ -102,7 +102,7 @@ export default function HomePage() {
                     className="flex-shrink-0 w-[80%] sm:w-[45%] md:w-[40%] max-w-sm"
                 >
                     
-                    <div className="rounded-xl border border-gray-100 shadow overflow-hidden p-4 shadow hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                    <div className="rounded-xl border border-gray-100 shadow overflow-hidden p-4 hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                     <img
                         src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
                         alt="test"
