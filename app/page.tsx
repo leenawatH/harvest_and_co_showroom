@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function HomePage() {
     return (
         <div>
-            <section className="relative w-full h-[800px]">
+            <section className="relative w-full h-[800px] mt-0">
                 <Image
                     src="/banner/banner.jpg"
                     alt="Pot Banner"
