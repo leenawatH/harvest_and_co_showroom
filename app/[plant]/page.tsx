@@ -152,6 +152,7 @@ const getTransformedImageUrl = (): string => {
   if (!plant) return <div className="p-6">Loading...</div>;
 
   return (
+    <main className="min-h-screen flex flex-col items-center">
     <div className="p-6 mx-4 px-4 w-full max-w-[400px] h-[400px] mx-auto">
 
       {imageUrl ? (
@@ -211,5 +212,6 @@ const getTransformedImageUrl = (): string => {
         <p>ความสูงรวมกระถางในรูป H: {heightWithSelectedPot} cm</p>
       </div>
     </div>
+    </main>
   );
 }

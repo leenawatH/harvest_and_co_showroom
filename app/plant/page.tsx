@@ -33,7 +33,8 @@ export default async function Plant() {
   };
 
   return (
-    <main className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+    <main className="min-h-screen flex flex-col items-center">
+      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4'>
       {filteredPlant.map((item) => {
         const withpotArray = item.withpot_imgurl;
         const imageUrl = withpotArray[0].available_colors[0].url;
@@ -54,6 +55,7 @@ export default async function Plant() {
 
         );
       })}
+      </div>
     </main>
   );
 }

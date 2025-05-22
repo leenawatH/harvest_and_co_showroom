@@ -2,7 +2,7 @@ import { FaFacebookF, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-900 text-white px-6 py-12 text-sm">
+    <footer className="bg-zinc-900 text-white px-6 py-12 text-sm mt-10">
       <div className="max-w-6xl mx-auto flex flex-col justify-between gap-10">
 
         {/* Grid layout: mobile = 1 col, md+ = 3 col */}
@@ -22,17 +22,13 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Follow</h4>
             <div className="flex space-x-4 md:justify-center">
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="https://www.facebook.com/profile.php?id=61554871502327&locale=th_TH"
                 className="hover:text-gray-400 transition"
               >
                 <FaFacebookF className="w-5 h-5" />
               </a>
               <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="https://www.instagram.com/harvestandco_th/"
                 className="hover:text-gray-400 transition"
               >
                 <FaInstagram className="w-5 h-5" />

@@ -27,7 +27,7 @@ export default function HomePage() {
                 <Link key={i} href="/" className="flex-shrink-0 w-[28%] sm:w-[28%] md:w-full max-w-sm block h-full">
                     <div className="rounded-xl md:p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
+                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/c_crop,h_1500,g_south/v1747462203/27_ndpr7c.png"
                         alt="test"
                         className="w-full h-40 object-contain md:mb-2"
                     />
@@ -63,7 +63,7 @@ export default function HomePage() {
                 <Link key={i} href="/" className="flex-shrink-0 w-[28%] sm:w-[28%] md:w-full max-w-sm block h-full">
                     <div className="rounded-xl md:p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
+                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/c_crop,h_1500,g_south/v1747462203/27_ndpr7c.png"
                         alt="test"
                         className="w-full h-40 object-contain md:mb-2"
                     />
@@ -104,7 +104,7 @@ export default function HomePage() {
                     
                     <div className="rounded-xl border border-gray-100 shadow overflow-hidden p-4 hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747462203/27_ndpr7c.png"
+                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/c_crop,h_1500,g_south/v1747462203/27_ndpr7c.png"
                         alt="test"
                         className="w-full h-48 object-contain mb-2"
                     />
