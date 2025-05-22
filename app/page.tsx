@@ -47,7 +47,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="relative w-full h-[700px]">
+            <section className="relative h-[700px] mx-10">
                 <Image
                     src="/banner/banner.jpg"
                     alt="Pot Banner"
@@ -102,36 +102,41 @@ export default function HomePage() {
                 </div>
             </section>
 
-           <section className="py-10">
-  <div className="container mx-auto px-10">
-    <h2 className="text-3xl font-semibold mb-6 text-left">Portfolio</h2>
-
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
-      {[
-        "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg",
-        "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_7820_vl1vlo.jpg",
-        "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_2129_vzgqdk.jpg",
-      ].map((i) => (
-        <Link key={i} href="/" className="block">
-          <div className="overflow-hidden hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
-            <div className="w-full aspect-[3/2] overflow-hidden mb-2">
-              <img
-                src={i}
-                alt="project"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h2 className="text-lg font-semibold px-4">Project</h2>
-            <p className="text-sm text-gray-600 px-4 mb-2">Description</p>
-          </div>
-        </Link>
-      ))}
-    </div>
-  </div>
-</section>
-
-
-
+            <section className="py-10">
+                <div className="container mx-auto px-10 mt-10">
+                    <h2 className="text-3xl font-semibold mb-6 text-left">Portfolio</h2>
+                    {/* Scrollable wrapper */}
+                    <div className="overflow-x-auto">
+                        <div className="flex gap-6 min-w-max">
+                            {[
+                                "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg",
+                                "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_7820_vl1vlo.jpg",
+                                "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_2129_vzgqdk.jpg",
+                                "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                            ].map((i) => (
+                                <Link key={i} href="/" className="flex-shrink-0 w-[420px]">
+                                    <div className="overflow-hidden hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                                        <div className="w-full aspect-[3/2] overflow-hidden mb-2">
+                                            <img
+                                                src={i}
+                                                alt="project"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <h2 className="text-lg font-semibold px-4">Project</h2>
+                                        <p className="text-sm text-gray-600 px-4 mb-2">Description</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex justify-center mt-20 mb-10">
+                        <button className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition">
+                            See More
+                        </button>
+                    </div>
+                </div>
+            </section>
 
             <section className="relative w-full h-[700px]">
                 <Image
