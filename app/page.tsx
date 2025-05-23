@@ -51,9 +51,9 @@ export default function HomePage() {
                         </div>
                     </div>
                     <div className="flex justify-center mt-10 mb-10">
-                        <button className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition">
-                            See All
-                        </button>
+                        <Link href="/plant" className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center">
+                            See More
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -106,9 +106,9 @@ export default function HomePage() {
                         </div>
                     </div>
                     <div className="flex justify-center mt-10 mb-10">
-                        <button className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition">
-                            See All
-                        </button>
+                        <Link href="/pot" className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center">
+                            See More
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -156,9 +156,9 @@ export default function HomePage() {
                         </div>
                     </div>
                     <div className="flex justify-center mt-20 mb-10">
-                        <button className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition">
+                        <Link href="/port" className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center">
                             See More
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </section>
