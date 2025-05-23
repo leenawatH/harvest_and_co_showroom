@@ -56,44 +56,55 @@ export default function Navbar() {
 
   return (
     <Box
-      sx={{
-        display: 'flex',
-        width: '100%',
-        px: 1.5,
-        py: 1,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 1100,
-        backdropFilter: isTop ? 'none' : 'blur(6px)',
-        bgcolor: isTop ? 'transparent' : 'background.default', // 👈 เปลี่ยนพื้นหลังตามตำแหน่ง scroll
-        transition: 'background-color 0.3s ease',
-      }}
-    >
-      <Box className="mt-[5px]">
-        <IconButton>
-          <MenuIcon onClick={toggleDrawer(true)} />
-          <SwipeableDrawer
-            anchor="top"
-            open={state}
-            onClose={toggleDrawer(false)}
-            onOpen={toggleDrawer(true)}
-          >
-            {list}
-          </SwipeableDrawer>
-        </IconButton>
-      </Box>
-      <Box className="flex flex-grow flex-col items-center justify-center">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo/Logo H_C-01.png"
-            alt="Logo"
-            width={200}
-            height={200}
-            priority
-          />
-        </Link>
-      </Box>
-    </Box>
+  sx={{
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    px: 1.5,
+    py: 1,
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    zIndex: 1100,
+    backdropFilter: isTop ? 'none' : 'blur(6px)',
+    bgcolor: isTop ? 'transparent' : 'background.default',
+    transition: 'background-color 0.3s ease',
+  }}
+>
+  {/* Menu icon with fixed width */}
+  <Box sx={{ width: '64px' }}>
+    <IconButton>
+      <MenuIcon onClick={toggleDrawer(true)} />
+      <SwipeableDrawer
+        anchor="top"
+        open={state}
+        onClose={toggleDrawer(false)}
+        onOpen={toggleDrawer(true)}
+      >
+        {list}
+      </SwipeableDrawer>
+    </IconButton>
+  </Box>
+
+  {/* Logo centered absolutely */}
+  <Box
+    sx={{
+      position: 'absolute',
+      left: '50%',
+      transform: 'translateX(-50%)',
+    }}
+  >
+    <Link href="/" className="flex items-center">
+      <Image
+        src="/logo/Logo H_C-01.png"
+        alt="Logo"
+        width={200}
+        height={200}
+        priority
+      />
+    </Link>
+  </Box>
+</Box>
+
   );
 }
