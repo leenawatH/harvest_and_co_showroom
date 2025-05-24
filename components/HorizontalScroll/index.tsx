@@ -1,10 +1,31 @@
 "use client";
 import { useRef, useEffect, useState } from 'react';
 
-export default function HorizontalScroll(itemWidth: number) {
+export default function HorizontalScroll(baseItemWidth: number) {
     const ref = useRef<HTMLDivElement>(null);
     const [canLeft, setCanLeft] = useState(false);
     const [canRight, setCanRight] = useState(true);
+    const [itemWidth, setItemWidth] = useState(baseItemWidth);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (typeof window !== "undefined") {
+                const width = window.innerWidth;
+                if (width < 640) {
+                    setItemWidth(baseItemWidth / 3); 
+                } else {
+                    setItemWidth(baseItemWidth);
+                }
+            }
+            if(baseItemWidth < 449) {
+                setItemWidth(baseItemWidth-120);
+            }
+        };
+
+        handleResize(); 
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [baseItemWidth]);
 
     const checkScroll = () => {
         if (ref.current) {

@@ -54,7 +54,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="text-center text-gray-500 text-xs mt-5">
-          © {new Date().getFullYear()} Harvest
+          Harvest and co
         </div>
       </div>
     </footer>

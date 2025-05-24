@@ -1,4 +1,4 @@
-
+// ✅ Updated layout.tsx
 import { Anuphan } from "next/font/google";
 import "./globals.css";
 
@@ -28,13 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={anuphan.className}>
-  <body className="bg-white text-black">
-    <div className="flex flex-col min-h-screen">
-        <Navbar />       
-        <main className="flex-1">{children}</main>
-        <Footer />      
-      </div>
-  </body>
-</html>
+      <body className="bg-white text-black overflow-x-hidden">
+        <div className="flex flex-col min-h-screen">
+          <Navbar />       
+          <main className="flex-1 overflow-x-hidden">{children}</main>
+          <Footer />      
+        </div>
+      </body>
+    </html>
   );
 }
