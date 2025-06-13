@@ -49,7 +49,7 @@ export default function PortfolioPage() {
                 </h1>
                 {/* Project Name bottom-left, rotated */}
                 <div className="absolute left-8 bottom-[20%] md:left-16 md:bottom-[20%]">
-                    <span className="text-white text-xl md:text-2xl font-semibold">
+                    <span className="text-white text-xl md:text-2xl">
                         {portfolioItems[current].title}
                     </span>
                 </div>
@@ -60,14 +60,14 @@ export default function PortfolioPage() {
                 <div className="grid gap-20 md:grid-cols-2">
                     {portfolioItems.map((item, idx) => (
                         <div key={idx} className="flex flex-col items-center">
-                            <div className="w-full aspect-[4/3] max-w-[500px]">
+                            <div className="w-full aspect-[8/5] max-w-[500px]">
                                 <img
                                     src={item.image}
                                     alt={item.title}
                                     className="w-full h-full object-cover shadow-md"
                                 />
                             </div>
-                            <h2 className="mt-4 text-center text-lg md:text-xl font-semibold">
+                            <h2 className="mt-4 text-center text-lg md:text-xl">
                                 {item.title}
                             </h2>
                         </div>
