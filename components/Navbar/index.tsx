@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 import {
   Typography,
@@ -22,8 +23,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const shouldChangeBgOnScroll = ['/', '/port'];
   const [state, setState] = useState(false);
   const [isTop, setIsTop] = useState(true);
+  const isWhiteMode = isTop && shouldChangeBgOnScroll.includes(pathname);
   const isMobile = useMediaQuery('(max-width:768px)');
   const [openProduct, setOpenProduct] = useState(false);
 
@@ -114,7 +118,7 @@ export default function Navbar() {
       {isMobile ? (
         <>
           <Box>
-            <IconButton onClick={toggleDrawer(true)}>
+            <IconButton onClick={toggleDrawer(true)} sx={{ color: isWhiteMode ? "#fff" : "#222" }}>
               <MenuIcon />
             </IconButton>
             {mobileMenu}
@@ -133,6 +137,10 @@ export default function Navbar() {
                 width={160}
                 height={160}
                 priority
+                style={{
+                  filter: isTop ? "invert(1)" : "none",
+                  transition: "filter 0.3s",
+                }}
               />
             </Link>
           </Box>
@@ -150,7 +158,6 @@ export default function Navbar() {
               alignItems: 'center',
             }}
           >
-            {/* Hoverable Product dropdown */}
             <Box
               sx={{
                 position: 'relative',
@@ -159,7 +166,7 @@ export default function Navbar() {
                 },
               }}
             >
-              <Typography sx={{ fontWeight: 500 }}>
+              <Typography sx={{ fontWeight: 500, color: isWhiteMode ? "#fff" : "#222", transition: "color 0.3s" }}>
                 Product
               </Typography>
 
@@ -192,10 +199,10 @@ export default function Navbar() {
 
             {/* Other menu items */}
             <Link href="/port">
-              <Typography sx={{ fontWeight: 500 }}>Portfolio</Typography>
+              <Typography sx={{ fontWeight: 500, color: isWhiteMode ? "#fff" : "#222", transition: "color 0.3s" }}>Portfolio</Typography>
             </Link>
             <Link href="/contact">
-              <Typography sx={{ fontWeight: 500 }}>Contact</Typography>
+              <Typography sx={{ fontWeight: 500, color: isWhiteMode ? "#fff" : "#222", transition: "color 0.3s" }}>Contact</Typography>
             </Link>
           </Box>
           {/* Center logo */}
@@ -207,31 +214,41 @@ export default function Navbar() {
                 width={180}
                 height={180}
                 priority
+                style={{
+                  filter: isWhiteMode ? "invert(1)" : "none",
+                  transition: "filter 0.3s",
+                }}
               />
             </Link>
           </Box>
-
           {/* Right side (Search bar) */}
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', pr: 6 }}>
             <Paper
               component="form"
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                width: 200, 
-                height: 36, 
-                px: 1, 
-                bgcolor: 'transparent', 
-                boxShadow: 'none', 
-                border: '1px solid rgba(0,0,0,0.2)',
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                width: 200,
+                height: 36,
+                px: 1,
+                bgcolor: isWhiteMode ? "transparent" : "background.default",
+                boxShadow: 'none',
+                border: isWhiteMode ? '1px solid #fff' : '1px solid rgba(0,0,0,0.2)',
+                transition: "border 0.3s, background-color 0.3s",
               }}
             >
-              <InputBase 
-                sx={{ ml: 1, flex: 1, color: 'inherit' }} 
-                placeholder="Search..." 
-                inputProps={{ 'aria-label': 'search' }} 
+              <InputBase
+                sx={{
+                  ml: 1,
+                  flex: 1,
+                  color: isWhiteMode ? "#fff" : "#222",
+                  '::placeholder': { color: isWhiteMode ? "#fff" : "#888" },
+                  transition: "color 0.3s",
+                }}
+                placeholder="Search..."
+                inputProps={{ 'aria-label': 'search' }}
               />
-              <IconButton type="submit" sx={{ p: '5px' }} aria-label="search">
+              <IconButton type="submit" sx={{ p: '5px', color: isWhiteMode ? "#fff" : "#222", transition: "color 0.3s" }} aria-label="search">
                 <SearchIcon />
               </IconButton>
             </Paper>
