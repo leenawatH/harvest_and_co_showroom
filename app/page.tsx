@@ -40,7 +40,7 @@ export default function HomePage() {
                         <div ref={topPickScroll.ref} className=" overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
                                 {topPickItems.map(([url, name, height], index) => (
-                                    <Link key={index} href={`/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                                    <Link key={index} href={`/product/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
                                         <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
                                                 <img
@@ -84,7 +84,7 @@ export default function HomePage() {
 
                     <div className="flex justify-center mt-10 mb-10">
                         <Link
-                            href="/plant"
+                            href="/product/plant"
                             className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center"
                         >
                             See More
@@ -119,7 +119,7 @@ export default function HomePage() {
                         <div ref={potScroll.ref} className=" overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
                                 {potItems.map(([url, name, height], index) => (
-                                    <Link key={index} href={`/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                                    <Link key={index} href={`/product/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
                                         <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
                                                 <img
@@ -162,7 +162,7 @@ export default function HomePage() {
 
                     <div className="flex justify-center mt-10 mb-10">
                         <Link
-                            href="/plant"
+                            href="/product/pot"
                             className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center"
                         >
                             See More
@@ -193,7 +193,7 @@ export default function HomePage() {
                         <div ref={bigTreeScroll.ref} className=" overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
                                 {bigTreeItems.map(([url, name, height], index) => (
-                                    <Link key={index} href={`/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                                    <Link key={index} href={`/product/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
                                         <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
                                                 <img
@@ -236,7 +236,7 @@ export default function HomePage() {
 
                     <div className="flex justify-center mt-10 mb-10">
                         <Link
-                            href="/plant"
+                            href="/product/bigtree"
                             className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center"
                         >
                             See More
@@ -262,9 +262,9 @@ export default function HomePage() {
                     <p className="mb-6">
                         ในราคาเริ่มต้นเพียง 6,500 บาท ต่อ ตร.ม.
                     </p>
-                    <button className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition">
+                    <Link href="/product/garden" className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition flex items-center justify-center">
                         SEE MORE
-                    </button>
+                    </Link>
                     </div>
                 </div>
 

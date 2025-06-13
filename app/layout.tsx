@@ -1,16 +1,15 @@
-// ✅ Updated layout.tsx
+
 import { Anuphan } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/components/Navbar/index";
-import Footer from "@/components/Footer/index";
+import ThemeRegistry from "@/components/ThemeRegistry";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+
 
 export const metadata = {
-  metadataBase: new URL(defaultUrl),
   title: "Next.js and Supabase Starter Kit",
   description: "The fastest way to build apps with Next.js and Supabase",
 };
@@ -21,19 +20,17 @@ const anuphan = Anuphan({
   display: 'swap',
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={anuphan.className}>
       <body className="bg-white text-black overflow-x-hidden">
-        <div className="flex flex-col min-h-screen">
-          <Navbar />       
-          <main className="flex-1 overflow-x-hidden">{children}</main>
-          <Footer />      
-        </div>
+        <ThemeRegistry>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1 overflow-x-hidden">{children}</main>
+            <Footer />
+          </div>
+        </ThemeRegistry>
       </body>
     </html>
   );

@@ -12,8 +12,8 @@ export default function Footer() {
           <div className="text-left">
             <h4 className="text-lg font-semibold mb-4">Info</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="underline hover:text-gray-400 transition">About</a></li>
-              <li><a href="#" className="underline hover:text-gray-400 transition">Plant Catalog</a></li>
+              <li><a href="#" className="underline hover:text-gray-400 transition">Our Service</a></li>
+              <li><a href="#" className="underline hover:text-gray-400 transition">Care Tip</a></li>
             </ul>
           </div>
 
@@ -42,19 +42,26 @@ export default function Footer() {
             <address className="not-italic leading-relaxed">
               722/1 Barom Road<br />
               Bangkok 10110<br />
+              <a 
+                href="https://line.me/R/ti/p/@myshop" 
+                className="text-white hover:text-gray-400 transition block mt-2"
+              >
+                LINE ID : @.....
+              </a>
+
               <a
                 href="mailto:harvest@gmail.com"
                 className="underline text-white hover:text-gray-400 transition block mt-2"
               >
                 harvest@gmail.com
-              </a>
+              </a><br />
             </address>
           </div>
         </div>
 
         {/* Copyright */}
         <div className="text-center text-gray-500 text-xs mt-5">
-          Harvest and co
+          Harvest and co 
         </div>
       </div>
     </footer>
