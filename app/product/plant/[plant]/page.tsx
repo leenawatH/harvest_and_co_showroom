@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import Link from 'next/link';
 
 interface AvailableColor {
   url: string;
@@ -61,14 +62,14 @@ export default function PlantDetail() {
       const potIds = plantData.withpot_imgurl.map((item) => item.pot_id);
 
       const { data: potData, error: potError } = await supabase
-      .from('pot')
-      .select()
-      .in('id', potIds);
+        .from('pot')
+        .select()
+        .in('id', potIds);
 
       if (potError) {
         setError(potError.message);
       } else {
-       
+
         const orderedPot = potIds.map(id => potData.find(p => p.id === id)).filter(Boolean);
         setPot(orderedPot);
 
@@ -79,10 +80,7 @@ export default function PlantDetail() {
         setheightWithSelectedPot(plantData.withpot_imgurl[0].height_with_pot);
       }
 
-
     };
-
-    
 
     const fetchDataPlant = async () => {
       const slug = params?.plant as string;
@@ -129,89 +127,225 @@ export default function PlantDetail() {
 
   const handleColorChange = (colorUrl: string) => {
     setImageUrl(colorUrl);
-    setActiveColor(colorUrl); 
+    setActiveColor(colorUrl);
   };
 
-const getTransformedImageUrl = (): string => {
-  if (!imageUrl || !plant) return imageUrl || "";
+  const getTransformedImageUrl = (): string => {
+    if (!imageUrl || !plant) return imageUrl || "";
 
 
-  if (plant.height <= 150 && plant.height >= 100) {
-    return imageUrl.replace("/upload/", "/upload/c_crop,h_1100,g_south/");
-  }else if(plant.height < 100){
-    return imageUrl.replace("/upload/", "/upload/c_crop,h_900,g_south/c_crop,w_600,h_600/");
-  }else if(plant.height <= 200 && plant.height >= 150){
-    return imageUrl.replace("/upload/", "/upload/c_crop,h_1300,g_south/");
-  }
+    if (plant.height <= 150 && plant.height >= 100) {
+      return imageUrl.replace("/upload/", "/upload/c_crop,h_1000,g_south/");
+    } else if (plant.height < 100) {
+      return imageUrl.replace("/upload/", "/upload/c_crop,h_900,g_south/c_crop,w_600,h_600/");
+    } else if (plant.height <= 200 && plant.height >= 150) {
+      return imageUrl.replace("/upload/", "/upload/c_crop,h_1500,g_south/");
+    }
 
-  return imageUrl;
-};
-
+    return imageUrl;
+  };
 
   if (error) return <div className="p-6">No data</div>;
   if (!plant) return <div className="p-6">Loading...</div>;
 
   return (
-    <main className="min-h-screen flex flex-col items-center mt-20 mb-20">
-    <div className="p-6 mx-4 px-4 w-full max-w-[400px] mx-auto">
-
-      {imageUrl ? (
-        <div className="relative">
-          <div className="overflow-hidden mb-4">
-            <img
-              src={getTransformedImageUrl()}
-              alt={plant.name}
-              className={`w-full h-full object-contain object-bottom object-scale-down transition-transform duration-300`}
-            />
+    <main className="min-h-screen flex flex-col items-center mt-15 mb-20 px-10">
+      <div className="w-full max-w-6xl flex flex-col px-5 md:flex-row gap-10 bg-white rounded-xl p-6">
+        {/* LEFT: Product Info */}
+        <div className="flex-1 flex flex-col justify-start mt-20 pt-10">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 mt-10">{plant.name.replace("-", " ")}</h1>
+          <p className="text-lg font-semibold mb-4">
+            ราคา: {plant.price?.toLocaleString()} บาท
+          </p>
+          <div className="mb-2">
+            <span className="font-semibold">รายละเอียด:</span>
+            <span className="ml-2 text-gray-700"> {/* เพิ่มรายละเอียดจริงตรงนี้ถ้ามี field */} - </span>
           </div>
-
-          <div className="flex justify-end gap-2 mb-4">
-            {availableColors?.map((color, index) => (
+          <div className="mb-2">
+            <span className="font-semibold">ขนาดต้นไม้:</span>
+            <span className="ml-2 text-gray-700">H: {plant.height} cm</span>
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">ขนาดรวมกระถาง:</span>
+            <span className="ml-2 text-gray-700">H: {heightWithSelectedPot} cm</span>
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">แบบกระถาง:</span>
+            <span className="ml-2 text-gray-700">
+              {pot?.find(p => p.id === selectedPotId)?.name || "-"}
+            </span>
+          </div>
+          <div className="mb-4">
+            <span className="font-semibold">สี:</span>
+            <span className="ml-2 text-gray-700">
+              {availableColors?.find(c => c.url === imageUrl)?.color || "-"}
+            </span>
+          </div>
+          {/* เลือกกระถาง */}
+          <div className="mb-4">
+            <div className="font-semibold mb-1">เลือกแบบกระถาง:</div>
+            <div className="flex gap-2 overflow-x-auto">
+              {pot?.map((potItem) => (
+                <div
+                  key={potItem.id}
+                  className={`flex flex-col items-center cursor-pointer border rounded-lg p-2 min-w-[60px] ${selectedPotId === potItem.id ? 'border-green-700 bg-green-50' : 'border-gray-200'}`}
+                  onClick={() => handlePotClick(potItem.id)}
+                >
+                  {potItem.color?.[0]?.url ? (
+                    <img src={potItem.color[0].url} alt={potItem.name} className="h-8 w-8 object-contain mb-1" />
+                  ) : (
+                    <div className="text-xs">No image</div>
+                  )}
+                  <span className="text-xs">{potItem.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* เลือกสี */}
+          <div>
+            <div className="font-semibold mb-1">เลือกสี:</div>
+            <div className="flex gap-2">
+              {availableColors?.map((color, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleColorChange(color.url)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === color.url ? 'border-green-700' : 'border-gray-300'} hover:opacity-70`}
+                  style={{ backgroundColor: color.color.toLowerCase() }}
+                  title={color.color}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* RIGHT: Product Image */}
+        <div className="flex-1 flex flex-col items-center">
+          <div className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+            {imageUrl ? (
+              <img
+                src={getTransformedImageUrl()}
+                alt={plant.name}
+                className="w-full h-full object-contain object-bottom transition-transform duration-300"
+              />
+            ) : (
+              <div className="text-gray-400">No image available</div>
+            )}
+          </div>
+          {/* เลือกสีซ้ำตรงนี้ถ้าต้องการ */}
+          <div className="flex gap-2 mt-2">
+            {availableColors?.map((color, idx) => (
               <button
-                key={index}
+                key={idx}
                 onClick={() => handleColorChange(color.url)}
-                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 
-              ${activeColor === color.url ? 'border-blue-400' : 'border-gray-400'} hover:opacity-70`}
+                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === color.url ? 'border-green-700' : 'border-gray-300'} hover:opacity-70`}
                 style={{ backgroundColor: color.color.toLowerCase() }}
                 title={color.color}
               />
             ))}
           </div>
         </div>
-      ) : (
-        <div>No image available</div>
-      )}
-        <div className="overflow-x-auto">
-          <div className="flex gap-4">
-            {pot?.map((potItem) => (
-              <div
-                key={potItem.id}
-                className={`flex-[0_0_25%] aspect-square border rounded-lg cursor-pointer 
-              ${selectedPotId === potItem.id ? 'bg-gray-100' : ''} 
-              hover:bg-gray-100 transition-all duration-300 
-              flex flex-col items-center justify-center text-center px-1`}
-                onClick={() => handlePotClick(potItem.id)}
-              >
-                {potItem.color?.[0]?.url ? (
-                  <img
-                    src={potItem.color[0].url}
-                    alt={potItem.name}
-                    className=" h-2/3 object-contain mb-1"
-                  />
-                ) : (
-                  <div className="text-[10px]">No image</div>
-                )}
-                <h4 className="text-[10px] font-medium leading-tight">{potItem.name}</h4>
-              </div>
-            ))}
+      </div>
+      <section className="w-full max-w-6xl mx-auto mt-10 px-5">
+        <h2 className="text-xl font-bold mb-4">Tips</h2>
+        <ol className="list-decimal ml-6 space-y-2 text-gray-700">
+          <li>ควรวางต้นไม้ในที่มีแสงรำไรหรือแสงธรรมชาติ เพื่อยืดอายุการใช้งานของต้นไม้ประดิษฐ์</li>
+          <li>หมั่นเช็ดฝุ่นที่ใบและกระถางด้วยผ้าแห้งหรือผ้าชุบน้ำหมาดๆ เพื่อความสวยงาม</li>
+          <li>หลีกเลี่ยงการวางใกล้เปลวไฟหรือความร้อนสูง</li>
+          <li>สามารถเปลี่ยนกระถางหรือจัดวางใหม่ได้ตามสไตล์ที่ต้องการ</li>
+        </ol>
+      </section>
+      <div className="w-full max-w-6xl flex flex-col px-5 md:flex-row gap-10 bg-white rounded-xl p-6">
+        <div className="flex-1 flex flex-col items-center">
+          <div className="flex flex-row gap-4 w-full justify-center">
+            <div className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+              {imageUrl ? (
+                <img
+                  src={getTransformedImageUrl()}
+                  alt={plant.name}
+                  className="w-full h-full object-contain object-bottom transition-transform duration-300"
+                />
+              ) : (
+                <div className="text-gray-400">No image available</div>
+              )}
+            </div>
+            <div className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+              {imageUrl ? (
+                <img
+                  src={getTransformedImageUrl()}
+                  alt={plant.name}
+                  className="w-full h-full object-contain object-bottom transition-transform duration-300"
+                />
+              ) : (
+                <div className="text-gray-400">No image available</div>
+              )}
+            </div>
           </div>
         </div>
-      <div>
-        <h1 className="text-2xl font-bold mt-4">{plant.name.replace("-", " ")}</h1>
-        <p>ความสูงต้นไม้ H: {plant.height} cm</p>
-        <p>ความสูงรวมกระถางในรูป H: {heightWithSelectedPot} cm</p>
       </div>
-    </div>
+      <section className="py-4 flex justify-center relative">
+        <div className="container mx-auto px-10">
+          <h1 className="text-[27px] font-semibold mt-10 text-left">Similar potted plants</h1>
+
+          <div className="relative">
+            <div className=" overflow-y-hidden scroll-smooth">
+              <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
+
+                <Link href={`/product/plant/`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                  <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                    <div className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[460px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                      {imageUrl ? (
+                        <img
+                          src={getTransformedImageUrl()}
+                          alt={plant.name}
+                          className="w-full h-full object-contain object-bottom transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="text-gray-400">No image available</div>
+                      )}
+                    </div>
+                    <h2 className="flex items-center justify-center text-center mt-2">{plant.name.replace("-", " ")}</h2>
+                    <p className="text-sm text-center text-gray-600">ความสูง {plant.height} cm</p>
+                  </div>
+                </Link>
+                <Link href={`/product/plant/`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                  <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                    <div className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[460px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                      {imageUrl ? (
+                        <img
+                          src={getTransformedImageUrl()}
+                          alt={plant.name}
+                          className="w-full h-full object-contain object-bottom transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="text-gray-400">No image available</div>
+                      )}
+                    </div>
+                    <h2 className="flex items-center justify-center text-center mt-2">{plant.name.replace("-", " ")}</h2>
+                    <p className="text-sm text-center text-gray-600">ความสูง {plant.height} cm</p>
+                  </div>
+                </Link>
+                <Link href={`/product/plant/`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                  <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                    <div className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[460px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                      {imageUrl ? (
+                        <img
+                          src={getTransformedImageUrl()}
+                          alt={plant.name}
+                          className="w-full h-full object-contain object-bottom transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="text-gray-400">No image available</div>
+                      )}
+                    </div>
+                    <h2 className="flex items-center justify-center text-center mt-2">{plant.name.replace("-", " ")}</h2>
+                    <p className="text-sm text-center text-gray-600">ความสูง {plant.height} cm</p>
+                  </div>
+                </Link>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

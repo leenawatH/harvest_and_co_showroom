@@ -193,7 +193,7 @@ export default function HomePage() {
                         <div ref={bigTreeScroll.ref} className=" overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
                                 {bigTreeItems.map(([url, name, height], index) => (
-                                    <Link key={index} href={`/product/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
+                                    <Link key={index} href={`/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
                                         <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
                                                 <img
