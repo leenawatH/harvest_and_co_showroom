@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 
 
 export const metadata = {
-  title: "Next.js and Supabase Starter Kit",
+  title: "Harvest and Co",
   description: "The fastest way to build apps with Next.js and Supabase",
 };
 

@@ -5,18 +5,21 @@ import { useState, useEffect } from "react";
 const portfolioItems = [
     {
         title: "Community Garden Project",
+        location: "Bangkok",
         description:
             "Our team volunteered to design and build a sustainable community garden, promoting urban agriculture and healthy living.",
         image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg",
     },
     {
         title: "Local Art Exhibition",
+        location: "ICON SIAM, Bangkok",
         description:
             "We hosted an art exhibition featuring local artists, supporting creativity and cultural engagement in our neighborhood.",
         image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_7820_vl1vlo.jpg",
     },
     {
         title: "Charity Bake Sale",
+        location: "Bangkok, Thailand",
         description:
             "Organized a bake sale to raise funds for local charities, bringing together employees and the community for a good cause.",
         image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_2129_vzgqdk.jpg",
@@ -44,15 +47,16 @@ export default function PortfolioPage() {
                 />
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/40" />
-                {/* Centered Portfolio Title */}
-                <h1 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-4xl md:text-6xl font-bold drop-shadow-lg">
-                    Portfolio
-                </h1>
-                {/* Project Name bottom-left, rotated */}
-                <div className="absolute left-8 bottom-[20%] md:left-16 md:bottom-[20%]">
-                    <span className="text-white text-xl md:text-2xl">
+          
+        
+                {/* Project Name bottom-left */}
+                <div className="absolute left-8 bottom-[10%] md:left-16 md:bottom-[10%]">
+                    <h1 className="text-white text-xl md:text-3xl font-semibold">
                         {portfolioItems[current].title}
-                    </span>
+                    </h1>
+                    <h1 className="text-white text-m md:text-xl mt-2">
+                        {portfolioItems[current].location}
+                    </h1>
                 </div>
             </section>
 
@@ -68,9 +72,8 @@ export default function PortfolioPage() {
                                     className="w-full h-full object-cover shadow-md"
                                 />
                             </div>
-                            <h2 className="mt-4 text-center text-lg md:text-xl">
-                                {item.title}
-                            </h2>
+                            <h2 className="text-center text-l mt-5">{item.title}</h2>
+                            <p className="text-center text-sm text-gray-600 mt-1 mb-2">{item.location}</p>
                         </Link>
                     ))}
                 </div>
