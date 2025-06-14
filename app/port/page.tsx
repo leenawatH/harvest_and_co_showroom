@@ -1,4 +1,5 @@
 'use client';
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const portfolioItems = [
@@ -59,7 +60,7 @@ export default function PortfolioPage() {
             <div className="max-w-6xl mx-auto py-12 px-4 mt-10 mb-20">
                 <div className="grid gap-20 md:grid-cols-2">
                     {portfolioItems.map((item, idx) => (
-                        <div key={idx} className="flex flex-col items-center">
+                        <Link key={idx} href={`/port/${item.title}`} className="flex flex-col items-center hover:opacity-90 transition">
                             <div className="w-full aspect-[8/5] max-w-[500px]">
                                 <img
                                     src={item.image}
@@ -70,7 +71,7 @@ export default function PortfolioPage() {
                             <h2 className="mt-4 text-center text-lg md:text-xl">
                                 {item.title}
                             </h2>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

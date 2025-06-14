@@ -1,5 +1,5 @@
 import { getAllFirstUrlPlantPic, getAllPlant } from '@/components/supabase/supabase';
-import PlantFilterClient from './PlantFilterClient';
+import PlantFilterClient from '@/components/FilterClient/PlantFilterClient';
 
 export default async function Plant() {
   const plant = await getAllFirstUrlPlantPic();

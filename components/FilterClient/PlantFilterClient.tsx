@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Box, Slider } from "@mui/material";
+import { Box, Slider, Checkbox, FormControlLabel } from "@mui/material";
 
 export default function PlantFilterClient({ plants }: { plants: any[] }) {
 
@@ -9,7 +9,8 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
         availability: false,
         collection: false,
         type: false,
-        size: false,
+        price: false,
+        height: false,
         light: false,
     });
 
@@ -20,11 +21,16 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
     function valuetext(value: number, index: number): string {
         return `${value}"`;
     }
+    const [valuePriceSilde, setPriceValueSilde] = useState<number[]>([500, 15000]);
 
-    const [valueSilde, setValueSilde] = useState<number[]>([20, 37]);
+    function handlePriceSlideChange(event: Event, newValue: number | number[]) {
+        setPriceValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
+    }
 
-    function handleSlideChange(event: Event, newValue: number | number[], activeThumb: number): void {
-        setValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
+    const [valueHeightSilde, setHeightValueSilde] = useState<number[]>([20, 37]);
+
+    function handleHeightSlideChange(event: Event, newValue: number | number[], activeThumb: number): void {
+        setHeightValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
     }
 
     const getTransformedImageUrl = (height: number, imageUrl: string): string => {
@@ -70,57 +76,46 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
                     </button>
                     {open.availability && (
                         <div className="pl-2 pt-2 space-y-1">
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                In stock
-                            </label>
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Out of stock
-                            </label>
+                            <FormControlLabel
+                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                                label="In stock"
+                            />
+                            <FormControlLabel
+                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                                label="Out of stock"
+                            />
                         </div>
                     )}
                 </div>
 
-                {/* Plant Collection */}
+                {/* Price */}
                 <div>
                     <button
-                        onClick={() => toggleSection('collection')}
+                        onClick={() => toggleSection('price')}
                         className="w-full text-left border-b pb-3 font-medium"
                     >
-                        Plant Collection {open.collection ? '−' : '+'}
+                        Price {open.price ? '−' : '+'}
                     </button>
-                    {open.collection && (
-                        <div className="pl-2 pt-2 space-y-1">
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Collection 1
-                            </label>
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Collection 2
-                            </label>
-                        </div>
-                    )}
-                </div>
-
-                {/* Size */}
-                <div>
-                    <button
-                        onClick={() => toggleSection('size')}
-                        className="w-full text-left border-b pb-3 font-medium"
-                    >
-                        Size {open.size ? '−' : '+'}
-                    </button>
-                    {open.size && (
-
-                        <Box sx={{ width: 180, mr: 2 }}>
+                    {open.price && (
+                        <Box
+                            sx={{
+                                p: 2,
+                                mt: 2,
+                                width: '100%',
+                                maxWidth: 220,
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <span>{valuePriceSilde[0]} ฿</span>
+                                <span>{valuePriceSilde[1]} ฿</span>
+                            </Box>
                             <Slider
-                                getAriaLabel={() => 'Size range'}
-                                value={valueSilde}
-                                onChange={handleSlideChange}
+                                getAriaLabel={() => 'Price range'}
+                                value={valuePriceSilde}
+                                onChange={handlePriceSlideChange}
                                 valueLabelDisplay="auto"
-                                getAriaValueText={valuetext}
+                                min={500}
+                                max={15000}
                                 sx={{
                                     color: 'black',
                                     '& .MuiSlider-thumb': {
@@ -137,6 +132,75 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
                         </Box>
                     )}
                 </div>
+
+
+                {/* Plant Collection */}
+                <div>
+                    <button
+                        onClick={() => toggleSection('collection')}
+                        className="w-full text-left border-b pb-3 font-medium"
+                    >
+                        Plant Collection {open.collection ? '−' : '+'}
+                    </button>
+                    {open.collection && (
+                        <div className="pl-2 pt-2 space-y-1">
+                            <FormControlLabel
+                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                                label="Collection 1"
+                            />
+                            <FormControlLabel
+                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                                label="Collection 2"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Height */}
+                <div>
+                    <button
+                        onClick={() => toggleSection('height')}
+                        className="w-full text-left border-b pb-3 font-medium"
+                    >
+                        Height {open.height ? '−' : '+'}
+                    </button>
+                    {open.height && (
+                        <Box
+                            sx={{
+                                p: 2,
+                                mt: 2,
+                                width: '100%',
+                                maxWidth: 220,
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <span>{valueHeightSilde[0]} cm</span>
+                                <span>{valueHeightSilde[1]} cm</span>
+                            </Box>
+                            <Slider
+                                getAriaLabel={() => 'Size range'}
+                                value={valueHeightSilde}
+                                onChange={handleHeightSlideChange}
+                                valueLabelDisplay="auto"
+                                min={20}
+                                max={250}
+                                sx={{
+                                    color: 'black',
+                                    '& .MuiSlider-thumb': {
+                                        backgroundColor: 'black',
+                                    },
+                                    '& .MuiSlider-track': {
+                                        backgroundColor: 'black',
+                                    },
+                                    '& .MuiSlider-rail': {
+                                        backgroundColor: '#ccc',
+                                    },
+                                }}
+                            />
+                        </Box>
+                    )}
+                </div>
+
             </aside>
             {/* Product grid */}
             <section className="flex-1">
