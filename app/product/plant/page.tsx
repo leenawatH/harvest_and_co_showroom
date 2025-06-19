@@ -1,4 +1,4 @@
-import { getAllFirstUrlPlantPic, getAllPlant } from '@/components/supabase/supabase';
+import { getAllFirstUrlPlantPic } from '@/lib/service/plantService';
 import PlantFilterClient from '@/components/FilterClient/PlantFilterClient';
 
 export default async function Plant() {

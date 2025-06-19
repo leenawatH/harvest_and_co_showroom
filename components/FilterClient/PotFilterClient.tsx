@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Box, Slider } from "@mui/material";
 
-export default function PlantFilterClient({ plants }: { plants: any[] }) {
+export default function PotFilterClient({ pots }: { pots: any[] }) {
 
     const [open, setOpen] = useState({
         availability: false,
@@ -27,32 +27,7 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
         setValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
     }
 
-    const getTransformedImageUrl = (height: number, imageUrl: string): string => {
-        if (!imageUrl || !plants) return imageUrl || "";
-
-        //return imageUrl.replace("/upload/", "/upload/c_crop,w_1220,h_1300,y_100/c_crop,g_center,w_1000,h_1000/");
-
-        if (height <= 100) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_650,g_south,y_200/");
-        } else if (height <= 120 && height > 100) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_800,g_south,y_200/");
-        } else if (height <= 140 && height > 120) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_900,g_south,y_200/");
-        } else if (height <= 150 && height > 140) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_1000,g_south,y_200/");
-        } else if (height <= 180 && height > 150) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_1100,g_south,y_200/");
-        } else if (height <= 200 && height > 180) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_1200,g_south,y_200/");
-        } else if (height <= 220 && height > 200) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_1300,g_south,y_200/");
-        } else if (height <= 240 && height > 220) {
-            return imageUrl.replace("/upload/", "/upload/c_crop,h_1400,g_south,y_200/");
-        } else {
-            return imageUrl;
-        }
-
-    }
+  
 
 
     return (
@@ -82,13 +57,13 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
                     )}
                 </div>
 
-                {/* Plant Collection */}
+                {/* pot Collection */}
                 <div>
                     <button
                         onClick={() => toggleSection('collection')}
                         className="w-full text-left border-b pb-3 font-medium"
                     >
-                        Plant Collection {open.collection ? '−' : '+'}
+                        pot Collection {open.collection ? '−' : '+'}
                     </button>
                     {open.collection && (
                         <div className="pl-2 pt-2 space-y-1">
@@ -141,16 +116,16 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
             {/* Product grid */}
             <section className="flex-1">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-10 ml-10">
-                    {plants.map((item) => {
-                        const withpotArray = item.withpot_imgurl;
-                        const imageUrl = withpotArray[0].available_colors[0].url;
+                    {pots.map((item) => {
+                        const potColorArray = item.color;
+                        const imageUrl = potColorArray[0].url;
                         const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
                         return (
                             <Link key={item.id} href={`/product/plant/${slug}`} className="h-full">
                                 <div className="w_[150px] hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                     <img
-                                        src={getTransformedImageUrl(item.height, imageUrl)}
+                                        src={imageUrl}
                                         alt={item.name}
                                         className="w-full h-[400px] object-contain mb-4"
                                     />

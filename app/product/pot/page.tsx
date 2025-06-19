@@ -1,8 +1,8 @@
-import { getAllFirstUrlPlantPic, getAllPlant } from '@/components/supabase/supabase';
-import PlantFilterClient from './PotFilterClient';
+import { getAllFirstUrlPotPic } from '@/lib/service/potService';
+import PlantFilterClient from '../../../components/FilterClient/PotFilterClient';
 
 export default async function Pot() {
-  const plant = await getAllFirstUrlPlantPic();
+  const pot = await getAllFirstUrlPotPic();
 
-  return <PlantFilterClient plants={plant} />;
+  return <PlantFilterClient pots={pot} />;
 }
