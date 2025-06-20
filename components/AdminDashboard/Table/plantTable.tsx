@@ -1,14 +1,49 @@
 'use client';
 import { useState } from 'react';
-import { Plant } from '@/lib/service/plantService';
+import { Plant , deletePlant , getAllPlants } from '@/lib/service/plantService';
+import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 
 export default function PlantTable({ plants }: { plants: Plant[] }) {
+
+  const [plantsData, setPlantsData] = useState<Plant[]>(plants);
   const [selected, setSelected] = useState<string[]>([]);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [targetId, setTargetId] = useState<string>("");
+  const [targetName, setTargetName] = useState<string>("");
+  const [isPending, setIsPending] = useState(false);
+
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
+
+  const handleDeleteClick = (id: string, name: string) => {
+    setTargetId(id);
+    setTargetName(name);
+    setConfirmOpen(true);
+  };
+
+  const refresh = async () => {
+    const NewPlant = await getAllPlants();
+      setPlantsData(NewPlant);
+  }
+
+  const confirmDelete = async () => {
+    if (targetId) {
+      setIsPending(true);
+    try {
+      await deletePlant(targetId);
+      refresh();
+    } catch (err) {
+      console.error(err);
+    }
+    setIsPending(false);
+  }
+      
+    setConfirmOpen(false);
   };
 
   return (
@@ -25,6 +60,12 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
               Delete Selected
             </button>
           )}
+          <button
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+            onClick={refresh}
+          >
+            Refresh
+          </button>
           <button
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             onClick={() => console.log('New Plant')}
@@ -47,7 +88,7 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
           </tr>
         </thead>
         <tbody className="text-sm text-gray-700">
-          {plants.map((item) => (
+          {plantsData.map((item) => (
             <tr key={item.id} className="border-t hover:bg-gray-50">
               <td className="p-4 text-center align-middle">
                 <input
@@ -81,7 +122,7 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
                     Edit
                   </button>
                   <button
-                    onClick={() => console.log('Delete', item.id)}
+                    onClick={() => handleDeleteClick(item.id!, item.name)}
                     className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                   >
                     Delete
@@ -92,6 +133,15 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
           ))}
         </tbody>
       </table>
+      {/* 🔴 Modal */}
+      <ConfirmModal
+        open={confirmOpen}
+        title="Confirm Delete"
+        message={`Are you sure you want to delete "${targetName}"?`}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        isPending={isPending}
+      />
     </div>
   );
 }

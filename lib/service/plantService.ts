@@ -77,6 +77,7 @@ export async function updatePlant(id: string, data: Partial<Plant>): Promise<Pla
 export async function deletePlant(id: string): Promise<void> {
   const res = await fetch(`${getBaseUrl()}/api/plant/${id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to delete plant');
 }
