@@ -22,10 +22,11 @@ export default async function Admin() {
   }
 
   return (
-    <div className="min-h-screen mt-20 px-[10%] py-6">
+    <div className="mt-20 px-[10%] py-6">
       <AuthAutoSignOut />
       <AsideTable plants={plant} pots={pot} />
       
     </div>
   );
 }
+

@@ -21,6 +21,7 @@ const anuphan = Anuphan({
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const noFooter = (children as any).type?.noFooter;
   return (
     <html lang="en" className={anuphan.className}>
       <body className="bg-white text-black overflow-x-hidden">
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-1 overflow-x-hidden">{children}</main>
-            <Footer />
+            {!noFooter && <Footer />}
           </div>
         </ThemeRegistry>
       </body>

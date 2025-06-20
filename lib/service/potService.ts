@@ -3,13 +3,13 @@ import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 export interface Pot {
   id?: string;
   name: string;
-  color?: Image[]; 
+  color?: PotImageEachColor[]; 
   height?: number;
   circumference?: number;
   price?: number;
 }
 
-export interface Image {
+export interface PotImageEachColor {
     url? : string;
     color?: string;
 }
@@ -19,6 +19,21 @@ export async function getAllPots(): Promise<Pot[]> {
   const res = await fetch(`${getBaseUrl()}/api/pot`);
   if (!res.ok) throw new Error('Failed to fetch pot data');
   return res.json();
+}
+
+// ✅ ดึงข้อมูล ชื่อทุกรายการ
+export async function getAllNamePotPic() {
+    const pots = await getAllPots();
+
+    const filteredPot = (pots || []).filter((item) => {
+        const colorArray = Array.isArray(item.color) ? item.color : [];
+        return (
+            colorArray.length > 0 &&
+            colorArray[0].url
+        );
+    }).sort((a, b) => a.name.localeCompare(b.name, 'th', { sensitivity: 'base' }));
+
+    return filteredPot;
 }
 
 // ✅ ดึงข้อมูล รูปเเรกทุกรายการ

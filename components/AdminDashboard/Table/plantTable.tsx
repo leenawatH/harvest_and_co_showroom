@@ -1,18 +1,26 @@
 'use client';
 import { useState } from 'react';
-import { Plant , deletePlant , getAllPlants } from '@/lib/service/plantService';
+import { Plant, deletePlant, getAllPlants } from '@/lib/service/plantService';
+import { Pot , getAllPots } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
+import PlantForm from "@/components/AdminDashboard/Form/plantForm";
 
-export default function PlantTable({ plants }: { plants: Plant[] }) {
+export default function PlantTable({ plants , pots }: { plants: Plant[] , pots: Pot[] }) {
 
   const [plantsData, setPlantsData] = useState<Plant[]>(plants);
+
   const [selected, setSelected] = useState<string[]>([]);
+  const [singleDelete, setSingleDelete] = useState<boolean>(true);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetId, setTargetId] = useState<string>("");
   const [targetName, setTargetName] = useState<string>("");
-  const [isPending, setIsPending] = useState(false);
 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPlant, setEditingPlant] = useState<Plant | null>(null);
+
+  const [isPending, setIsPending] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
@@ -23,60 +31,115 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
   const handleDeleteClick = (id: string, name: string) => {
     setTargetId(id);
     setTargetName(name);
+    setSingleDelete(true);
+    setConfirmOpen(true);
+  };
+
+  const handleManyDeleteClick = () => {
+    setSingleDelete(false);
     setConfirmOpen(true);
   };
 
   const refresh = async () => {
+  setIsRefreshing(true);
+  try {
     const NewPlant = await getAllPlants();
-      setPlantsData(NewPlant);
+    setPlantsData(NewPlant);
+  } catch (err) {
+    console.error(err);
   }
+  setIsRefreshing(false);
+};
+
 
   const confirmDelete = async () => {
-    if (targetId) {
-      setIsPending(true);
-    try {
-      await deletePlant(targetId);
-      refresh();
-    } catch (err) {
-      console.error(err);
+    if (!singleDelete) {
+      if (selected.length > 0) {
+        setIsPending(true);
+        try {
+          await Promise.all(selected.map(id => deletePlant(id)));
+          refresh();
+          setSelected([]);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    } else {
+      if (targetId) {
+        setIsPending(true);
+        try {
+          await deletePlant(targetId);
+          refresh();
+        } catch (err) {
+          console.error(err);
+        }
+      }
     }
     setIsPending(false);
-  }
-      
     setConfirmOpen(false);
   };
 
   return (
     <div className="overflow-x-auto mb-6">
-      {/* ✅ Top Bar */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Plant List</h2>
-        <div className="flex gap-4">
-          {selected.length > 0 && (
-            <button
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={() => console.log('Delete selected', selected)}
-            >
-              Delete Selected
-            </button>
-          )}
+    {isFormOpen ? (
+      <PlantForm
+          initialData={editingPlant ?? undefined}
+          onSubmit={async (formData: any) => {
+            if (editingPlant) {
+              // Edit
+              //await updatePlant(editingPlant.id, formData);
+            } else {
+              // Add
+              //await createPlant(formData);
+            }
+            await refresh();
+            setIsFormOpen(false);
+            setEditingPlant(null);
+          } }
+          onCancel={() => {
+            setIsFormOpen(false);
+            setEditingPlant(null);
+          } } pots={pots} />
+    ) : (
+      <>
+  {/* ✅ Top Bar */}
+  <div className="sticky top-0 z-10 bg-white py-4">
+    <div className="flex justify-between items-center mb-2 px-2">
+      <h2 className="text-xl font-bold">Plant List</h2>
+      <div className="flex gap-4">
+        {selected.length > 0 && (
           <button
-            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-            onClick={refresh}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            onClick={handleManyDeleteClick}
           >
-            Refresh
+            Delete Selected
           </button>
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            onClick={() => console.log('New Plant')}
-          >
-            New Plant
-          </button>
-        </div>
+        )}
+        <button
+          className={`px-4 py-2 rounded text-white ${
+            isRefreshing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'
+          }`}
+          disabled={isRefreshing}
+          onClick={refresh}
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+        <button
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          onClick={() => {
+            setEditingPlant(null);  
+            setIsFormOpen(true);
+          }}
+        >
+          New Plant
+        </button>
       </div>
+    </div>
+  </div>
 
-      {/* ✅ Table */}
-      <table className="min-w-full bg-white">
+  {/* ✅ Scrollable Table */}
+  <div className="overflow-y-auto max-h-[70vh] bg-white">
+    <table className="min-w-full bg-white">
         <thead className="text-left text-gray-700 text-base">
           <tr>
             <th className="p-4 w-12"></th>
@@ -116,7 +179,10 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
               <td className="p-4 text-center align-middle">
                 <div className="flex justify-center gap-2">
                   <button
-                    onClick={() => console.log('Edit', item.id)}
+                    onClick={() => {
+  setEditingPlant(item);      // กรณี Edit
+  setIsFormOpen(true);
+}}
                     className="px-4 py-3 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Edit
@@ -137,11 +203,21 @@ export default function PlantTable({ plants }: { plants: Plant[] }) {
       <ConfirmModal
         open={confirmOpen}
         title="Confirm Delete"
-        message={`Are you sure you want to delete "${targetName}"?`}
+        message={
+          !singleDelete && selected.length > 1
+            ? `Are you sure you want to delete ${selected.length} items?`
+            : `Are you sure you want to delete "${targetName}"?`
+        }
         onCancel={() => setConfirmOpen(false)}
         onConfirm={confirmDelete}
         isPending={isPending}
       />
+      
     </div>
-  );
+    </>
+    )}
+  </div>
+);
+    
+  ;
 }
