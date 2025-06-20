@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 
+import { Plant } from "@/lib/service/plantService";
+import { Pot } from "@/lib/service/potService";
+
+import PlantTable from "@/components/AdminDashboard/Table/plantTable";
+import PotTable from "@/components/AdminDashboard/Table/potTable";
+
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
 
 const dummyTableData = [
@@ -10,13 +16,13 @@ const dummyTableData = [
     { id: 3, name: "Daniel Gibson", status: "Review", date: "2024-11-04", price: "$420.40" },
 ];
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ plants, pots }: { plants: Plant[], pots: Pot[] }) {
     const [activeTab, setActiveTab] = useState("Home Content");
 
     return (
         <div className="min-h-screen flex">
             {/* Sidebar */}
-            <aside className="w-[200px] border-r pr-4">
+            <aside className="w-[200px] border-r pr-4 mb-6">
                 <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
                 <ul className="space-y-4">
                     {menuItems.map((item) => (
@@ -35,48 +41,20 @@ export default function AdminDashboard() {
 
             {/* Content Area */}
             <div className="flex-1 pl-10">
-                <h3 className="text-xl font-semibold mb-6">{activeTab}</h3>
 
-                {/* Table */}
-                <div className="bg-white overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-100">
-                            <tr>
-                                <th className="text-left px-6 py-3 font-medium text-gray-600">ID</th>
-                                <th className="text-left px-6 py-3 font-medium text-gray-600">Customer</th>
-                                <th className="text-left px-6 py-3 font-medium text-gray-600">Status</th>
-                                <th className="text-left px-6 py-3 font-medium text-gray-600">Date Added</th>
-                                <th className="text-left px-6 py-3 font-medium text-gray-600">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {dummyTableData.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 text-sm text-gray-700">{item.id}</td>
-                                    <td className="px-6 py-4 text-sm font-medium">{item.name}</td>
-                                    <td className="px-6 py-4 text-sm">
-                                        <span
-                                            className={
-                                                "font-semibold " +
-                                                (item.status === "Completed"
-                                                    ? "text-green-600"
-                                                    : item.status === "Ongoing"
-                                                        ? "text-red-500"
-                                                        : item.status === "Review"
-                                                            ? "text-purple-500"
-                                                            : "")
-                                            }
-                                        >
-                                            {item.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{item.date}</td>
-                                    <td className="px-6 py-4 text-sm font-bold">{item.price}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {activeTab === "Home Content" && (
+                    <div>
+                        <p className="text-gray-600">Welcome to Home Content</p>
+                    </div>
+                )}
+
+                {activeTab === "Plant" && <PlantTable plants={plants} />}
+                {activeTab === "Pot" && <PotTable pots={pots} />}
+                {activeTab === "Port" && (
+                    <div>
+                        <p className="text-gray-600">Port section coming soon...</p>
+                    </div>
+                )}
             </div>
         </div>
     );

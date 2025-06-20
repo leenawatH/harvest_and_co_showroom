@@ -1,10 +1,17 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+
+import { getAllPlants } from '@/lib/service/plantService';
+import { getAllPots } from '@/lib/service/potService';
+
 import AuthAutoSignOut from "@/components/AuthAutoSignOut/AuthAutoSignOut";
 import AsideTable from "@/components/AdminDashboard/AsideTable";
 
 export default async function Admin() {
   const supabase = await createClient();
+
+  const plant = await getAllPlants();
+  const pot = await getAllPots();
 
   const {
     data: { user },
@@ -17,7 +24,7 @@ export default async function Admin() {
   return (
     <div className="min-h-screen mt-20 px-[10%] py-6">
       <AuthAutoSignOut />
-      <AsideTable />
+      <AsideTable plants={plant} pots={pot} />
       
     </div>
   );

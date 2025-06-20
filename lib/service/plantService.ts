@@ -1,7 +1,7 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 
 export interface Plant {
-    id?: string; 
+    id: string; 
     name: string;
     height?: number;
     price?: number;
@@ -44,10 +44,16 @@ export async function getAllFirstUrlPlantPic() {
 
     return filteredPlant;
 }
+// ✅ ดึงข้อมูล 1 รายการ
+export async function getPlantById(id: string): Promise<Plant> {
+  const res = await fetch(`${getBaseUrl()}/api/plant/${id}`);
+  if (!res.ok) throw new Error('Not found');
+  return res.json();
+}
 
 // ✅ เพิ่มใหม่
 export async function addPlant(data: Plant): Promise<Plant> {
-    const res = await fetch('/api/plant', {
+    const res = await fetch(`${getBaseUrl()}/api/plant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -56,25 +62,21 @@ export async function addPlant(data: Plant): Promise<Plant> {
     return res.json();
 }
 
-// ✅ แก้ไข 1 รายการ
-export async function updatePlant(data: Plant): Promise<Plant> {
-    if (!data.id) throw new Error('Missing id for update');
-    const res = await fetch('/api/plant', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Failed to update plant');
-    return res.json();
+// ✅ UPDATE
+export async function updatePlant(id: string, data: Partial<Plant>): Promise<Plant> {
+  const res = await fetch(`${getBaseUrl()}/api/plant/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update plant');
+  return res.json();
 }
 
-// ✅ ลบ 1 รายการ
+// ✅ DELETE
 export async function deletePlant(id: string): Promise<void> {
-    const res = await fetch('/api/plant', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-    });
-    if (!res.ok) throw new Error('Failed to delete plant');
+  const res = await fetch(`${getBaseUrl()}/api/plant/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete plant');
 }
-

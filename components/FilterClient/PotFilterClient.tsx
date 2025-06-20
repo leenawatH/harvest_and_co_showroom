@@ -130,7 +130,7 @@ export default function PotFilterClient({ pots }: { pots: any[] }) {
                                         className="w-full h-[400px] object-contain mb-4"
                                     />
                                     <h2 className="text-center font-medium">{name}</h2>
-                                    <p className="text-center text-sm text-gray-600 mt-1 mb-2">ความสูง {item.height} cm</p>
+                                    <p className="text-center text-sm text-gray-600 mt-1 mb-2">ความสูง {item.height} cm เส้นรอบวง {item.circumference} cm</p>
                                 </div>
                             </Link>
                         );

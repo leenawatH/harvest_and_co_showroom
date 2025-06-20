@@ -23,11 +23,9 @@ export async function getAllPots(): Promise<Pot[]> {
 
 // ✅ ดึงข้อมูล รูปเเรกทุกรายการ
 export async function getAllFirstUrlPotPic() {
-    const plants = await getAllPots();
+    const pots = await getAllPots();
 
-    console.log('plants', plants);
-
-    const filteredPlant = (plants || []).filter((item) => {
+    const filteredPot = (pots || []).filter((item) => {
         const colorArray = Array.isArray(item.color) ? item.color : [];
         return (
             colorArray.length > 0 &&
@@ -35,12 +33,19 @@ export async function getAllFirstUrlPotPic() {
         );
     }).sort((a, b) => a.name.localeCompare(b.name, 'th', { sensitivity: 'base' }));
 
-    return filteredPlant;
+    return filteredPot;
+}
+
+// ✅ ดึงข้อมูล 1 รายการ
+export async function getPotById(id: string): Promise<Pot> {
+  const res = await fetch(`${getBaseUrl()}/api/pot/${id}`);
+  if (!res.ok) throw new Error('Not found');
+  return res.json();
 }
 
 // ✅ เพิ่มใหม่
 export async function addPot(data: Pot): Promise<Pot> {
-  const res = await fetch('/api/pot', {
+  const res = await fetch(`${getBaseUrl()}/api/pot`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -49,10 +54,9 @@ export async function addPot(data: Pot): Promise<Pot> {
   return res.json();
 }
 
-// ✅ แก้ไข 1 รายการ
-export async function updatePot(data: Pot): Promise<Pot> {
-  if (!data.id) throw new Error('Missing id for update');
-  const res = await fetch('/api/pot', {
+// ✅ UPDATE
+export async function updatePot(id: string, data: Partial<Pot>): Promise<Pot> {
+  const res = await fetch(`${getBaseUrl()}/api/pot/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -61,12 +65,10 @@ export async function updatePot(data: Pot): Promise<Pot> {
   return res.json();
 }
 
-// ✅ ลบ 1 รายการ
+// ✅ DELETE
 export async function deletePot(id: string): Promise<void> {
-  const res = await fetch('/api/pot', {
+  const res = await fetch(`${getBaseUrl()}/api/pot/${id}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error('Failed to delete pot');
 }
