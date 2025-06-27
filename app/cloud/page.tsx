@@ -1,20 +1,17 @@
-// components/UploadButton.tsx
 "use client";
-import { CldUploadButton } from "next-cloudinary";
+import CloudinaryImageUpload from "@/components/AdminDashboard/CloudinaryImageUpload";
+import { useState } from "react";
 
 function UploadButton() {
-    return (
-        <div className="p-4 h-screen flex items-center justify-center">
-            <CldUploadButton
-                uploadPreset="my_unsigned_preset"
-                options={{
-                    folder: "my-nextjs-uploads/specific-folder",
-                    sources: ["local"],
-                    multiple: false,
-                }}
-            />
-        </div>
-    );
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  return (
+    <div className="p-4 h-screen flex flex-col items-center justify-center gap-4">
+      <CloudinaryImageUpload
+      />
+
+   </div>  
+  );
 }
 
 export default UploadButton;
