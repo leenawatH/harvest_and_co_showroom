@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
-import { Plant, deletePlant, getAllPlants } from '@/lib/service/plantService';
+import {getAllSinglePlantWithPotInCard , deletePlant  } from '@/lib/service/plantService';
+import { SinglePlantWithPotInCard } from '@/lib/types/types';
 import { Pot, getAllPots } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
 
-export default function PlantTable({ plants, pots }: { plants: Plant[], pots: Pot[] }) {
+export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPotInCard[], pots: Pot[] }) {
 
-  const [plantsData, setPlantsData] = useState<Plant[]>(plants);
+  const [plantsData, setPlantsData] = useState<SinglePlantWithPotInCard[]>(plants);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [singleDelete, setSingleDelete] = useState<boolean>(true);
@@ -17,7 +18,7 @@ export default function PlantTable({ plants, pots }: { plants: Plant[], pots: Po
   const [targetName, setTargetName] = useState<string>("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPlant, setEditingPlant] = useState<Plant | null>(null);
+  const [editingPlant, setEditingPlant] = useState<SinglePlantWithPotInCard | null>(null);
 
   const [isPending, setIsPending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -43,7 +44,7 @@ export default function PlantTable({ plants, pots }: { plants: Plant[], pots: Po
   const refresh = async () => {
     setIsRefreshing(true);
     try {
-      const NewPlant = await getAllPlants();
+      const NewPlant = await getAllSinglePlantWithPotInCard();
       setPlantsData(NewPlant);
     } catch (err) {
       console.error(err);
@@ -83,7 +84,7 @@ export default function PlantTable({ plants, pots }: { plants: Plant[], pots: Po
     <div className="overflow-x-auto">
       {isFormOpen ? (
         <PlantForm
-          initialData={editingPlant ?? undefined}
+          initialData={editingPlant}
           onSubmit={async (formData: any) => {
             if (editingPlant) {
               // Edit
@@ -161,9 +162,9 @@ export default function PlantTable({ plants, pots }: { plants: Plant[], pots: Po
                     </td>
                     <td className="p-4">
                       <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
-                        {item.withpot_imgurl?.[0]?.available_colors?.[0]?.url ? (
+                        {item.url? (
                           <img
-                            src={item.withpot_imgurl[0].available_colors[0].url}
+                            src={item.url}
                             alt={item.name}
                             className="w-full h-full object-cover"
                           />

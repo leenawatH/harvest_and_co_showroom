@@ -1,49 +1,33 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
+import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
 
-export interface Plant {
-    id: string; 
-    name: string;
-    height?: number;
-    price?: number;
-    withpot_imgurl?: PotAvailable[];
-}
-
-export interface PotAvailable {
-    pot_id: string;
-    height_with_pot?: string;
-    available_colors?: Available_colors[];
-}
-
-export interface Available_colors {
-    url: string;
-    color: string;
+export async function getAllPlant(): Promise<Plant[]> {
+    const res = await fetch(`${getBaseUrl()}/api/plant`);
+    if (!res.ok) throw new Error('Failed to fetch plant data');
+    return res.json();     
 }
 
 // ✅ ดึงข้อมูลทั้งหมด
-export async function getAllPlants(): Promise<Plant[]> {
-    const res = await fetch(`${getBaseUrl()}/api/plant`);
-    if (!res.ok) throw new Error('Failed to fetch plant data');
-    return res.json();
+export async function getAllSinglePlantWithPotInCard(): Promise<SinglePlantWithPotInCard[]> {
+  const res = await fetch(`${getBaseUrl()}/api/plant`);
+  if (!res.ok) throw new Error('Failed to fetch plant data');
+
+  const data = await res.json();
+
+  const result: SinglePlantWithPotInCard[] = data
+    .map((item: any) => ({
+      id: item.plant_id,
+      name: item.name,
+      height: item.height,
+      price: item.price,
+      url: item.cover_image_url,
+    }))
+    .sort((a: { name: string; }, b: { name: string; }) => a.name.localeCompare(b.name)); // ✅ sort ชื่อ A-Z
+
+  return result;
 }
 
-// ✅ ดึงข้อมูล รูปเเรกทุกรายการ
-export async function getAllFirstUrlPlantPic() {
-    const plants = await getAllPlants();
 
-    console.log('plants', plants);
-
-    const filteredPlant = (plants || []).filter((item) => {
-        const withpotArray = Array.isArray(item.withpot_imgurl) ? item.withpot_imgurl : [];
-        return (
-            withpotArray.length > 0 &&
-            withpotArray[0].available_colors &&
-            withpotArray[0].available_colors.length > 0 &&
-            withpotArray[0].available_colors[0].url
-        );
-    }).sort((a, b) => a.name.localeCompare(b.name, 'th', { sensitivity: 'base' }));
-
-    return filteredPlant;
-}
 // ✅ ดึงข้อมูล 1 รายการ
 export async function getPlantById(id: string): Promise<Plant> {
   const res = await fetch(`${getBaseUrl()}/api/plant/${id}`);

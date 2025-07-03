@@ -2,8 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Box, Slider, Checkbox, FormControlLabel } from "@mui/material";
+import { SinglePlantWithPotInCard } from "@/lib/types/types";
 
-export default function PlantFilterClient({ plants }: { plants: any[] }) {
+export default function PlantFilterClient({ plants }: { plants: SinglePlantWithPotInCard[] }) {
 
     const [open, setOpen] = useState({
         availability: false,
@@ -206,10 +207,13 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
             <section className="flex-1">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-10 ml-10">
                     {plants.map((item) => {
-                        const withpotArray = item.withpot_imgurl;
-                        const imageUrl = withpotArray[0].available_colors[0].url;
+                        // ❌ ถ้าไม่มี URL ข้ามการ render ไปเลย
+                        if (!item.url) return null;
+
+                        const imageUrl = item.url;
                         const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
+
                         return (
                             <Link key={item.id} href={`/product/plant/${slug}`} className="h-full">
                                 <div className="w_[150px] hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
@@ -219,11 +223,14 @@ export default function PlantFilterClient({ plants }: { plants: any[] }) {
                                         className="w-full h-[400px] object-contain mb-4"
                                     />
                                     <h2 className="text-center font-medium">{name}</h2>
-                                    <p className="text-center text-sm text-gray-600 mt-1 mb-2">ความสูง {item.height} cm</p>
+                                    <p className="text-center text-sm text-gray-600 mt-1 mb-2">
+                                        ความสูง {item.height} cm
+                                    </p>
                                 </div>
                             </Link>
                         );
                     })}
+
                 </div>
             </section>
         </main>

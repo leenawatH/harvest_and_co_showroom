@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Plant } from "@/lib/service/plantService";
+import { SinglePlantWithPotInCard } from "@/lib/types/types";
 import { Pot } from "@/lib/service/potService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
@@ -10,13 +10,8 @@ import PotTable from "@/components/AdminDashboard/Table/potTable";
 
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
 
-const dummyTableData = [
-    { id: 1, name: "Seth Weber", status: "Completed", date: "2024-08-07", price: "$620.10" },
-    { id: 2, name: "Connor Roberson", status: "Ongoing", date: "2024-05-11", price: "$120.10" },
-    { id: 3, name: "Daniel Gibson", status: "Review", date: "2024-11-04", price: "$420.40" },
-];
-
-export default function AdminDashboard({ plants, pots }: { plants: Plant[], pots: Pot[] }) {
+export default function AdminDashboard({ plants, pots }: { plants: SinglePlantWithPotInCard[], pots: Pot[] }) {
+  
   const [activeTab, setActiveTab] = useState("Home Content");
 
   return (

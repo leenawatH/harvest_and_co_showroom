@@ -1,16 +1,17 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-import { getAllPlants } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard } from '@/lib/service/plantService';
 import { getAllPots } from '@/lib/service/potService';
 
 import AuthAutoSignOut from "@/components/AuthAutoSignOut/AuthAutoSignOut";
 import AsideTable from "@/components/AdminDashboard/AsideTable";
+import { SinglePlantWithPotInCard } from "@/lib/types/types";
 
 export default async function Admin() {
   const supabase = await createClient();
 
-  const plant = await getAllPlants();
+  const plant: SinglePlantWithPotInCard[] = await getAllSinglePlantWithPotInCard();
   const pot = await getAllPots();
 
   const {

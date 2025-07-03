@@ -1,8 +1,8 @@
-import { getAllFirstUrlPlantPic } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard } from '@/lib/service/plantService';
 import PlantFilterClient from '@/components/FilterClient/PlantFilterClient';
 
 export default async function Plant() {
-  const plant = await getAllFirstUrlPlantPic();
+  const plant = await getAllSinglePlantWithPotInCard();
 
   return <PlantFilterClient plants={plant} />;
 }

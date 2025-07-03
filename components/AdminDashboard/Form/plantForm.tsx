@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-import { Pot, PotImageEachColor, getAllPots, getPotById } from '@/lib/service/potService'
-import { Plant, Available_colors, PotAvailable } from '@/lib/service/plantService';
+import { Pot } from '@/lib/service/potService'
+import { getPlantPotOptionById } from '@/lib/service/plantWithPotOptionService';
 
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { plant_pot_options } from '@/lib/types/types';
 
 interface PlantFormProps {
     initialData?: any;
@@ -14,12 +15,15 @@ interface PlantFormProps {
     pots?: Pot[];
 }
 
-export default function PlantForm({ initialData, onSubmit, onCancel, pots }: PlantFormProps) {
-    const [allPots, setAllPots] = useState<Pot[]>(pots || []);
+export default async function PlantForm({ initialData, onSubmit, onCancel, pots }: PlantFormProps) {
+    console.log(initialData.id);
+
+    const potPair = await getPlantPotOptionById(initialData.id);
+
     const [name, setName] = useState(initialData?.name || '');
     const [height, setHeight] = useState(initialData?.height || '');
     const [price, setPrice] = useState(initialData?.price || '');
-    const [potPairs, setPotPairs] = useState<PotAvailable[]>(initialData?.withpot_imgurl || []);
+    const [potPairs, setPotPairs] = useState<plant_pot_options[]>(potPair);
 
     function handlePotChange(index: number, arg1: string, value: string): void {
         throw new Error('Function not implemented.');
@@ -88,7 +92,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel, pots }: Pla
                                 onChange={(e) => handlePotChange(index, 'pot_id', e.target.value)}
                                 className="border w-full px-3 py-2"
                             >
-                                {allPots?.map((pot) => (
+                                {pots?.map((pot) => (
                                     <option key={pot.id} value={pot.id}>
                                         {pot.name}
                                     </option>
@@ -109,7 +113,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel, pots }: Pla
                         <div>
                             <label className="block text-sm font-medium mb-1">Preview</label>
                             <img
-                                src={pair.available_colors?.[0]?.url || ''}
+                                src={pair.url || ''}
                                 alt="preview"
                                 className="w-20 h-20 object-cover border"
                             />
@@ -130,7 +134,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel, pots }: Pla
                         <label className="block text-sm font-medium mb-1">Image URL</label>
                         <input
                             type="text"
-                            value={(pair.available_colors?.[0]?.url) || ''}
+                            value={(pair.url) || ''}
                             onChange={(e) => handleColorChange(index, 0, 'url', e.target.value)}
                             className="w-full border px-3 py-2"
                         />
@@ -139,7 +143,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel, pots }: Pla
                         <label className="block text-sm font-medium mb-1">Color</label>
                         <input
                             type="text"
-                            value={pair.available_colors?.[0]?.color || ''}
+                            value={pair.pot_color|| ''}
                             onChange={(e) => handleColorChange(index, 0, 'color', e.target.value)}
                             className="w-full border px-3 py-2"
                         />
