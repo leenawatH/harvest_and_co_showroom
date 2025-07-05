@@ -13,6 +13,7 @@ export interface Plant {
     price?: number;
     is_suggested?: boolean;
     similar_plant_ids?: string[];
+    addition_img: string[];
     plant_pot_options?: plant_pot_options[];
 }
 
@@ -30,18 +31,18 @@ export interface Pot {
     height: number;
     circumference: number;
     price?: number;
-    is_Suggested: boolean;
+    is_suggested: boolean;
 }
 
 export interface plant_pot_options {
     id: string;
     plant_id: string;
     pot_id: string;
-    pot_color: PotColor;
+    pot_color: PotColor | "";
     height_with_pot?: string;
     is_suggested: boolean;
     url: string;
-    addition_img: string[];
+    file: File | null; 
 }
 
 export interface Pot_Img {

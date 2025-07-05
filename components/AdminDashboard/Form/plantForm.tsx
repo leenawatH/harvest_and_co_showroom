@@ -1,62 +1,117 @@
 'use client';
 
-import { useState } from 'react';
-
-import { Pot } from '@/lib/service/potService'
-import { getPlantPotOptionById } from '@/lib/service/plantWithPotOptionService';
-
+import { useState, useEffect } from 'react';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import { plant_pot_options } from '@/lib/types/types';
+
+import { getAllPots, Pot } from '@/lib/service/potService';
+import { getPlantById } from '@/lib/service/plantService';
+import { getPlantPotOptionById } from '@/lib/service/plantWithPotOptionService';
+import { Plant, plant_pot_options, PotColor } from '@/lib/types/types';
 
 interface PlantFormProps {
-    initialData?: any;
+    initialData: string; // ใช้ plantId
     onSubmit: (formData: any) => void;
     onCancel?: () => void;
-    pots?: Pot[];
 }
 
-export default async function PlantForm({ initialData, onSubmit, onCancel, pots }: PlantFormProps) {
-    console.log(initialData.id);
+export default function PlantForm({ initialData, onSubmit, onCancel }: PlantFormProps) {
+    const [plant, setPlant] = useState<Plant | null>(null);
+    const [allPots, setAllPots] = useState<Pot[]>([]);
+    const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
+    const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
-    const potPair = await getPlantPotOptionById(initialData.id);
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [plantData, potsList] = await Promise.all([
+                    getPlantById(initialData),
+                    getAllPots()
+                ]);
+                setPlant(plantData);
+                setPotPairs(plantData.plant_pot_options ?? []);
+                setOriginalPotPairs(plantData.plant_pot_options ?? []);
+                setAllPots(potsList);
+            } catch (err) {
+                console.error('Error loading plant data:', err);
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, [initialData]);
 
-    const [name, setName] = useState(initialData?.name || '');
-    const [height, setHeight] = useState(initialData?.height || '');
-    const [price, setPrice] = useState(initialData?.price || '');
-    const [potPairs, setPotPairs] = useState<plant_pot_options[]>(potPair);
-
-    function handlePotChange(index: number, arg1: string, value: string): void {
-        throw new Error('Function not implemented.');
+    function handleChangePlant(field: keyof Plant, value: string) {
+        if (!plant) return;
+        setPlant({ ...plant, [field]: value });
     }
 
-    function removePotPair(index: number): void {
-        throw new Error('Function not implemented.');
+    function handlePotChange(index: number, field: keyof plant_pot_options, value: string) {
+        const updated = [...potPairs];
+        (updated[index] as any)[field] = value;
+        setPotPairs(updated);
     }
-
-    function handleColorChange(index: number, p0: number, p1: string, value: string): void {
-        throw new Error('Function not implemented.');
+    // ลบรูปที่ cloudinary ด้วย
+    function removePotPair(index: number) {
+        const updated = [...potPairs];
+        updated.splice(index, 1);
+        setPotPairs(updated);
     }
 
     function addPotPair() {
+        setPotPairs([...potPairs, {
+            id: '',
+            pot_id: '',
+            pot_color: '',
+            url: '',
+            height_with_pot: '',
+            plant_id: plant?.id ?? '',
+            is_suggested: false,
+            file: null
+        }]);
+    }
 
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!plant) return;
+
+        const newPotOptions = potPairs.filter(p => !p.id);
+        const updatedPotOptions = potPairs.filter(p => {
+            const original = originalPotPairs.find(o => o.id === p.id);
+            return original && JSON.stringify(original) !== JSON.stringify(p);
+        });
+        const deletedPotOptionIds = originalPotPairs
+            .filter(o => !potPairs.find(p => p.id === o.id))
+            .map(o => o.id);
+
+        console.log('📦 SUBMIT PAYLOAD:', {
+            plant,
+            newPotOptions,
+            updatedPotOptions,
+            deletedPotOptionIds
+        });
+
+        onSubmit({ plant, newPotOptions, updatedPotOptions, deletedPotOptionIds });
+    }
+
+    if (loading || !plant) {
+        return <div className="p-6 text-center text-gray-500">Loading...</div>;
     }
 
     return (
-        <form className="space-y-6 bg-white p-6 max-w-3xl">
-            <button
-                onClick={onCancel}
-                className=" text-black-600 "
-            >
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl">
+            <button onClick={onCancel} type="button" className="text-black-600">
                 <ArrowBackIosNewIcon fontSize="small" /> Back
             </button>
+
             <h2 className="text-2xl font-bold mb-4">Plant Form</h2>
 
             <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={plant.name}
+                    onChange={(e) => handleChangePlant('name', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
@@ -65,8 +120,8 @@ export default async function PlantForm({ initialData, onSubmit, onCancel, pots 
                 <label className="block text-sm font-medium mb-1">Height</label>
                 <input
                     type="text"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
+                    value={plant.height}
+                    onChange={(e) => handleChangePlant('height', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
@@ -75,8 +130,8 @@ export default async function PlantForm({ initialData, onSubmit, onCancel, pots 
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
                     type="text"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    value={plant.price}
+                    onChange={(e) => handleChangePlant('price', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
@@ -88,14 +143,12 @@ export default async function PlantForm({ initialData, onSubmit, onCancel, pots 
                         <div className="flex-1">
                             <label className="block text-sm font-medium mb-1">Pot</label>
                             <select
-                                value={pair.pot_id ?? ''}
+                                value={pair.pot_id}
                                 onChange={(e) => handlePotChange(index, 'pot_id', e.target.value)}
                                 className="border w-full px-3 py-2"
                             >
-                                {pots?.map((pot) => (
-                                    <option key={pot.id} value={pot.id}>
-                                        {pot.name}
-                                    </option>
+                                {allPots.map((pot) => (
+                                    <option key={pot.id} value={pot.id}>{pot.name}</option>
                                 ))}
                             </select>
                         </div>
@@ -111,51 +164,59 @@ export default async function PlantForm({ initialData, onSubmit, onCancel, pots 
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Preview</label>
-                            <img
-                                src={pair.url || ''}
-                                alt="preview"
-                                className="w-20 h-20 object-cover border"
-                            />
-                        </div>
-
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => removePotPair(index)}
-                                className="text-red-500 hover:underline text-sm"
-                            >
+                            <button type="button" onClick={() => removePotPair(index)} className="text-red-500 hover:underline text-sm">
                                 Remove
                             </button>
                         </div>
                     </div>
 
                     <div className="mt-2">
-                        <label className="block text-sm font-medium mb-1">Image URL</label>
-                        <input
-                            type="text"
-                            value={(pair.url) || ''}
-                            onChange={(e) => handleColorChange(index, 0, 'url', e.target.value)}
+                        <label className="block text-sm font-medium mb-1">Color</label>
+                        <select
+                            value={pair.pot_color}
+                            onChange={(e) => handlePotChange(index, 'pot_color', e.target.value)}
                             className="w-full border px-3 py-2"
-                        />
+                        >
+                            <option value="">Select color</option>
+                            {Object.values(PotColor).map((color) => (
+                                <option key={color} value={color}>{color}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="mt-2">
-                        <label className="block text-sm font-medium mb-1">Color</label>
+                        <label className="block text-sm font-medium mb-1">Upload Image</label>
                         <input
-                            type="text"
-                            value={pair.pot_color|| ''}
-                            onChange={(e) => handleColorChange(index, 0, 'color', e.target.value)}
-                            className="w-full border px-3 py-2"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const updated = [...potPairs];
+                                    updated[index].file = file;
+                                    // ✅ Preview: สร้าง URL ชั่วคราวสำหรับ preview
+                                    updated[index].url = URL.createObjectURL(file);
+                                    setPotPairs(updated);
+                                    console.log('setPotPairs uploaded:',potPairs);
+                                }
+                            }}
+                            
                         />
+                        <div className="mt-2">
+           {pair.url? (
+                          <img
+                            src={pair.url}
+                            className="w-32 h-32 object-cover border rounded"
+                          />
+                        ) : (
+                          <span className="text-gray-400 text-s">No Image</span>
+                        )}
+        </div>
                     </div>
+
                 </div>
             ))}
 
-            <button
-                type="button"
-                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={addPotPair}
-            >
+            <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addPotPair}>
                 + Add Pot
             </button>
 
@@ -169,6 +230,7 @@ export default async function PlantForm({ initialData, onSubmit, onCancel, pots 
                     Save
                 </button>
             </div>
+
         </form>
     );
 }

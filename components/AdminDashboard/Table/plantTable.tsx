@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import {getAllSinglePlantWithPotInCard , deletePlant  } from '@/lib/service/plantService';
-import { SinglePlantWithPotInCard } from '@/lib/types/types';
-import { Pot, getAllPots } from '@/lib/service/potService';
+import {getAllSinglePlantWithPotInCard , deletePlant, updatePlant  } from '@/lib/service/plantService';
+import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { Pot } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
 
@@ -18,7 +18,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
   const [targetName, setTargetName] = useState<string>("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPlant, setEditingPlant] = useState<SinglePlantWithPotInCard | null>(null);
+  const [editingPlantId, seteditingPlantId] = useState<string>("");
 
   const [isPending, setIsPending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -84,23 +84,23 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
     <div className="overflow-x-auto">
       {isFormOpen ? (
         <PlantForm
-          initialData={editingPlant}
-          onSubmit={async (formData: any) => {
-            if (editingPlant) {
+          initialData={editingPlantId}
+          onSubmit={async ({ plant, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
+            if (editingPlantId) {
               // Edit
-              //await updatePlant(editingPlant.id, formData);
+              await updatePlant(editingPlantId, plant);
             } else {
               // Add
-              //await createPlant(formData);
+              // await createPlant(plant, newPotOptions, updatedPotOptions, deletedPotOptionIds);
             }
             await refresh();
             setIsFormOpen(false);
-            setEditingPlant(null);
+            seteditingPlantId("");
           }}
           onCancel={() => {
             setIsFormOpen(false);
-            setEditingPlant(null);
-          }} pots={pots} />
+            seteditingPlantId("");
+          }} />
       ) : (
         <>
           {/* ✅ Top Bar */}
@@ -127,7 +127,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
                 <button
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   onClick={() => {
-                    setEditingPlant(null);
+                    seteditingPlantId("");
                     setIsFormOpen(true);
                   }}
                 >
@@ -180,7 +180,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => {
-                            setEditingPlant(item);      // กรณี Edit
+                            seteditingPlantId(item.id);      // กรณี Edit
                             setIsFormOpen(true);
                           }}
                           className="px-4 py-3 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"

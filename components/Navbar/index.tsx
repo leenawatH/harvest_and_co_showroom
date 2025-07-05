@@ -44,9 +44,9 @@ export default function Navbar() {
       setState(open);
     };
 
-    const handleClickProduct = () => {
-        setOpenProduct(!openProduct);
-    };
+  const handleClickProduct = () => {
+    setOpenProduct(!openProduct);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,35 +65,35 @@ export default function Navbar() {
       onOpen={toggleDrawer(true)}
     >
       <Box role="presentation">
-          <List sx={{bgcolor: 'background.paper' }}>
-            <ListItemButton onClick={handleClickProduct}>
-                <ListItemText primary="Product" />
-                    {openProduct ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-                <Collapse in={openProduct} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                    <ListItemButton sx={{ pl: 4 }} key="Tree_With_Pot" href={`/product/plant`}>
-                        <ListItemText primary= "ต้นไม้พร้อมกระถาง" />
-                    </ListItemButton>
-                    <ListItemButton sx={{ pl: 4 }} key="Pot" href={`/product/pot`}>
-                        <ListItemText primary= "กระถาง" />
-                    </ListItemButton>
-                    <ListItemButton sx={{ pl: 4 }} key="Big_Tree" href={`/product/bigtree`}>
-                        <ListItemText primary= "ต้นไม้ใหญ่" />
-                    </ListItemButton>
-                    <ListItemButton sx={{ pl: 4 }} key="Garden" href={`/product/garden`}>
-                        <ListItemText primary= "จัดสวน" />
-                    </ListItemButton>
-                    </List>
-                </Collapse>
-            <ListItemButton href={`/port`}>
-                <ListItemText primary="Portfolio" />
-            </ListItemButton>
-            <ListItemButton href={`/contact`}>
-                <ListItemText primary="Contact" />
-            </ListItemButton>
-          </List>
-        </Box>
+        <List sx={{ bgcolor: 'background.paper' }}>
+          <ListItemButton onClick={handleClickProduct}>
+            <ListItemText primary="Product" />
+            {openProduct ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={openProduct} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }} key="Tree_With_Pot" href={`/product/plant`}>
+                <ListItemText primary="ต้นไม้พร้อมกระถาง" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} key="Pot" href={`/product/pot`}>
+                <ListItemText primary="กระถาง" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} key="Big_Tree" href={`/product/bigtree`}>
+                <ListItemText primary="ต้นไม้ใหญ่" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} key="Garden" href={`/product/garden`}>
+                <ListItemText primary="จัดสวน" />
+              </ListItemButton>
+            </List>
+          </Collapse>
+          <ListItemButton href={`/port`}>
+            <ListItemText primary="Portfolio" />
+          </ListItemButton>
+          <ListItemButton href={`/contact`}>
+            <ListItemText primary="Contact" />
+          </ListItemButton>
+        </List>
+      </Box>
     </SwipeableDrawer>
   );
 
@@ -185,12 +185,12 @@ export default function Navbar() {
                 }}
               >
                 <Link href="/product/plant">
-                  <Typography sx={{ px: 1.5, py: 1.5, '&:hover': { bgcolor: 'grey.100' }, cursor: 'pointer' ,fontSize: '14px'}}>
+                  <Typography sx={{ px: 1.5, py: 1.5, '&:hover': { bgcolor: 'grey.100' }, cursor: 'pointer', fontSize: '14px' }}>
                     ต้นไม้พร้อมกระถาง
                   </Typography>
                 </Link>
                 <Link href="/product/pot">
-                  <Typography sx={{ px: 1.5,  py: 1.5, '&:hover': { bgcolor: 'grey.100' }, cursor: 'pointer' ,fontSize: '14px'}}>
+                  <Typography sx={{ px: 1.5, py: 1.5, '&:hover': { bgcolor: 'grey.100' }, cursor: 'pointer', fontSize: '14px' }}>
                     กระถาง
                   </Typography>
                 </Link>
@@ -211,14 +211,17 @@ export default function Navbar() {
               <Image
                 src="/logo/Logo H_C-01.png"
                 alt="Logo"
-                width={180}
-                height={180}
+                width={160}
+                height={160}
                 priority
                 style={{
+                  width: 'auto', // ✅ ป้องกัน warning
+                  height: 'auto',
                   filter: isWhiteMode ? "invert(1)" : "none",
                   transition: "filter 0.3s",
                 }}
               />
+
             </Link>
           </Box>
           {/* Right side (Search bar) */}
