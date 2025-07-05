@@ -71,6 +71,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         }]);
     }
 
+    function handleSelectSuggested(index: number) {
+    const updated = potPairs.map((p, i) => ({
+        ...p,
+        is_suggested: i === index, // true เฉพาะตัวที่เลือก
+    }));
+    setPotPairs(updated);
+}
+
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!plant) return;
@@ -135,6 +144,50 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     className="w-full border px-3 py-2"
                 />
             </div>
+            <h3 className="text-lg font-semibold mb-2 mt-6">Cover Image (Pot + Color)</h3>
+{potPairs.length === 0 ? (
+  <p className="text-gray-500 text-sm">Add at least one matched pot first.</p>
+) : (
+  <div className="space-y-4">
+    {/* select dropdown */}
+    <select
+      value={potPairs.findIndex(p => p.is_suggested)}
+      onChange={(e) => handleSelectSuggested(Number(e.target.value))}
+      className="w-full border px-3 py-2"
+    >
+      <option value={-1}>Select cover...</option>
+      {potPairs.map((pair, index) => {
+        const potName = allPots.find(p => p.id === pair.pot_id)?.name ?? 'Unnamed Pot';
+        const label = `${potName} - ${pair.pot_color || 'No Color'}`;
+        return (
+          <option key={index} value={index}>
+            {label}
+          </option>
+        );
+      })}
+    </select>
+
+
+    {/* preview image */}
+    <div className="w-32 h-32 overflow-hidden flex items-center justify-center">
+      {(() => {
+        const cover = potPairs.find(p => p.is_suggested);
+        return cover && cover.url ? (
+          <img
+            src={cover.url}
+            alt="Cover Preview"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-sm text-gray-400">No Image</span>
+        );
+      })()}
+    </div>
+  </div>
+)}
+
+
+
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Matched Pots</h3>
             {potPairs.map((pair, index) => (
