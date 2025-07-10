@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
+  
+  const { id } = await params
+
   const { data, error } = await supabase
     .from('plant')
     .select(`
@@ -21,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
              height_with_pot
           )
           `)
-    .eq('id', params.id).single();
+    .eq('id', id).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   return NextResponse.json(data);
 }
