@@ -16,7 +16,7 @@ export async function getAllSinglePlantWithPotInCard(): Promise<SinglePlantWithP
 
   const result: SinglePlantWithPotInCard[] = data
     .map((item: any) => ({
-      id: item.plant_id,
+      id: item.id,
       name: item.name,
       height: item.height,
       price: item.price,
@@ -48,6 +48,9 @@ export async function addPlant(data: Plant): Promise<Plant> {
 
 // ✅ UPDATE
 export async function updatePlant(id: string, data: Partial<Plant>): Promise<Plant> {
+
+  console.log("data" + data);
+  //Edit plant Info
   const res = await fetch(`${getBaseUrl()}/api/plant/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

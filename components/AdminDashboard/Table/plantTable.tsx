@@ -88,7 +88,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
           onSubmit={async ({ plant, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
             if (editingPlantId) {
               // Edit
-              await updatePlant(editingPlantId, plant);
+              //await updatePlant(editingPlantId, plant);
             } else {
               // Add
               // await createPlant(plant, newPotOptions, updatedPotOptions, deletedPotOptionIds);

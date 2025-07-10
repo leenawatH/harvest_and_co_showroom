@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   const result = data.map((plant: any) => {
     const cover = plant.plant_pot_options?.find((p: any) => p.is_suggested && p.url != null);
     return {
-      plant_id: plant.id,
+      id: plant.id,
       name: plant.name,
       height: plant.height,
       price: plant.price,
