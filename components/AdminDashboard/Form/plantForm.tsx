@@ -33,6 +33,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     const [selectedSimilar, setSelectedSimilar] = useState<string[]>([]);
     const selectedSimilarRef = useRef<string[]>(selectedSimilar);
+    const [additionImages, setAdditionImages] = useState<string[]>([]);
 
     const selectedPlants = useMemo(() => {
         return allPlants.reduce((acc, plant) => {
@@ -56,6 +57,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setAllPots(potsList);
                 setAllPlants(plantsList)
+                if (plantData.addition_img) {
+                    setAdditionImages(plantData.addition_img);
+                }
             } catch (err) {
                 console.error('Error loading plant data:', err);
             }
@@ -120,6 +124,21 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 if (plant) {
                     setPlant({ ...plant, similar_plant_ids: selectedIds }); // Update similar_plant_ids in plant
                 }
+            }
+        }
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const newImages = [...additionImages];
+            newImages[index] = URL.createObjectURL(file);
+            setAdditionImages(newImages);
+
+            // หากต้องการบันทึกข้อมูลลงใน plant เพิ่มเติม
+            if (plant) {
+                const updatedPlant = { ...plant, addition_img: newImages };
+                setPlant(updatedPlant);
             }
         }
     };
@@ -249,6 +268,55 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 </div>
             )}
 
+            <h3 className="text-lg font-semibold mb-2 mt-6">Image with Environment</h3>
+            <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-4">Upload Images</h3>
+                <div className="flex space-x-4">
+                    {/* First Image */}
+                    <div className="w-1/2">
+                        <label className="block text-sm font-medium mb-2">Image 1</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, 0)}
+                            className="w-full border px-3 py-2"
+                        />
+                        <div className="mt-2">
+                            {additionImages[0] ? (
+                                <img
+                                    src={additionImages[0]}
+                                    alt="Preview 1"
+                                    className="w-full h-48 object-cover border rounded"
+                                />
+                            ) : (
+                                <span className="text-gray-400">No image selected</span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Second Image */}
+                    <div className="w-1/2">
+                        <label className="block text-sm font-medium mb-2">Image 2</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, 1)}
+                            className="w-full border px-3 py-2"
+                        />
+                        <div className="mt-2">
+                            {additionImages[1] ? (
+                                <img
+                                    src={additionImages[1]}
+                                    alt="Preview 2"
+                                    className="w-full h-48 object-cover border rounded"
+                                />
+                            ) : (
+                                <span className="text-gray-400">No image selected</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
             <h3 className="text-lg font-semibold mb-2 mt-6">Similar Plant</h3>
             <FormControl sx={{ m: 1, width: 500 }}>
                 <InputLabel>Similar Plants</InputLabel>
