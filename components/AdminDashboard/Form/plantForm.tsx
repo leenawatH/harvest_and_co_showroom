@@ -13,7 +13,7 @@ import {
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { getAllPots, Pot } from '@/lib/service/potService';
-import { getAllPlant, getPlantById } from '@/lib/service/plantService';
+import { getAllPlant, getPlantById, uploadImage } from '@/lib/service/plantService';
 import { Plant, plant_pot_options, PotColor } from '@/lib/types/types';
 
 interface PlantFormProps {
@@ -34,6 +34,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     const [selectedSimilar, setSelectedSimilar] = useState<string[]>([]);
     const selectedSimilarRef = useRef<string[]>(selectedSimilar);
     const [additionImages, setAdditionImages] = useState<string[]>([]);
+    const [additionImageFile, setAdditionImageFile] = useState<File[]>([]);
 
     const selectedPlants = useMemo(() => {
         return allPlants.reduce((acc, plant) => {
@@ -134,6 +135,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             const newImages = [...additionImages];
             newImages[index] = URL.createObjectURL(file);
             setAdditionImages(newImages);
+            setAdditionImageFile(prev => [...prev, file]);
 
             // หากต้องการบันทึกข้อมูลลงใน plant เพิ่มเติม
             if (plant) {
@@ -143,13 +145,51 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         }
     };
 
-    function handleSubmit(e: React.FormEvent) {
+    async function uploadImage(file: File, path: string) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('path', path);
+
+        const res = await fetch('/api/cloudinary/upload-image', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await res.json();
+        return data;
+    }
+
+
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!plant) return;
 
         if (!originalPlant) return;
 
         if (!originalPotPairs) return;
+
+        //upload รูป Addition_img สำหรับ New Image Only
+        let resultsUrl = [];
+        //ตรวจสอบก่อนว่า additionImageFile มีมั้ย เพราะจพได้รู้ว่าต้อง uploadมั้ย
+        console.log("additionImageFile");
+        console.log(additionImageFile);
+        if (additionImageFile !== null) {
+            //ตรวจสอบว่า เพราะ จะได้รุ้ว่า เปนการ upload หรือ replace รู้เก่า
+            console.log("originalPlant");
+            console.log(originalPlant);
+            if (originalPlant.addition_img === null) {
+                resultsUrl = await Promise.all(
+                    additionImageFile.map((file) => uploadImage(file, `Plant/${plant.name}/Addition_img`))
+                );
+            } else {
+                //use Replace
+            }
+        }
+
+        console.log("resultsUrl");
+        console.log(resultsUrl)
+
+
 
         const updatedPlantData: Partial<Plant> = {};
 
@@ -395,7 +435,6 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                                     updated[index].file = file;
                                     updated[index].url = URL.createObjectURL(file);
                                     setPotPairs(updated);
-                                    console.log('setPotPairs uploaded:', potPairs);
                                 }
                             }}
 

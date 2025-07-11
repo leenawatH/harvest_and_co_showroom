@@ -68,3 +68,21 @@ export async function deletePlant(id: string): Promise<void> {
   });
   if (!res.ok) throw new Error('Failed to delete plant');
 }
+
+// RENAME CLOUDINARY FOLDER
+
+//Upload file to cloudinary
+export async function uploadImage(file: File , path : string) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('path', path);
+
+  const res = await fetch(`${getBaseUrl()}/api/cloudinary/upload-image`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await res.json();
+  return data;
+}
+

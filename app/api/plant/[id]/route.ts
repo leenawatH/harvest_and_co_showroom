@@ -15,6 +15,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           height,
           price,
           is_suggested,
+          addition_img,
+          similar_plant_ids,
           plant_pot_options (
              id,
              url,
