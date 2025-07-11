@@ -5,6 +5,8 @@ export enum PotColor {
   Stone = 'stone',
 }
 
+
+//test
 //ใช้ในหน้า detail ที่จะใส่ทุกอย่างไว้ในนี้
 export interface Plant {
     id: string; 
