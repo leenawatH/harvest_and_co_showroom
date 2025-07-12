@@ -5,15 +5,13 @@ export enum PotColor {
   Stone = 'stone',
 }
 
-
-//test
 //ใช้ในหน้า detail ที่จะใส่ทุกอย่างไว้ในนี้
 export interface Plant {
     id: string; 
     name: string;
     height?: number;
     price?: number;
-    is_suggested?: boolean;
+    is_suggested?: number;
     similar_plant_ids?: string[];
     addition_img: string[];
     plant_pot_options?: plant_pot_options[];

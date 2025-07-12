@@ -52,8 +52,8 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
   );
 
-  cleanData.similar_plant_ids = cleanData.similar_plant_ids ?? null;
-  cleanData.addition_img = cleanData.addition_img ?? null;
+  // cleanData.similar_plant_ids = cleanData.similar_plant_ids ?? null;
+  // cleanData.addition_img = cleanData.addition_img ?? null;
 
   const { data, error } = await supabase
     .from('plant')

@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 
-import { SinglePlantWithPotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard , Plant } from "@/lib/types/types";
 import { Pot } from "@/lib/service/potService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
 import PotTable from "@/components/AdminDashboard/Table/potTable";
+import HomeContent from "@/components/AdminDashboard/Table/homeContent";
 
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
 
-export default function AdminDashboard({ plants, pots }: { plants: SinglePlantWithPotInCard[], pots: Pot[] }) {
+export default function AdminDashboard({ plants, suggest_plant , pots }: { plants: SinglePlantWithPotInCard[], suggest_plant : SinglePlantWithPotInCard[], pots: Pot[] }) {
   
   const [activeTab, setActiveTab] = useState("Home Content");
 
@@ -36,11 +37,7 @@ export default function AdminDashboard({ plants, pots }: { plants: SinglePlantWi
 
       {/* Scrollable Content */}
       <main className="flex-1 overflow-y-auto pl-5">
-        {activeTab === "Home Content" && (
-          <div>
-            <p className="text-gray-600">Welcome to Home Content</p>
-          </div>
-        )}
+        {activeTab === "Home Content" && <HomeContent suggest_plant={suggest_plant} plants={plants}/>}
         {activeTab === "Plant" && <PlantTable plants={plants} pots={pots} />}
         {activeTab === "Pot" && <PotTable pots={pots} />}
         {activeTab === "Port" && (

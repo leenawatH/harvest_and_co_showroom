@@ -20,13 +20,13 @@ export async function getAllSinglePlantWithPotInCard(): Promise<SinglePlantWithP
       name: item.name,
       height: item.height,
       price: item.price,
-      url: item.cover_image_url,
+      is_suggested:item.is_suggested,
+      url: item.url,
     }))
     .sort((a: { name: string; }, b: { name: string; }) => a.name.localeCompare(b.name)); // ✅ sort ชื่อ A-Z
 
   return result;
 }
-
 
 // ✅ ดึงข้อมูล 1 รายการ
 export async function getPlantById(id: string): Promise<Plant> {
@@ -34,6 +34,36 @@ export async function getPlantById(id: string): Promise<Plant> {
   if (!res.ok) throw new Error('Not found');
   return res.json();
 }
+
+// ✅ ดึงข้อมูล ที่ is_suggested = true
+export async function getSuggestedPlants() {
+  try {
+    const res = await fetch(`${getBaseUrl()}/api/plant?is_suggested=true`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    const result: SinglePlantWithPotInCard[] = data
+    .map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      height: item.height,
+      price: item.price,
+      is_suggested:item.is_suggested,
+      url: item.url,
+    }))
+    .sort((a: { is_suggested: number; }, b: { is_suggested: number; }) => a.is_suggested - b.is_suggested); // ✅ sort by is_suggested numerically
+
+    return result; 
+  } catch (error) {
+    console.error('❌ Error fetching suggested plants:', error);
+    return [];
+  }
+}
+
 
 // ✅ เพิ่มใหม่
 export async function addPlant(data: Plant): Promise<Plant> {

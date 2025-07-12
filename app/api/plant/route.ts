@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     `);
 
   if (onlySuggested) {
-    query = query.eq('is_suggested', true);
+    query = query.neq('is_suggested', 0);
   }
 
   const { data, error } = await query;
@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
       name: plant.name,
       height: plant.height,
       price: plant.price,
-      cover_image_url: cover?.url,
+      is_suggested: plant.is_suggested,
+      url: cover?.url,
     };
   });
 

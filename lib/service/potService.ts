@@ -58,6 +58,23 @@ export async function getPotById(id: string): Promise<Pot> {
   return res.json();
 }
 
+// ✅ ดึงข้อมูล ที่ suggested
+export async function getSuggestedPots() {
+  try {
+    const res = await fetch(`${getBaseUrl()}/api/pot?is_suggested=true`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data; // [{ id, name, height, price, cover_image_url }, ...]
+  } catch (error) {
+    console.error('❌ Error fetching suggested plants:', error);
+    return [];
+  }
+}
+
 // ✅ เพิ่มใหม่
 export async function addPot(data: Pot): Promise<Pot> {
   const res = await fetch(`${getBaseUrl()}/api/pot`, {
