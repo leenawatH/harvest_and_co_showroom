@@ -9,7 +9,8 @@ import {
     FormControl,
     ListItemText,
     Checkbox,
-    CircularProgress
+    CircularProgress,
+    Input
 } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
@@ -23,20 +24,27 @@ interface PlantFormProps {
     onCancel?: () => void;
 }
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
+
 export default function PlantForm({ initialData, onSubmit, onCancel }: PlantFormProps) {
-    const [plant, setPlant] = useState<Plant | null>(null);
-    const [originalPlant, setOriginalPlant] = useState<Plant | null>(null);
-    const [allPots, setAllPots] = useState<Pot[]>([]);
-    const [allPlants, setAllPlants] = useState<Plant[]>([]);
-    const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
-    const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    const [plant, setPlant] = useState<Plant | null>(null);
+    const [originalPlant, setOriginalPlant] = useState<Plant | null>(null);
+    const [allPlants, setAllPlants] = useState<Plant[]>([]);
     const [selectedSimilar, setSelectedSimilar] = useState<string[]>([]);
-    const selectedSimilarRef = useRef<string[]>(selectedSimilar);
+    const selectedSimilarSet = useMemo(() => new Set(selectedSimilar), [selectedSimilar]);
     const [additionImages, setAdditionImages] = useState<string[]>([]);
     const [deleteAdditionImages, setDeleteAdditionImages] = useState<string[]>([])
-    //const [additionImageFile, setAdditionImageFile] = useState<File[]>([]);
     const additionImageFileRef = useRef<File[]>(new Array(2));
 
     const selectedPlants = useMemo(() => {
@@ -45,6 +53,12 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             return acc;
         }, {} as Record<string, string>);
     }, [allPlants]);
+
+    //Match Pots
+    const [allPots, setAllPots] = useState<Pot[]>([]);
+    const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
+    const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
+
 
     const [isPending, setIsPending] = useState(false);
 
@@ -64,6 +78,10 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setAllPots(potsList);
                 setAllPlants(plantsList);
                 setAdditionImages(plantData.addition_img);
+                if (plantData.similar_plant != null) {
+                    setSelectedSimilar(plantData.similar_plant);
+                }
+
             } catch (err) {
                 console.error('Error loading plant data:', err);
             }
@@ -111,23 +129,17 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     }
 
     const handleSelectSimilarChange = (
-        event: React.ChangeEvent<{ value: unknown }> | (Event & { target: { value: unknown; name?: string } }),
-        _child?: React.ReactNode
+        event: React.ChangeEvent<HTMLInputElement> | (Event & { target: { value: string[]; name?: string } }),
+        child?: React.ReactNode
     ) => {
-        const value = typeof event.target.value === 'string'
-            ? event.target.value.split(',')
-            : (event.target.value as string[]);
-
+        const value =
+            typeof event.target.value === 'string'
+                ? event.target.value.split(',')
+                : (event.target.value as string[]);
         if (value.length <= 3) {
-            // Update the selectedSimilar state only if there's a change
-            if (JSON.stringify(value) !== JSON.stringify(selectedSimilar)) {
-                setSelectedSimilar(value);
-                selectedSimilarRef.current = value;
-                const selectedIds = value.map((plantName) => selectedPlants[plantName]).filter((id) => id !== undefined);
-
-                if (plant) {
-                    setPlant({ ...plant, similar_plant_ids: selectedIds }); // Update similar_plant_ids in plant
-                }
+            setSelectedSimilar(value);
+            if (plant) {
+                setPlant({ ...plant, similar_plant: value }); // Update similar_plant_ids in plant
             }
         }
     };
@@ -159,20 +171,6 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             }
         }
     };
-
-    // async function uploadImage(file: File, path: string) {
-    //     const formData = new FormData();
-    //     formData.append('file', file);
-    //     formData.append('path', path);
-
-    //     const res = await fetch('/api/cloudinary/upload-image', {
-    //         method: 'POST',
-    //         body: formData,
-    //     });
-
-    //     const data = await res.json();
-    //     return data;
-    // }
 
     async function handleSubmit(e: React.FormEvent) {
         setIsPending(true);
@@ -210,7 +208,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         if (plant.height !== originalPlant.height) updatedPlantData.height = finalPlant.height;
         if (plant.price !== originalPlant.price) updatedPlantData.price = finalPlant.price;
         if (plant.is_suggested !== originalPlant.is_suggested) updatedPlantData.is_suggested = finalPlant.is_suggested;
-        if (plant.similar_plant_ids !== originalPlant.similar_plant_ids) updatedPlantData.similar_plant_ids = finalPlant.similar_plant_ids;
+        if (plant.similar_plant !== originalPlant.similar_plant) updatedPlantData.similar_plant = finalPlant.similar_plant;
         if (plant.addition_img !== originalPlant.addition_img) updatedPlantData.addition_img = finalPlant.addition_img;
 
         const finalUpdatePlantData = Object.keys(updatedPlantData).length > 1 ? updatedPlantData : null;
@@ -375,23 +373,25 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 </div>
             </div>
             <h3 className="text-lg font-semibold mb-2 mt-6">Similar Plant</h3>
-            <FormControl sx={{ m: 1, width: 500 }}>
+            <FormControl sx={{ width: 300 }}>
                 <InputLabel>Similar Plants</InputLabel>
                 <Select
                     multiple
                     value={selectedSimilar}
                     onChange={handleSelectSimilarChange}
                     input={<OutlinedInput label="Similar Plants" />}
-                    renderValue={(selected) => selected.length > 0 ? selected.join(', ') : 'Select up to 3 plants'}
+                    renderValue={(selected) => selected.join(', ')}
+                    MenuProps={MenuProps}
                 >
                     {allPlants.map((plant) => (
                         <MenuItem key={plant.id} value={plant.name}>
-                            <Checkbox checked={selectedSimilar.indexOf(plant.name) > -1} />
+                            <Checkbox checked={selectedSimilarSet.has(plant.name)} />
                             <ListItemText primary={plant.name} />
                         </MenuItem>
                     ))}
                 </Select>
             </FormControl>
+
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Matched Pots</h3>
             {potPairs.map((pair, index) => (
@@ -404,6 +404,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                                 onChange={(e) => handlePotChange(index, 'pot_id', e.target.value)}
                                 className="border w-full px-3 py-2"
                             >
+                                <option value="">Select Pot</option>
                                 {allPots.map((pot) => (
                                     <option key={pot.id} value={pot.id}>{pot.name}</option>
                                 ))}

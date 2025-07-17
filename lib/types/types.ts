@@ -9,12 +9,12 @@ export enum PotColor {
 export interface Plant {
     id: string; 
     name: string;
-    height?: number;
-    price?: number;
-    is_suggested?: number;
-    similar_plant_ids?: string[];
+    height: number;
+    price: number;
+    is_suggested: number;
+    similar_plant: string[];
     addition_img: string[];
-    plant_pot_options?: plant_pot_options[];
+    plant_pot_options: plant_pot_options[];
 }
 
 export interface SinglePlantWithPotInCard {
