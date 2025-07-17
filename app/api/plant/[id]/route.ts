@@ -31,9 +31,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(data);
 }
 
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
-  const { id } = context.params;
+  const { id } = await params;
   const body = await req.json();
 
   console.log("🔧 Updating plant with ID:", id, "Raw Data:", body);

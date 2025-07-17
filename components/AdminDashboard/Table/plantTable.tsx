@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
-import {getAllSinglePlantWithPotInCard , deletePlant, updatePlant  } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant } from '@/lib/service/plantService';
 import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
 import { Pot } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
+import { CircularProgress } from '@mui/material';
 
 export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPotInCard[], pots: Pot[] }) {
 
@@ -21,6 +22,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
   const [editingPlantId, seteditingPlantId] = useState<string>("");
 
   const [isPending, setIsPending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const toggleSelect = (id: string) => {
@@ -82,20 +84,24 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
 
   return (
     <div className="overflow-x-auto">
+        {isLoading && (
+                      <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
+                          <CircularProgress />
+                      </div>
+                  )}
       {isFormOpen ? (
         <PlantForm
           initialData={editingPlantId}
-          onSubmit={async ({ plant, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
-            if (editingPlantId) {
-              // Edit
-              //await updatePlant(editingPlantId, plant);
-            } else {
-              // Add
-              // await createPlant(plant, newPotOptions, updatedPotOptions, deletedPotOptionIds);
+          onSubmit={async ({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
+            setIsLoading(true);
+            if (finalUpdatePlantData) {
+              await updatePlant(editingPlantId, finalUpdatePlantData);
             }
+
             await refresh();
             setIsFormOpen(false);
             seteditingPlantId("");
+            setIsLoading(false);
           }}
           onCancel={() => {
             setIsFormOpen(false);
@@ -162,7 +168,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
                     </td>
                     <td className="p-4">
                       <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
-                        {item.url? (
+                        {item.url ? (
                           <img
                             src={item.url}
                             alt={item.name}

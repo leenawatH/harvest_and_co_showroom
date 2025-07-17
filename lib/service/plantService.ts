@@ -116,3 +116,18 @@ export async function uploadImage(file: File , path : string) {
   return data;
 }
 
+// Delete image from cloudinary
+export async function deleteImage(publicId: string) {
+  const res = await fetch(`${getBaseUrl()}/api/cloudinary/delete-image?public_id=${publicId}`, {
+    method: 'DELETE',
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    console.log('Image deleted successfully:', data);
+  } else {
+    console.error('Error deleting image:', data.error);
+  }
+}
+
+

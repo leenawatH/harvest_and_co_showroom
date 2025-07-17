@@ -8,12 +8,13 @@ import {
     Select,
     FormControl,
     ListItemText,
-    Checkbox
+    Checkbox,
+    CircularProgress
 } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { getAllPots, Pot } from '@/lib/service/potService';
-import { getAllPlant, getPlantById, uploadImage } from '@/lib/service/plantService';
+import { getAllPlant, getPlantById, uploadImage, deleteImage } from '@/lib/service/plantService';
 import { Plant, plant_pot_options, PotColor } from '@/lib/types/types';
 
 interface PlantFormProps {
@@ -34,7 +35,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     const [selectedSimilar, setSelectedSimilar] = useState<string[]>([]);
     const selectedSimilarRef = useRef<string[]>(selectedSimilar);
     const [additionImages, setAdditionImages] = useState<string[]>([]);
-    const [additionImageFile, setAdditionImageFile] = useState<File[]>([]);
+    const [deleteAdditionImages, setDeleteAdditionImages] = useState<string[]>([])
+    //const [additionImageFile, setAdditionImageFile] = useState<File[]>([]);
+    const additionImageFileRef = useRef<File[]>(new Array(2));
 
     const selectedPlants = useMemo(() => {
         return allPlants.reduce((acc, plant) => {
@@ -42,6 +45,8 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             return acc;
         }, {} as Record<string, string>);
     }, [allPlants]);
+
+    const [isPending, setIsPending] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -57,10 +62,8 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setAllPots(potsList);
-                setAllPlants(plantsList)
-                if (plantData.addition_img) {
-                    setAdditionImages(plantData.addition_img);
-                }
+                setAllPlants(plantsList);
+                setAdditionImages(plantData.addition_img);
             } catch (err) {
                 console.error('Error loading plant data:', err);
             }
@@ -131,11 +134,23 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const file = e.target.files?.[0];
+        let newImages = [];
         if (file) {
-            const newImages = [...additionImages];
-            newImages[index] = URL.createObjectURL(file);
-            setAdditionImages(newImages);
-            setAdditionImageFile(prev => [...prev, file]);
+            if (additionImages != null) {
+                if (additionImages[index] != null) {
+                    setDeleteAdditionImages(prev => [...prev, additionImages[index]]);
+                }
+                newImages = [...additionImages];
+                newImages[index] = URL.createObjectURL(file);
+                setAdditionImages(newImages);
+                additionImageFileRef.current[index] = file;
+
+            } else {
+                newImages[index] = URL.createObjectURL(file);
+                setAdditionImages(newImages);
+                additionImageFileRef.current[index] = file;
+            }
+            //setAdditionImageFile(prev => [...prev, file]);
 
             // หากต้องการบันทึกข้อมูลลงใน plant เพิ่มเติม
             if (plant) {
@@ -145,22 +160,22 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         }
     };
 
-    async function uploadImage(file: File, path: string) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('path', path);
+    // async function uploadImage(file: File, path: string) {
+    //     const formData = new FormData();
+    //     formData.append('file', file);
+    //     formData.append('path', path);
 
-        const res = await fetch('/api/cloudinary/upload-image', {
-            method: 'POST',
-            body: formData,
-        });
+    //     const res = await fetch('/api/cloudinary/upload-image', {
+    //         method: 'POST',
+    //         body: formData,
+    //     });
 
-        const data = await res.json();
-        return data;
-    }
-
+    //     const data = await res.json();
+    //     return data;
+    // }
 
     async function handleSubmit(e: React.FormEvent) {
+        setIsPending(true);
         e.preventDefault();
         if (!plant) return;
 
@@ -168,38 +183,35 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         if (!originalPotPairs) return;
 
-        //upload รูป Addition_img สำหรับ New Image Only
         let resultsUrl = [];
-        //ตรวจสอบก่อนว่า additionImageFile มีมั้ย เพราะจพได้รู้ว่าต้อง uploadมั้ย
-        console.log("additionImageFile");
-        console.log(additionImageFile);
-        if (additionImageFile !== null) {
-            //ตรวจสอบว่า เพราะ จะได้รุ้ว่า เปนการ upload หรือ replace รู้เก่า
-            console.log("originalPlant");
-            console.log(originalPlant);
-            if (originalPlant.addition_img === null) {
-                resultsUrl = await Promise.all(
-                    additionImageFile.map((file) => uploadImage(file, `Plant/${plant.name}/Addition_img`))
-                );
+        for (let i = 0; i < additionImageFileRef.current.length; i++) {
+            if (additionImageFileRef.current[i] != null) {
+                resultsUrl[i] = await uploadImage(additionImageFileRef.current[i], `Plant/${plant.name}/Addition_img`);
+                resultsUrl[i] = resultsUrl[i].secure_url || resultsUrl[i].url;
             } else {
-                //use Replace
+                resultsUrl[i] = additionImages[i] || null;
             }
         }
+        deleteAdditionImages.forEach(async (url) => {
+            const urlParts = url.split('Plant');
+            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            await deleteImage(public_id);
+        });
 
-        console.log("resultsUrl");
-        console.log(resultsUrl)
+        additionImageFileRef.current = [];
 
-
-
+        const finalPlant = resultsUrl.length > 0
+            ? { ...plant, addition_img: resultsUrl }
+            : plant;
         const updatedPlantData: Partial<Plant> = {};
 
-        updatedPlantData.id = plant.id;
-        if (plant.name !== originalPlant.name) updatedPlantData.name = plant.name;
-        if (plant.height !== originalPlant.height) updatedPlantData.height = plant.height;
-        if (plant.price !== originalPlant.price) updatedPlantData.price = plant.price;
-        if (plant.is_suggested !== originalPlant.is_suggested) updatedPlantData.is_suggested = plant.is_suggested;
-        if (plant.similar_plant_ids !== originalPlant.similar_plant_ids) updatedPlantData.similar_plant_ids = plant.similar_plant_ids;
-        if (plant.addition_img !== originalPlant.addition_img) updatedPlantData.addition_img = plant.addition_img;
+        updatedPlantData.id = finalPlant.id;
+        if (plant.name !== originalPlant.name) updatedPlantData.name = finalPlant.name;
+        if (plant.height !== originalPlant.height) updatedPlantData.height = finalPlant.height;
+        if (plant.price !== originalPlant.price) updatedPlantData.price = finalPlant.price;
+        if (plant.is_suggested !== originalPlant.is_suggested) updatedPlantData.is_suggested = finalPlant.is_suggested;
+        if (plant.similar_plant_ids !== originalPlant.similar_plant_ids) updatedPlantData.similar_plant_ids = finalPlant.similar_plant_ids;
+        if (plant.addition_img !== originalPlant.addition_img) updatedPlantData.addition_img = finalPlant.addition_img;
 
         const finalUpdatePlantData = Object.keys(updatedPlantData).length > 1 ? updatedPlantData : null;
 
@@ -223,6 +235,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         });
 
         onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
+        setIsPending(false);
     }
 
 
@@ -232,6 +245,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl">
+            {isPending && (
+                <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
+                    <CircularProgress />
+                </div>
+            )}
             <button onClick={onCancel} type="button" className="text-black-600">
                 <ArrowBackIosNewIcon fontSize="small" /> Back
             </button>
@@ -290,7 +308,6 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                         })}
                     </select>
 
-                    {/* preview image */}
                     <div className="w-32 h-32 overflow-hidden flex items-center justify-center">
                         {(() => {
                             const cover = potPairs.find(p => p.is_suggested);
@@ -322,7 +339,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                             className="w-full border px-3 py-2"
                         />
                         <div className="mt-2">
-                            {additionImages[0] ? (
+                            {additionImages && additionImages[0] ? (
                                 <img
                                     src={additionImages[0]}
                                     alt="Preview 1"
@@ -344,7 +361,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                             className="w-full border px-3 py-2"
                         />
                         <div className="mt-2">
-                            {additionImages[1] ? (
+                            {additionImages && additionImages[1] ? (
                                 <img
                                     src={additionImages[1]}
                                     alt="Preview 2"
