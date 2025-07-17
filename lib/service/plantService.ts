@@ -2,9 +2,9 @@ import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
 
 export async function getAllPlant(): Promise<Plant[]> {
-    const res = await fetch(`${getBaseUrl()}/api/plant`);
-    if (!res.ok) throw new Error('Failed to fetch plant data');
-    return res.json();     
+  const res = await fetch(`${getBaseUrl()}/api/plant`);
+  if (!res.ok) throw new Error('Failed to fetch plant data');
+  return res.json();
 }
 
 // ✅ ดึงข้อมูลทั้งหมด
@@ -20,7 +20,7 @@ export async function getAllSinglePlantWithPotInCard(): Promise<SinglePlantWithP
       name: item.name,
       height: item.height,
       price: item.price,
-      is_suggested:item.is_suggested,
+      is_suggested: item.is_suggested,
       url: item.url,
     }))
     .sort((a: { name: string; }, b: { name: string; }) => a.name.localeCompare(b.name)); // ✅ sort ชื่อ A-Z
@@ -47,17 +47,17 @@ export async function getSuggestedPlants() {
     const data = await res.json();
 
     const result: SinglePlantWithPotInCard[] = data
-    .map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      height: item.height,
-      price: item.price,
-      is_suggested:item.is_suggested,
-      url: item.url,
-    }))
-    .sort((a: { is_suggested: number; }, b: { is_suggested: number; }) => a.is_suggested - b.is_suggested); // ✅ sort by is_suggested numerically
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        height: item.height,
+        price: item.price,
+        is_suggested: item.is_suggested,
+        url: item.url,
+      }))
+      .sort((a: { is_suggested: number; }, b: { is_suggested: number; }) => a.is_suggested - b.is_suggested); // ✅ sort by is_suggested numerically
 
-    return result; 
+    return result;
   } catch (error) {
     console.error('❌ Error fetching suggested plants:', error);
     return [];
@@ -67,13 +67,13 @@ export async function getSuggestedPlants() {
 
 // ✅ เพิ่มใหม่
 export async function addPlant(data: Plant): Promise<Plant> {
-    const res = await fetch(`${getBaseUrl()}/api/plant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Failed to add plant');
-    return res.json();
+  const res = await fetch(`${getBaseUrl()}/api/plant`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to add plant');
+  return res.json();
 }
 
 // ✅ UPDATE
@@ -102,7 +102,7 @@ export async function deletePlant(id: string): Promise<void> {
 // RENAME CLOUDINARY FOLDER
 
 //Upload file to cloudinary
-export async function uploadImage(file: File , path : string) {
+export async function uploadImage(file: File, path: string) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('path', path);

@@ -84,11 +84,11 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
 
   return (
     <div className="overflow-x-auto">
-        {isLoading && (
-                      <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
-                          <CircularProgress />
-                      </div>
-                  )}
+      {isLoading && (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
+          <CircularProgress />
+        </div>
+      )}
       {isFormOpen ? (
         <PlantForm
           initialData={editingPlantId}
