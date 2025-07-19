@@ -83,18 +83,21 @@ export async function DELETE(request: Request) {
   if (!id) {
     return NextResponse.json({ error: "Missing ID" }, { status: 400 });
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  
+  const { error: error1 } = await supabase
+    .from("plant_pot_options")
+    .delete()
+    .eq("plant_id", id);
 
-  console.log("👉 Logged in user:", user); // ถ้าได้ null แสดงว่า cookie ไม่มา
-  const { error } = await supabase
+  // ลบจาก plant
+  const { error: error2 } = await supabase
     .from("plant")
     .delete()
     .eq("id", id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  // ตรวจสอบข้อผิดพลาดทั้งสอง
+  if (error1 || error2) {
+    return NextResponse.json({ error: error1?.message || error2?.message }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });

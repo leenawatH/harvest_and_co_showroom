@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, deleteFolder } from '@/lib/service/plantService';
 import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
 import { Pot } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
@@ -12,6 +12,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
   const [plantsData, setPlantsData] = useState<SinglePlantWithPotInCard[]>(plants);
 
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedName, setSelectedName] = useState<string[]>([]);
   const [singleDelete, setSingleDelete] = useState<boolean>(true);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -25,9 +26,13 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string , name: string) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+    const path = 'Plant/' + name;
+    setSelectedName((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== path) : [...prev, path]
     );
   };
 
@@ -61,8 +66,10 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
         setIsPending(true);
         try {
           await Promise.all(selected.map(id => deletePlant(id)));
+          await Promise.all(selectedName.map(path => deleteFolder(path)));
           refresh();
           setSelected([]);
+          setSelectedName([]);
         } catch (err) {
           console.error(err);
         }
@@ -71,6 +78,8 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
       if (targetId) {
         setIsPending(true);
         try {
+          console.log("Deleting plant with ID:", targetId, "and name:", targetName);
+          await deleteFolder('Plant/' + targetName );
           await deletePlant(targetId);
           refresh();
         } catch (err) {
@@ -185,7 +194,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
                       <input
                         type="checkbox"
                         checked={item.id ? selected.includes(item.id) : false}
-                        onChange={() => item.id && toggleSelect(item.id)}
+                        onChange={() => item.id && toggleSelect(item.id , item.name)}
                       />
                     </td>
                     <td className="p-4">

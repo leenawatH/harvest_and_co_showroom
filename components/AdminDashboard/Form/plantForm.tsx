@@ -70,7 +70,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setAllPots(potsList);
                 setAllPlants(plantsList);
-                setAdditionImages(plantData.addition_img);
+                if(plantData.addition_img != null) {
+                    setAdditionImages(plantData.addition_img);
+                }else{
+                    setAdditionImages([]);
+                }
                 if (plantData.similar_plant != null) {
                     setSelectedSimilar(plantData.similar_plant);
                 } else {

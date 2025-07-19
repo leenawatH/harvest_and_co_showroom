@@ -154,6 +154,19 @@ export async function deleteImage(publicId: string) {
   }
 }
 
+//Delete folder from cloudinary
+export async function deleteFolder(folderName: string) {
+  console.log('Deleting folder:', folderName);
+  const res = await fetch(`${getBaseUrl()}/api/cloudinary/delete-folder?folderName=${folderName}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+if (res.ok) {
+    console.log('Folder deleted successfully:', data);
+  } else {
+    console.error('Error deleting folder:', data.error);
+  }
+}
 //Plant_with_Pot
 
 
