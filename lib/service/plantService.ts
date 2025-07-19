@@ -1,5 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
-import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
 
 export async function getAllPlant(): Promise<Plant[]> {
   const res = await fetch(`${getBaseUrl()}/api/plant`);
@@ -99,7 +99,31 @@ export async function deletePlant(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete plant');
 }
 
-// RENAME CLOUDINARY FOLDER
+//Plant_with_Pot
+export async function addNewPlantPotOption(data: plant_pot_options): Promise<plant_pot_options> {
+
+  const newData = { 
+    pot_id : data.pot_id,
+    plant_id : data.plant_id,
+    pot_color: data.pot_color,
+    height_with_pot: data.height_with_pot,
+    is_suggested: data.is_suggested,
+    url: data.url,
+  };
+  console.log("newData");
+  console.log(newData);
+  console.log(JSON.stringify(newData));
+  
+  const res = await fetch(`${getBaseUrl()}/api/plant_pot_options`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newData),
+  });
+  if (!res.ok) throw new Error('Failed to add plant');
+  return res.json();
+}
+
+
 
 //Upload file to cloudinary
 export async function uploadImage(file: File, path: string) {
@@ -129,5 +153,7 @@ export async function deleteImage(publicId: string) {
     console.error('Error deleting image:', data.error);
   }
 }
+
+//Plant_with_Pot
 
 

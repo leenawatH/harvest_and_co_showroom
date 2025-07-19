@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant } from '@/lib/service/plantService';
-import { Plant, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption } from '@/lib/service/plantService';
+import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
 import { Pot } from '@/lib/service/potService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
@@ -95,14 +95,36 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
           onSubmit={async ({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
             setIsLoading(true);
             if (finalUpdatePlantData) {
-              await updatePlant(editingPlantId, finalUpdatePlantData);
+              if (editingPlantId === "") {
+                const plant = await addPlant(finalUpdatePlantData);
+                seteditingPlantId(plant.id);
+              } else {
+                await updatePlant(editingPlantId, finalUpdatePlantData);
+              }
             }
+            if (newPotOptions != null) {
+              for (const pair of newPotOptions) {
+                try{
+                  await addNewPlantPotOption(pair);
+                }
+                catch (error) {
+                  console.error("Error adding new pot option:", error);
+                }
+              }
+            }
+              if (updatedPotOptions) {
 
-            await refresh();
-            setIsFormOpen(false);
-            seteditingPlantId("");
-            setIsLoading(false);
-          }}
+              }
+              if (deletedPotOptionIds) {
+
+              }
+
+              await refresh();
+              setIsFormOpen(false);
+              seteditingPlantId("");
+              setIsLoading(false);
+            }
+          }
           onCancel={() => {
             setIsFormOpen(false);
             seteditingPlantId("");

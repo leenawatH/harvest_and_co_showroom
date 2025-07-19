@@ -10,7 +10,6 @@ import {
     ListItemText,
     Checkbox,
     CircularProgress,
-    Input
 } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
@@ -47,18 +46,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     const [deleteAdditionImages, setDeleteAdditionImages] = useState<string[]>([])
     const additionImageFileRef = useRef<File[]>(new Array(2));
 
-    const selectedPlants = useMemo(() => {
-        return allPlants.reduce((acc, plant) => {
-            acc[plant.name] = plant.id;
-            return acc;
-        }, {} as Record<string, string>);
-    }, [allPlants]);
-
     //Match Pots
     const [allPots, setAllPots] = useState<Pot[]>([]);
     const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
     const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
-
+    const [deletePotPairImages, setDeletePotPairImages] = useState<string[]>([])
 
     const [isPending, setIsPending] = useState(false);
 
@@ -73,6 +65,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 ]);
                 setPlant(plantData);
                 setOriginalPlant(plantData);
+
                 setPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setAllPots(potsList);
@@ -80,7 +73,10 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setAdditionImages(plantData.addition_img);
                 if (plantData.similar_plant != null) {
                     setSelectedSimilar(plantData.similar_plant);
+                } else {
+                    setSelectedSimilar([]);
                 }
+                setDeleteAdditionImages([]);
 
             } catch (err) {
                 console.error('Error loading plant data:', err);
@@ -144,7 +140,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const handleAdditionImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const file = e.target.files?.[0];
         let newImages = [];
         if (file) {
@@ -162,9 +158,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setAdditionImages(newImages);
                 additionImageFileRef.current[index] = file;
             }
-            //setAdditionImageFile(prev => [...prev, file]);
 
-            // หากต้องการบันทึกข้อมูลลงใน plant เพิ่มเติม
             if (plant) {
                 const updatedPlant = { ...plant, addition_img: newImages };
                 setPlant(updatedPlant);
@@ -181,6 +175,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         if (!originalPotPairs) return;
 
+        // plant info Update
         let resultsUrl = [];
         for (let i = 0; i < additionImageFileRef.current.length; i++) {
             if (additionImageFileRef.current[i] != null) {
@@ -213,6 +208,28 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         const finalUpdatePlantData = Object.keys(updatedPlantData).length > 1 ? updatedPlantData : null;
 
+        // อัปเดตข้อมูล Pot
+        const potPromises = potPairs.map(async (pair, index) => {
+            if (pair.file) {
+                const potPairFile = pair.file;
+                let potPairUrl: any;
+                potPairUrl = await uploadImage(potPairFile, `Plant/${plant.name}`);
+                potPairUrl = potPairUrl.secure_url || potPairUrl.url;
+                handlePotChange(index, 'url', potPairUrl);
+            }
+            handlePotChange(index, 'plant_id', plant.id);
+        });
+
+        // ลบ Pot Pair ที่ถูกลบ
+        await Promise.all(deletePotPairImages.map(async (url) => {
+            const urlParts = url.split('Plant');
+            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            await deleteImage(public_id);
+        }));
+
+        // รอจนกระทั่งอัปเดตทุกอย่างเสร็จ
+        await Promise.all(potPromises);
+
         const newPotOptions = potPairs.filter(p => !p.id);
         const updatedPotOptions = potPairs.filter(p => {
             const original = originalPotPairs.find(o => o.id === p.id);
@@ -232,7 +249,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             deletedPotOptionIds
         });
 
-        onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
+        await onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
         setIsPending(false);
     }
 
@@ -258,7 +275,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
                     type="text"
-                    value={plant.name}
+                    value={plant.name || ''}
                     onChange={(e) => handleChangePlant('name', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
@@ -268,7 +285,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <label className="block text-sm font-medium mb-1">Height</label>
                 <input
                     type="text"
-                    value={plant.height}
+                    value={plant.height || ''}
                     onChange={(e) => handleChangePlant('height', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
@@ -278,7 +295,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
                     type="text"
-                    value={plant.price}
+                    value={plant.price || ''}
                     onChange={(e) => handleChangePlant('price', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
@@ -333,7 +350,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleImageChange(e, 0)}
+                            onChange={(e) => handleAdditionImageChange(e, 0)}
                             className="w-full border px-3 py-2"
                         />
                         <div className="mt-2">
@@ -355,7 +372,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleImageChange(e, 1)}
+                            onChange={(e) => handleAdditionImageChange(e, 1)}
                             className="w-full border px-3 py-2"
                         />
                         <div className="mt-2">
@@ -451,6 +468,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                                 if (file) {
                                     const updated = [...potPairs];
                                     updated[index].file = file;
+                                    if (updated[index].url != '') {
+                                        setDeletePotPairImages(prev => [...prev, updated[index].url]);
+                                    }
                                     updated[index].url = URL.createObjectURL(file);
                                     setPotPairs(updated);
                                 }
