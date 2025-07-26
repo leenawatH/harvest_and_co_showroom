@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, deleteFolder } from '@/lib/service/plantService';
-import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
-import { Pot } from '@/lib/service/potService';
+import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, updatePlantPotOption, deletePlantPotOption } from '@/lib/service/plantService';
+import { deleteFolder } from '@/lib/service/cloudinaryService';
+import { SinglePlantWithPotInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
 import { CircularProgress } from '@mui/material';
 
-export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPotInCard[], pots: Pot[] }) {
+export default function PlantTable({ plants, setPlants  }: { plants: SinglePlantWithPotInCard[], setPlants: React.Dispatch<React.SetStateAction<SinglePlantWithPotInCard[]>> }) {
 
   const [plantsData, setPlantsData] = useState<SinglePlantWithPotInCard[]>(plants);
 
@@ -26,7 +26,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const toggleSelect = (id: string , name: string) => {
+  const toggleSelect = (id: string, name: string) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
@@ -79,7 +79,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
         setIsPending(true);
         try {
           console.log("Deleting plant with ID:", targetId, "and name:", targetName);
-          await deleteFolder('Plant/' + targetName );
+          await deleteFolder('Plant/' + targetName);
           await deletePlant(targetId);
           refresh();
         } catch (err) {
@@ -105,34 +105,77 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
             setIsLoading(true);
             if (finalUpdatePlantData) {
               if (editingPlantId === "") {
+                // สร้าง Plant ใหม่
                 const plant = await addPlant(finalUpdatePlantData);
-                seteditingPlantId(plant.id);
+
+                // ตั้งค่า plant_id ให้กับ newPotOptions หลังจากสร้าง Plant
+                if (newPotOptions != null) {
+                  for (const pair of newPotOptions) {
+                    pair.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
+                    try {
+                      await addNewPlantPotOption(pair);
+                    } catch (error) {
+                      console.error("Error adding new pot option:", error);
+                    }
+                  }
+                }
               } else {
+                // อัปเดต Plant ที่มีอยู่แล้ว
                 await updatePlant(editingPlantId, finalUpdatePlantData);
+
+                // ตั้งค่า plant_id ของ newPotOptions โดยใช้ editingPlantId
+                if (newPotOptions != null) {
+                  for (const pair of newPotOptions) {
+                    pair.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                    try {
+                      await addNewPlantPotOption(pair);
+                    } catch (error) {
+                      console.error("Error adding new pot option:", error);
+                    }
+                  }
+                }
+              }
+            } else {
+              // ถ้าไม่มีการอัปเดต Plant ก็ใช้ editingPlantId สำหรับ plant_id
+              if (newPotOptions != null) {
+                for (const pair of newPotOptions) {
+                  pair.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                  try {
+                    await addNewPlantPotOption(pair);
+                  } catch (error) {
+                    console.error("Error adding new pot option:", error);
+                  }
+                }
               }
             }
-            if (newPotOptions != null) {
-              for (const pair of newPotOptions) {
-                try{
-                  await addNewPlantPotOption(pair);
+            if (updatedPotOptions != null) {
+              for (const pair of updatedPotOptions) {
+                try {
+                  await updatePlantPotOption(pair);
                 }
                 catch (error) {
-                  console.error("Error adding new pot option:", error);
+                  console.error("Error updating pot option:", error);
                 }
               }
+
             }
-              if (updatedPotOptions) {
-
+            if (deletedPotOptionIds != null) {
+              for (const id of deletedPotOptionIds) {
+                try {
+                  await deletePlantPotOption(id);
+                }
+                catch (error) {
+                  console.error("Error deleting pot option:", error);
+                }
               }
-              if (deletedPotOptionIds) {
 
-              }
-
-              await refresh();
-              setIsFormOpen(false);
-              seteditingPlantId("");
-              setIsLoading(false);
             }
+            await refresh();
+            setPlants(await getAllSinglePlantWithPotInCard());
+            setIsFormOpen(false);
+            seteditingPlantId("");
+            setIsLoading(false);
+          }
           }
           onCancel={() => {
             setIsFormOpen(false);
@@ -194,7 +237,7 @@ export default function PlantTable({ plants, pots }: { plants: SinglePlantWithPo
                       <input
                         type="checkbox"
                         checked={item.id ? selected.includes(item.id) : false}
-                        onChange={() => item.id && toggleSelect(item.id , item.name)}
+                        onChange={() => item.id && toggleSelect(item.id, item.name)}
                       />
                     </td>
                     <td className="p-4">

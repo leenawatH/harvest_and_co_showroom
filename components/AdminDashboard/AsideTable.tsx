@@ -1,19 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { SinglePlantWithPotInCard , Plant } from "@/lib/types/types";
-import { Pot } from "@/lib/service/potService";
+import { SinglePlantWithPotInCard , Pot, SinglePotInCard } from "@/lib/types/types";
+import { getAllPots, getAllSinglePotInCard } from "@/lib/service/potService";
+import { getAllSinglePlantWithPotInCard, getSuggestedPlants } from "@/lib/service/plantService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
 import PotTable from "@/components/AdminDashboard/Table/potTable";
 import HomeContent from "@/components/AdminDashboard/Table/homeContent";
 
+import { CircularProgress } from '@mui/material';
+
+
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
 
-export default function AdminDashboard({ plants, suggest_plant , pots }: { plants: SinglePlantWithPotInCard[], suggest_plant : SinglePlantWithPotInCard[], pots: Pot[] }) {
+export default function AdminDashboard() {
   
   const [activeTab, setActiveTab] = useState("Home Content");
+  const [plants, setPlants] = useState<SinglePlantWithPotInCard[]>([]);
+  const [pots, setPots] = useState<SinglePotInCard[]>([]);
+  const [suggest_plant, setSuggestPlant] = useState<SinglePlantWithPotInCard[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true); // เริ่มการโหลดข้อมูล
+      try {
+        const fetchedPlants = await getAllSinglePlantWithPotInCard();
+        const fetchedSuggestPlant = await getSuggestedPlants();
+        const fetchedPots = await getAllSinglePotInCard();
+        
+        setPlants(fetchedPlants);
+        setSuggestPlant(fetchedSuggestPlant);
+        setPots(fetchedPots);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);  // ข้อมูลโหลดเสร็จ
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="h-screen flex overflow-hidden"> 
@@ -37,13 +67,21 @@ export default function AdminDashboard({ plants, suggest_plant , pots }: { plant
 
       {/* Scrollable Content */}
       <main className="flex-1 overflow-y-auto pl-5">
-        {activeTab === "Home Content" && <HomeContent suggest_plant={suggest_plant} plants={plants}/>}
-        {activeTab === "Plant" && <PlantTable plants={plants} pots={pots} />}
-        {activeTab === "Pot" && <PotTable pots={pots} />}
-        {activeTab === "Port" && (
-          <div>
-            <p className="text-gray-600">Port section coming soon...</p>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <CircularProgress />
           </div>
+        ) : (
+          <>
+            {activeTab === "Home Content" && <HomeContent suggest_plant={suggest_plant} plants={plants} />}
+            {activeTab === "Plant" && <PlantTable plants={plants} setPlants={setPlants} />}
+            {activeTab === "Pot" && <PotTable pots={pots} setPots={setPots}/>}
+            {activeTab === "Port" && (
+              <div>
+                <p className="text-gray-600">Port section coming soon...</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

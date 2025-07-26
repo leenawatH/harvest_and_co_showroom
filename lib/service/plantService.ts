@@ -99,7 +99,7 @@ export async function deletePlant(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete plant');
 }
 
-//Plant_with_Pot
+//New Plant_with_Pot
 export async function addNewPlantPotOption(data: plant_pot_options): Promise<plant_pot_options> {
 
   const newData = { 
@@ -123,50 +123,24 @@ export async function addNewPlantPotOption(data: plant_pot_options): Promise<pla
   return res.json();
 }
 
-
-
-//Upload file to cloudinary
-export async function uploadImage(file: File, path: string) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('path', path);
-
-  const res = await fetch(`${getBaseUrl()}/api/cloudinary/upload-image`, {
-    method: 'POST',
-    body: formData,
+// ✅ UPDATE Plant Pot Option
+export async function updatePlantPotOption(data: plant_pot_options): Promise<plant_pot_options> {
+  console.log("data" + data);
+  //Edit plant Info
+  const res = await fetch(`${getBaseUrl()}/api/plant_pot_options/${data.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
-
-  const data = await res.json();
-  return data;
+  if (!res.ok) throw new Error('Failed to update plant');
+  return res.json();
 }
 
-// Delete image from cloudinary
-export async function deleteImage(publicId: string) {
-  const res = await fetch(`${getBaseUrl()}/api/cloudinary/delete-image?public_id=${publicId}`, {
+// ✅ DELETE Plant Pot Option
+export async function deletePlantPotOption(id: string): Promise<void> {
+  const res = await fetch(`${getBaseUrl()}/api/plant_pot_options/${id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
-
-  const data = await res.json();
-  if (res.ok) {
-    console.log('Image deleted successfully:', data);
-  } else {
-    console.error('Error deleting image:', data.error);
-  }
+  if (!res.ok) throw new Error('Failed to delete plant');
 }
-
-//Delete folder from cloudinary
-export async function deleteFolder(folderName: string) {
-  console.log('Deleting folder:', folderName);
-  const res = await fetch(`${getBaseUrl()}/api/cloudinary/delete-folder?folderName=${folderName}`, {
-    method: 'DELETE',
-  });
-  const data = await res.json();
-if (res.ok) {
-    console.log('Folder deleted successfully:', data);
-  } else {
-    console.error('Error deleting folder:', data.error);
-  }
-}
-//Plant_with_Pot
-
-

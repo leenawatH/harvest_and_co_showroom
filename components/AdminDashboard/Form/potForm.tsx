@@ -13,13 +13,13 @@ import {
 } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
-import { getAllPots } from '@/lib/service/potService';
-import { getAllPlant, getPlantById } from '@/lib/service/plantService';
+import { getAllPots, getPotById } from '@/lib/service/potService';
 import { uploadImage, deleteImage } from '@/lib/service/cloudinaryService';
-import { Plant, plant_pot_options, Color, Pot } from '@/lib/types/types';
+import { Pot, Pot_Img, Color } from '@/lib/types/types';
+import { on } from 'events';
 
-interface PlantFormProps {
-    initialData: string; // ใช้ plantId
+interface PotFormProps {
+    initialData: string; // ใช้ potId
     onSubmit: (formData: any) => void;
     onCancel?: () => void;
 }
@@ -35,12 +35,12 @@ const MenuProps = {
     },
 };
 
-export default function PlantForm({ initialData, onSubmit, onCancel }: PlantFormProps) {
+export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProps) {
     const [loading, setLoading] = useState<boolean>(true);
 
-    const [plant, setPlant] = useState<Plant | null>(null);
-    const [originalPlant, setOriginalPlant] = useState<Plant | null>(null);
-    const [allPlants, setAllPlants] = useState<Plant[]>([]);
+    const [pot, setPot] = useState<Pot | null>(null);
+    const [originalPot, setOriginalPot] = useState<Pot | null>(null);
+    const [allPots, setAllPots] = useState<Pot[]>([]);
     const [selectedSimilar, setSelectedSimilar] = useState<string[]>([]);
     const selectedSimilarSet = useMemo(() => new Set(selectedSimilar), [selectedSimilar]);
     const [additionImages, setAdditionImages] = useState<string[]>([]);
@@ -48,10 +48,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     const additionImageFileRef = useRef<File[]>(new Array(2));
 
     //Match Pots
-    const [allPots, setAllPots] = useState<Pot[]>([]);
-    const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
-    const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
-    const [deletePotPairImages, setDeletePotPairImages] = useState<string[]>([])
+    const [potColors, setPotColors] = useState<Pot_Img[]>([]);
+    const [originalpotColors, setOriginalpotColors] = useState<Pot_Img[]>([]);
+    const [deletePotColorImages, setDeletePotColorImages] = useState<string[]>([])
 
     const [isPending, setIsPending] = useState(false);
 
@@ -59,77 +58,73 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [plantData, potsList, plantsList] = await Promise.all([
-                    getPlantById(initialData),
+                const [potData, potsList] = await Promise.all([
+                    getPotById(initialData),
                     getAllPots(),
-                    getAllPlant()
-                ]);
-                setPlant(plantData);
-                setOriginalPlant(plantData);
 
-                setPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
-                setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
+                ]);
+                setPot(potData);
+                console.log('Fetched Pot Data:', potData);
+                setOriginalPot(potData);
+                setPotColors(JSON.parse(JSON.stringify(potData.pot_colors ?? [])));
+                setOriginalpotColors(JSON.parse(JSON.stringify(potData.pot_colors ?? [])));
                 setAllPots(potsList);
-                setAllPlants(plantsList);
-                if (plantData.addition_img != null) {
-                    setAdditionImages(plantData.addition_img);
+                if (potData.addition_img != null) {
+                    setAdditionImages(potData.addition_img);
                 } else {
                     setAdditionImages([]);
                 }
-                if (plantData.similar_plant != null) {
-                    setSelectedSimilar(plantData.similar_plant);
+                if (potData.similar_pot != null) {
+                    setSelectedSimilar(potData.similar_pot);
                 } else {
                     setSelectedSimilar([]);
                 }
                 setDeleteAdditionImages([]);
 
             } catch (err) {
-                console.error('Error loading plant data:', err);
+                console.error('Error loading pot data:', err);
             }
             setLoading(false);
         };
         fetchData();
     }, [initialData]);
 
-    function handleChangePlant(field: keyof Plant, value: string) {
-        if (!plant) return;
-        setPlant({ ...plant, [field]: value });
+    function handleChangePot(field: keyof Pot, value: string) {
+        if (!pot) return;
+        setPot({ ...pot, [field]: value });
     }
 
-    function handlePotChange(index: number, field: keyof plant_pot_options, value: string) {
-        const updated = [...potPairs];
+    function handlePotChange(index: number, field: keyof Pot_Img, value: string) {
+        const updated = [...potColors];
         (updated[index] as any)[field] = value;
-        setPotPairs(updated);
+        setPotColors(updated);
     }
 
-    function removePotPair(index: number , pairId: string | null) {
-        if(pairId != null) {
-            setDeletePotPairImages(prev => [...prev, potPairs[index].url]);
+    function removePotColor(index: number, pairId: string | null) {
+        if (pairId != null) {
+            setDeletePotColorImages(prev => [...prev, potColors[index].url]);
         }
-        const updated = [...potPairs];
+        const updated = [...potColors];
         updated.splice(index, 1);
-        setPotPairs(updated);
+        setPotColors(updated);
     }
 
-    function addPotPair() {
-        setPotPairs([...potPairs, {
+    function addNewPorColor() {
+        setPotColors([...potColors, {
             id: '',
             pot_id: '',
-            pot_color: '',
+            pot_color: null,
             url: '',
-            height_with_pot: '',
-            plant_id: '',
-            is_suggested: false,
             file: null
         }]);
     }
 
     function handleSelectSuggested(index: number) {
-        const updated = potPairs.map((p, i) => ({
+        const updated = potColors.map((p, i) => ({
             ...p,
             is_suggested: i === index, // true เฉพาะตัวที่เลือก
         }));
-        setPotPairs(updated);
+        setPotColors(updated);
     }
 
     const handleSelectSimilarChange = (
@@ -142,8 +137,8 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 : (event.target.value as string[]);
         if (value.length <= 3) {
             setSelectedSimilar(value);
-            if (plant) {
-                setPlant({ ...plant, similar_plant: value }); // Update similar_plant_ids in plant
+            if (pot) {
+                setPot({ ...pot, similar_pot: value }); // Update similar_pot_ids in pot
             }
         }
     };
@@ -167,9 +162,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 additionImageFileRef.current[index] = file;
             }
 
-            if (plant) {
-                const updatedPlant = { ...plant, addition_img: newImages };
-                setPlant(updatedPlant);
+            if (pot) {
+                const updatedPot = { ...pot, addition_img: newImages };
+                setPot(updatedPot);
             }
         }
     };
@@ -177,17 +172,17 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     async function handleSubmit(e: React.FormEvent) {
         setIsPending(true);
         e.preventDefault();
-        if (!plant) return;
+        if (!pot) return;
 
-        if (!originalPlant) return;
+        if (!originalPot) return;
 
-        if (!originalPotPairs) return;
+        if (!originalpotColors) return;
 
-        // plant info Update
+        // pot info Update
         let resultsUrl = [];
         for (let i = 0; i < additionImageFileRef.current.length; i++) {
             if (additionImageFileRef.current[i] != null) {
-                resultsUrl[i] = await uploadImage(additionImageFileRef.current[i], `Plant/${plant.name}/Addition_img`);
+                resultsUrl[i] = await uploadImage(additionImageFileRef.current[i], `Pot/${pot.name}/Addition_img`);
                 resultsUrl[i] = resultsUrl[i].secure_url || resultsUrl[i].url;
             } else {
                 resultsUrl[i] = additionImages[i] || null;
@@ -195,64 +190,64 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         }
 
         deleteAdditionImages.forEach(async (url) => {
-            const urlParts = url.split('Plant');
-            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            const urlParts = url.split('Pot');
+            const public_id = "Pot" + urlParts[urlParts.length - 1].split('.')[0];
             await deleteImage(public_id);
         });
 
         additionImageFileRef.current = [];
 
-        const finalPlant = resultsUrl.length > 0
-            ? { ...plant, addition_img: resultsUrl }
-            : plant;
-        const updatedPlantData: Partial<Plant> = {};
+        const finalPot = resultsUrl.length > 0
+            ? { ...pot, addition_img: resultsUrl }
+            : pot;
+        const updatedPotData: Partial<Pot> = {};
 
-        updatedPlantData.id = finalPlant.id;
-        if (plant.name !== originalPlant.name) updatedPlantData.name = finalPlant.name;
-        if (plant.height !== originalPlant.height) updatedPlantData.height = finalPlant.height;
-        if (plant.price !== originalPlant.price) updatedPlantData.price = finalPlant.price;
-        if (plant.is_suggested !== originalPlant.is_suggested) updatedPlantData.is_suggested = finalPlant.is_suggested;
-        if (plant.similar_plant !== originalPlant.similar_plant) updatedPlantData.similar_plant = finalPlant.similar_plant;
-        if (plant.addition_img !== originalPlant.addition_img) updatedPlantData.addition_img = finalPlant.addition_img;
+        updatedPotData.id = finalPot.id;
+        if (pot.name !== originalPot.name) updatedPotData.name = finalPot.name;
+        if (pot.height !== originalPot.height) updatedPotData.height = finalPot.height;
+        if (pot.price !== originalPot.price) updatedPotData.price = finalPot.price;
+        if (pot.circumference !== originalPot.circumference) updatedPotData.circumference = finalPot.circumference;
+        if (pot.onShow_color !== originalPot.onShow_color) updatedPotData.onShow_color = finalPot.onShow_color;
+        if (pot.is_suggested !== originalPot.is_suggested) updatedPotData.is_suggested = finalPot.is_suggested;
+        if (pot.similar_pot !== originalPot.similar_pot) updatedPotData.similar_pot = finalPot.similar_pot;
+        if (pot.addition_img !== originalPot.addition_img) updatedPotData.addition_img = finalPot.addition_img;
 
-        const finalUpdatePlantData = Object.keys(updatedPlantData).length > 1 ? updatedPlantData : null;
+        const finalUpdatePotData = Object.keys(updatedPotData).length > 1 ? updatedPotData : null;
 
         // อัปเดตข้อมูล Pot
-        const potPromises = potPairs.map(async (pair, index) => {
+        const potPromises = potColors.map(async (pair, index) => {
             if (pair.file) {
-                const potPairFile = pair.file;
-                let potPairUrl: any;
-                potPairUrl = await uploadImage(potPairFile, `Plant/${plant.name}`);
-                potPairUrl = potPairUrl.secure_url || potPairUrl.url;
-                handlePotChange(index, 'url', potPairUrl);
+                const PotColorFile = pair.file;
+                let PotColorUrl: any;
+                PotColorUrl = await uploadImage(PotColorFile, `Pot/${pot.name}`);
+                PotColorUrl = PotColorUrl.secure_url || PotColorUrl.url;
+                handlePotChange(index, 'url', PotColorUrl);
             }
-            handlePotChange(index, 'plant_id', plant.id);
+            handlePotChange(index, 'pot_id', pot.id);
         });
 
         // ลบ Pot Pair ที่ถูกลบ
-        await Promise.all(deletePotPairImages.map(async (url) => {
+        await Promise.all(deletePotColorImages.map(async (url) => {
             if (url.includes('blob')) return; // Ignore blob URLs
-            const urlParts = url.split('Plant');
-            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            const urlParts = url.split('Pot');
+            const public_id = "Pot" + urlParts[urlParts.length - 1].split('.')[0];
             await deleteImage(public_id);
         }));
 
         // รอจนกระทั่งอัปเดตทุกอย่างเสร็จ
         await Promise.all(potPromises);
 
-        const newPotOptions = potPairs.filter(p => !p.id);
+        const newPotOptions = potColors.filter(p => !p.id);
 
-        const updatedPotOptions = potPairs.filter(p => {
-            const original = originalPotPairs.find(o => o.id === p.id);
+        const updatedPotOptions = potColors.filter(p => {
+            const original = originalpotColors.find(o => o.id === p.id);
 
             if (original) {
                 // เปรียบเทียบฟิลด์ที่สำคัญระหว่าง original และ p
                 const hasChanges =
                     original.pot_id !== p.pot_id ||
                     original.pot_color !== p.pot_color ||
-                    original.height_with_pot !== p.height_with_pot ||
-                    original.url !== p.url ||
-                    original.is_suggested !== p.is_suggested;
+                    original.url !== p.url;
 
                 // ถ้ามีการเปลี่ยนแปลงในฟิลด์ใด ๆ ให้รวมไว้ใน updatedPotOptions
                 return hasChanges;
@@ -263,20 +258,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             // กรองแค่ฟิลด์ที่มีการเปลี่ยนแปลง
             const updatedFields: any = {};
 
-            if (p.pot_id !== originalPotPairs.find(o => o.id === p.id)?.pot_id) {
+            if (p.pot_id !== originalpotColors.find(o => o.id === p.id)?.pot_id) {
                 updatedFields.pot_id = p.pot_id;
             }
-            if (p.pot_color !== originalPotPairs.find(o => o.id === p.id)?.pot_color) {
+            if (p.pot_color !== originalpotColors.find(o => o.id === p.id)?.pot_color) {
                 updatedFields.pot_color = p.pot_color;
             }
-            if (p.height_with_pot !== originalPotPairs.find(o => o.id === p.id)?.height_with_pot) {
-                updatedFields.height_with_pot = p.height_with_pot;
-            }
-            if (p.url !== originalPotPairs.find(o => o.id === p.id)?.url) {
+
+            if (p.url !== originalpotColors.find(o => o.id === p.id)?.url) {
                 updatedFields.url = p.url;
-            }
-            if (p.is_suggested !== originalPotPairs.find(o => o.id === p.id)?.is_suggested) {
-                updatedFields.is_suggested = p.is_suggested;
             }
 
             // ต้องการให้ทุกฟิลด์ที่มีการเปลี่ยนแปลงรวมอยู่ใน object
@@ -286,26 +276,26 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             };
         });
 
-        // ใช้กรองให้เฉพาะรายการที่ถูกลบจาก originalPotPairs เเละ ลบ ใน cloudinary
+        // ใช้กรองให้เฉพาะรายการที่ถูกลบจาก originalpotColors เเละ ลบ ใน cloudinary
         const deletedPotOptionIds = await Promise.all(
-            originalPotPairs
-                .filter(o => !potPairs.some(p => p.id === o.id))  // ตรวจหาว่ามีหรือไม่ใน potPairs
-                .map(async (o) => o.id )
+            originalpotColors
+                .filter(o => !potColors.some(p => p.id === o.id))  // ตรวจหาว่ามีหรือไม่ใน potColors
+                .map(async (o) => o.id)
         );
 
         console.log('📦 SUBMIT PAYLOAD:', {
-            finalUpdatePlantData,
+            finalUpdatePotData,
             newPotOptions,
             updatedPotOptions,
             deletedPotOptionIds
         });
 
-        await onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
+        await onSubmit({ finalUpdatePotData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
         setIsPending(false);
     }
 
 
-    if (loading || !plant) {
+    if (loading || !pot) {
         return <div className="p-6 text-center text-gray-500">Loading...</div>;
     }
 
@@ -320,14 +310,14 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <ArrowBackIosNewIcon fontSize="small" /> Back
             </button>
 
-            <h2 className="text-2xl font-bold mb-4">Plant Form</h2>
+            <h2 className="text-2xl font-bold mb-4">Pot Form</h2>
 
             <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
                     type="text"
-                    value={plant.name || ''}
-                    onChange={(e) => handleChangePlant('name', e.target.value)}
+                    value={pot.name || ''}
+                    onChange={(e) => handleChangePot('name', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
@@ -336,8 +326,8 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <label className="block text-sm font-medium mb-1">Height</label>
                 <input
                     type="text"
-                    value={plant.height || ''}
-                    onChange={(e) => handleChangePlant('height', e.target.value)}
+                    value={pot.height || ''}
+                    onChange={(e) => handleChangePot('height', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
@@ -346,25 +336,48 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
                     type="text"
-                    value={plant.price || ''}
-                    onChange={(e) => handleChangePlant('price', e.target.value)}
+                    value={pot.price || ''}
+                    onChange={(e) => handleChangePot('price', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>
+            <div>
+                <label className="block text-sm font-medium mb-1">Circumference</label>
+                <input
+                    type="text"
+                    value={pot.circumference || ''}
+                    onChange={(e) => handleChangePot('circumference', e.target.value)}
+                    className="w-full border px-3 py-2"
+                />
+            </div>
+            <div className="mt-2">
+                <label className="block text-sm font-medium mb-1">On Show Color</label>
+                <select
+                    value={pot.onShow_color ?? ''} // ใช้ pot.onShow_color ถ้ามีค่า ถ้าไม่มีก็ให้เป็น ''
+                    onChange={(e) => handleChangePot('onShow_color', e.target.value)} // เมื่อมีการเลือกสีให้ update
+                    className="w-full border px-3 py-2"
+                >
+                    <option value="">Select color</option>  {/* ค่านี้จะถูกเลือกหากไม่มีสีที่เลือก */}
+                    {Object.values(Color).map((color) => ( // ตรวจสอบว่า PotColor มีสีที่ต้องการหรือไม่
+                        <option key={color} value={color}>{color}</option> // แสดงตัวเลือกสี
+                    ))}
+                </select>
+            </div>
+
             <h3 className="text-lg font-semibold mb-2 mt-6">Cover Image (Pot + Color)</h3>
-            {potPairs.length === 0 ? (
+            {potColors.length === 0 ? (
                 <p className="text-gray-500 text-sm">Add at least one matched pot first.</p>
             ) : (
                 <div className="space-y-4">
                     {/* select dropdown */}
                     <select
-                        value={potPairs.findIndex(p => p.is_suggested)}
+                        value={potColors.findIndex(p => pot.onShow_color === p.pot_color)}
                         onChange={(e) => handleSelectSuggested(Number(e.target.value))}
                         className="w-full border px-3 py-2"
                     >
                         <option value={-1}>Select cover...</option>
-                        {potPairs.map((pair, index) => {
-                            const potName = allPots.find(p => p.id === pair.pot_id)?.name ?? 'Unnamed Pot';
+                        {potColors.map((pair, index) => {
+                            const potName = pot.name ?? 'Unnamed Pot';
                             const label = `${potName} - ${pair.pot_color || 'No Color'}`;
                             return (
                                 <option key={index} value={index}>
@@ -376,7 +389,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
                     <div className="w-32 h-32 overflow-hidden flex items-center justify-center">
                         {(() => {
-                            const cover = potPairs.find(p => p.is_suggested);
+                            const cover = potColors.find(p => pot.onShow_color === p.pot_color);
                             return cover && cover.url ? (
                                 <img
                                     src={cover.url}
@@ -440,57 +453,34 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     </div>
                 </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2 mt-6">Similar Plant</h3>
+            <h3 className="text-lg font-semibold mb-2 mt-6">Similar Pot</h3>
             <FormControl sx={{ width: 300 }}>
-                <InputLabel>Similar Plants</InputLabel>
+                <InputLabel>Similar Pots</InputLabel>
                 <Select
                     multiple
                     value={selectedSimilar}
                     onChange={handleSelectSimilarChange}
-                    input={<OutlinedInput label="Similar Plants" />}
+                    input={<OutlinedInput label="Similar Pots" />}
                     renderValue={(selected) => selected.join(', ')}
                     MenuProps={MenuProps}
                 >
-                    {allPlants.map((plant) => (
-                        <MenuItem key={plant.id} value={plant.name}>
-                            <Checkbox checked={selectedSimilarSet.has(plant.name)} />
-                            <ListItemText primary={plant.name} />
+                    {allPots.map((pot) => (
+                        <MenuItem key={pot.id} value={pot.name}>
+                            <Checkbox checked={selectedSimilarSet.has(pot.name)} />
+                            <ListItemText primary={pot.name} />
                         </MenuItem>
                     ))}
                 </Select>
             </FormControl>
 
 
-            <h3 className="text-lg font-semibold mb-2 mt-6">Matched Pots</h3>
-            {potPairs.map((pair, index) => (
+            <h3 className="text-lg font-semibold mb-2 mt-6">Pot Color</h3>
+            {potColors.map((pair, index) => (
                 <div key={index} className="border p-4 mb-4 rounded shadow-sm bg-gray-50">
                     <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium mb-1">Pot</label>
-                            <select
-                                value={pair.pot_id}
-                                onChange={(e) => handlePotChange(index, 'pot_id', e.target.value)}
-                                className="border w-full px-3 py-2"
-                            >
-                                <option value="">Select Pot</option>
-                                {allPots.map((pot) => (
-                                    <option key={pot.id} value={pot.id}>{pot.name}</option>
-                                ))}
-                            </select>
-                        </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Height with Pot</label>
-                            <input
-                                type="text"
-                                value={pair.height_with_pot}
-                                onChange={(e) => handlePotChange(index, 'height_with_pot', e.target.value)}
-                                className="border px-3 py-2"
-                            />
-                        </div>
-
-                        <div>
-                            <button type="button" onClick={() => removePotPair(index , pair.id)} className="text-red-500 hover:underline text-sm">
+                            <button type="button" onClick={() => removePotColor(index, pair.id)} className="text-red-500 hover:underline text-sm">
                                 Remove
                             </button>
                         </div>
@@ -499,7 +489,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     <div className="mt-2">
                         <label className="block text-sm font-medium mb-1">Color</label>
                         <select
-                            value={pair.pot_color}
+                            value={pair.pot_color ?? ''}
                             onChange={(e) => handlePotChange(index, 'pot_color', e.target.value)}
                             className="w-full border px-3 py-2"
                         >
@@ -517,13 +507,13 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                    const updated = [...potPairs];
+                                    const updated = [...potColors];
                                     updated[index].file = file;
                                     if (updated[index].url != '') {
-                                        setDeletePotPairImages(prev => [...prev, updated[index].url]);
+                                        setDeletePotColorImages(prev => [...prev, updated[index].url]);
                                     }
                                     updated[index].url = URL.createObjectURL(file);
-                                    setPotPairs(updated);
+                                    setPotColors(updated);
                                 }
                             }}
 
@@ -543,7 +533,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 </div>
             ))}
 
-            <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addPotPair}>
+            <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addNewPorColor}>
                 + Add Pot
             </button>
 

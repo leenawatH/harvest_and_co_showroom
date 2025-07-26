@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    console.log('Fetching plant pot options for plant ID:', params.id);
+    console.log('Fetching pot color for pot ID:', params.id);
     const supabase = await createClient();
-    const { data, error } = await supabase.from('plant_pot_options').select('*').eq('plant_id', params.id);
+    const { data, error } = await supabase.from('pot_colors').select('*').eq('pot_id', params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 404 });
 
     console.log('Fetched data:', data);
@@ -17,15 +17,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const supabase = await createClient();
     const { id } = await params;
     const body = await req.json();
-    console.log("🔧 Updating plant pot options with Plant ID : ", id , "Raw Data: ", body);
+    console.log("🔧 Updating pot color with Pot ID : ", id , "Raw Data: ", body);
 
     // ✅ อนุญาตเฉพาะ field ที่ database มีจริง
     const allowedFields = [
         'url',
-        'is_suggested',
         'pot_id',
         'pot_color',
-        'height_with_pot'
     ];
 
     const cleanData = Object.fromEntries(
@@ -33,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     );
 
     const { data, error } = await supabase
-        .from('plant_pot_options')
+        .from('pot_colors')
         .update(cleanData)
         .eq('id', id)
         .select()
@@ -54,7 +52,7 @@ export async function DELETE(request: Request) {
   }
   
   const { error } = await supabase
-    .from("plant_pot_options")
+    .from("pot_colors")
     .delete()
     .eq("id", id);
 

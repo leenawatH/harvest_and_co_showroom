@@ -51,8 +51,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const body = await req.json();
-  console.log("body is");
-  console.log(body);
+  console.log("🔧 body : " + body.json);
 
   const { data, error } = await supabase.from('plant').insert(body).select();
 

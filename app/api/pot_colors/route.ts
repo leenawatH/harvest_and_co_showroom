@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const body = await req.json();
 
-  const { data, error } = await supabase.from('plant_pot_options').insert(body).select();
+  const { data, error } = await supabase.from('pot_colors').insert(body).select();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
