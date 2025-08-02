@@ -7,7 +7,7 @@ import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal'
 import PlantForm from "@/components/AdminDashboard/Form/plantForm";
 import { CircularProgress } from '@mui/material';
 
-export default function PlantTable({ plants, setPlants  }: { plants: SinglePlantWithPotInCard[], setPlants: React.Dispatch<React.SetStateAction<SinglePlantWithPotInCard[]>> }) {
+export default function PlantTable({ plants, refreshData  }: { plants: SinglePlantWithPotInCard[], refreshData: () => Promise<void>; }) {
 
   const [plantsData, setPlantsData] = useState<SinglePlantWithPotInCard[]>(plants);
 
@@ -67,7 +67,6 @@ export default function PlantTable({ plants, setPlants  }: { plants: SinglePlant
         try {
           await Promise.all(selected.map(id => deletePlant(id)));
           await Promise.all(selectedName.map(path => deleteFolder(path)));
-          refresh();
           setSelected([]);
           setSelectedName([]);
         } catch (err) {
@@ -81,12 +80,13 @@ export default function PlantTable({ plants, setPlants  }: { plants: SinglePlant
           console.log("Deleting plant with ID:", targetId, "and name:", targetName);
           await deleteFolder('Plant/' + targetName);
           await deletePlant(targetId);
-          refresh();
         } catch (err) {
           console.error(err);
         }
       }
     }
+    refresh();
+    await refreshData();
     setIsPending(false);
     setConfirmOpen(false);
   };
@@ -171,7 +171,7 @@ export default function PlantTable({ plants, setPlants  }: { plants: SinglePlant
 
             }
             await refresh();
-            setPlants(await getAllSinglePlantWithPotInCard());
+            await refreshData();
             setIsFormOpen(false);
             seteditingPlantId("");
             setIsLoading(false);

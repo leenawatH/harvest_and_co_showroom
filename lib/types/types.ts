@@ -23,6 +23,7 @@ export interface SinglePlantWithPotInCard {
     height: number;
     price: number;
     url?: string;
+    is_suggested: number;
 }
 export interface SinglePotInCard {
     id: string;

@@ -56,7 +56,6 @@ export async function getSuggestedPlants() {
         url: item.url,
       }))
       .sort((a: { is_suggested: number; }, b: { is_suggested: number; }) => a.is_suggested - b.is_suggested); // ✅ sort by is_suggested numerically
-
     return result;
   } catch (error) {
     console.error('❌ Error fetching suggested plants:', error);
@@ -88,6 +87,23 @@ export async function updatePlant(id: string, data: Partial<Plant>): Promise<Pla
   });
   if (!res.ok) throw new Error('Failed to update plant');
   return res.json();
+}
+
+// ✅ UPDATE Suggested Plant
+export async function updateSuggestedPlant(id: string, suggest_number: number) {
+    try {
+        const response = await fetch('/api/plant/updateSuggested', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id, suggest_number }),  // ส่ง id และ suggest_number ไป
+        });
+
+        console.log('Updated successfully:');
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 // ✅ DELETE

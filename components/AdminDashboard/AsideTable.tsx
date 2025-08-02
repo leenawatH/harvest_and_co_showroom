@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { SinglePlantWithPotInCard , Pot, SinglePotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard, Pot, SinglePotInCard } from "@/lib/types/types";
 import { getAllPots, getAllSinglePotInCard } from "@/lib/service/potService";
 import { getAllSinglePlantWithPotInCard, getSuggestedPlants } from "@/lib/service/plantService";
 
@@ -16,7 +16,7 @@ import { CircularProgress } from '@mui/material';
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
 
 export default function AdminDashboard() {
-  
+
   const [activeTab, setActiveTab] = useState("Home Content");
   const [plants, setPlants] = useState<SinglePlantWithPotInCard[]>([]);
   const [pots, setPots] = useState<SinglePotInCard[]>([]);
@@ -25,28 +25,28 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // เริ่มการโหลดข้อมูล
-      try {
-        const fetchedPlants = await getAllSinglePlantWithPotInCard();
-        const fetchedSuggestPlant = await getSuggestedPlants();
-        const fetchedPots = await getAllSinglePotInCard();
-        
-        setPlants(fetchedPlants);
-        setSuggestPlant(fetchedSuggestPlant);
-        setPots(fetchedPots);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);  // ข้อมูลโหลดเสร็จ
-      }
-    };
-
     fetchData();
   }, []);
 
+  const fetchData = async () => {
+    setIsLoading(true); // เริ่มการโหลดข้อมูล
+    try {
+      const fetchedPlants = await getAllSinglePlantWithPotInCard();
+      const fetchedSuggestPlant = await getSuggestedPlants();
+      const fetchedPots = await getAllSinglePotInCard();
+
+      setPlants(fetchedPlants);
+      setSuggestPlant(fetchedSuggestPlant);
+      setPots(fetchedPots);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);  // ข้อมูลโหลดเสร็จ
+    }
+  };
+
   return (
-    <div className="h-screen flex overflow-hidden"> 
+    <div className="h-screen flex overflow-hidden">
       {/* Sidebar */}
       <aside className="w-[200px] h-full border-r p-4 flex-shrink-0 bg-white">
         <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
@@ -54,9 +54,8 @@ export default function AdminDashboard() {
           {menuItems.map((item) => (
             <li
               key={item}
-              className={`cursor-pointer ${
-                item === activeTab ? "text-black font-bold" : "text-gray-500"
-              } hover:text-black transition font-medium`}
+              className={`cursor-pointer ${item === activeTab ? "text-black font-bold" : "text-gray-500"
+                } hover:text-black transition font-medium`}
               onClick={() => setActiveTab(item)}
             >
               {item}
@@ -73,9 +72,21 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <>
-            {activeTab === "Home Content" && <HomeContent suggest_plant={suggest_plant} plants={plants} />}
-            {activeTab === "Plant" && <PlantTable plants={plants} setPlants={setPlants} />}
-            {activeTab === "Pot" && <PotTable pots={pots} setPots={setPots}/>}
+            {activeTab === "Home Content" && (
+              <HomeContent
+                suggest_plant={suggest_plant}
+                plants={plants}
+                refreshData={fetchData}
+              />
+            )}
+
+            {activeTab === "Plant" && (
+              <PlantTable
+                plants={plants}
+                refreshData={fetchData}
+              />
+            )}
+            {activeTab === "Pot" && <PotTable pots={pots} setPots={setPots} />}
             {activeTab === "Port" && (
               <div>
                 <p className="text-gray-600">Port section coming soon...</p>
