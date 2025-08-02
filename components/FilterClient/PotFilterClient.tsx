@@ -2,8 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Box, Slider } from "@mui/material";
+import { SinglePotInCard } from "@/lib/types/types";
 
-export default function PotFilterClient({ pots }: { pots: any[] }) {
+export default function PotFilterClient({ pots }: { pots: SinglePotInCard[] }) {
 
     const [open, setOpen] = useState({
         availability: false,
@@ -26,9 +27,6 @@ export default function PotFilterClient({ pots }: { pots: any[] }) {
     function handleSlideChange(event: Event, newValue: number | number[], activeThumb: number): void {
         setValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
     }
-
-  
-
 
     return (
         <main className="min-h-screen mt-20 mx-10 mb-10 px-5 py-6 flex flex-col lg:flex-row gap-8">
@@ -117,8 +115,8 @@ export default function PotFilterClient({ pots }: { pots: any[] }) {
             <section className="flex-1">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-10 ml-10">
                     {pots.map((item) => {
-                        const potColorArray = item.color;
-                        const imageUrl = potColorArray[0].url;
+                        if (!item.url) return null;
+                        const imageUrl = item.url;
                         const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
                         return (

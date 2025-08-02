@@ -224,7 +224,7 @@ export default function PlantTable({ plants, refreshData  }: { plants: SinglePla
                 <tr>
                   <th className="p-4 w-12"></th>
                   <th className="p-4 w-36">Cover Image</th>
-                  <th className="p-4 w-32">Name</th>
+                  <th className="p-4 w-50">Name</th>
                   <th className="p-4 text-center w-32">Height</th>
                   <th className="p-4 text-center w-32">Price</th>
                   <th className="p-4 text-center w-36">Action</th>

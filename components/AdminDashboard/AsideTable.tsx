@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="fixed h-full flex overflow-hidden">
       {/* Sidebar */}
       <aside className="w-[200px] h-full border-r p-4 flex-shrink-0 bg-white">
         <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Scrollable Content */}
-      <main className="flex-1 overflow-y-auto pl-5">
+      <main className="flex-1 overflow-y-auto pl-5 h-full">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <CircularProgress />

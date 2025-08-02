@@ -264,9 +264,9 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
 
     return (
         
-        <Box sx={{ px: 1, py: 3 }}>
+        <Box sx={{ px: 1, py: 3, height: 'calc(100vh - 128px)', overflowY: 'auto' }}>
             {isLoading ? (
-          <div className="flex justify-center plantItems-center h-full">
+          <div className="flex justify-center plantItems-center">
             <CircularProgress />
           </div>
         ) : (
