@@ -10,7 +10,9 @@ import {
     ListItemText,
     Checkbox,
     CircularProgress,
+    IconButton,
 } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { getAllPots, getPotById } from '@/lib/service/potService';
@@ -116,14 +118,6 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
             url: '',
             file: null
         }]);
-    }
-
-    function handleSelectSuggested(index: number) {
-        const updated = potColors.map((p, i) => ({
-            ...p,
-            is_suggested: i === index, // true เฉพาะตัวที่เลือก
-        }));
-        setPotColors(updated);
     }
 
     const handleSelectSimilarChange = (
@@ -351,57 +345,38 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
             </div>
             <div className="mt-2">
                 <label className="block text-sm font-medium mb-1">On Show Color</label>
-                <select
-                    value={pot.onShow_color ?? ''} // ใช้ pot.onShow_color ถ้ามีค่า ถ้าไม่มีก็ให้เป็น ''
-                    onChange={(e) => handleChangePot('onShow_color', e.target.value)} // เมื่อมีการเลือกสีให้ update
-                    className="w-full border px-3 py-2"
-                >
-                    <option value="">Select color</option>  {/* ค่านี้จะถูกเลือกหากไม่มีสีที่เลือก */}
-                    {Object.values(Color).map((color) => ( // ตรวจสอบว่า PotColor มีสีที่ต้องการหรือไม่
-                        <option key={color} value={color}>{color}</option> // แสดงตัวเลือกสี
-                    ))}
-                </select>
-            </div>
 
-            <h3 className="text-lg font-semibold mb-2 mt-6">Cover Image (Pot + Color)</h3>
-            {potColors.length === 0 ? (
-                <p className="text-gray-500 text-sm">Add at least one matched pot first.</p>
-            ) : (
-                <div className="space-y-4">
-                    {/* select dropdown */}
-                    <select
-                        value={potColors.findIndex(p => pot.onShow_color === p.pot_color)}
-                        onChange={(e) => handleSelectSuggested(Number(e.target.value))}
-                        className="w-full border px-3 py-2"
-                    >
-                        <option value={-1}>Select cover...</option>
-                        {potColors.map((pair, index) => {
-                            const potName = pot.name ?? 'Unnamed Pot';
-                            const label = `${potName} - ${pair.pot_color || 'No Color'}`;
-                            return (
-                                <option key={index} value={index}>
-                                    {label}
-                                </option>
-                            );
-                        })}
-                    </select>
-
-                    <div className="w-32 h-32 overflow-hidden flex items-center justify-center">
-                        {(() => {
-                            const cover = potColors.find(p => pot.onShow_color === p.pot_color);
-                            return cover && cover.url ? (
-                                <img
-                                    src={cover.url}
-                                    alt="Cover Preview"
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <span className="text-sm text-gray-400">No Image</span>
-                            );
-                        })()}
+                {potColors.length === 0 ? (
+                    <p className="text-gray-500 text-sm">Add at least one pot color.</p>
+                ) : (
+                    <div className="space-y-4">
+                        <select
+                            value={pot.onShow_color ?? ''} // ใช้ pot.onShow_color ถ้ามีค่า ถ้าไม่มีก็ให้เป็น ''
+                            onChange={(e) => handleChangePot('onShow_color', e.target.value)} // เมื่อมีการเลือกสีให้ update
+                            className="w-full border px-3 py-2"
+                        >
+                            <option value="">Select color</option>  {/* ค่านี้จะถูกเลือกหากไม่มีสีที่เลือก */}
+                            {Object.values(Color).map((color) => ( // ตรวจสอบว่า PotColor มีสีที่ต้องการหรือไม่
+                                <option key={color} value={color}>{color}</option> // แสดงตัวเลือกสี
+                            ))}
+                        </select>
+                        <div className="w-32 h-32 overflow-hidden flex items-center justify-center">
+                            {(() => {
+                                const cover = potColors.find(p => pot.onShow_color === p.pot_color);
+                                return cover && cover.url ? (
+                                    <img
+                                        src={cover.url}
+                                        alt="Cover Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm text-gray-400">Not Add Yet</span>
+                                );
+                            })()}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Image with Environment</h3>
             <div className="space-y-6">
@@ -475,15 +450,25 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Pot Color</h3>
             {potColors.map((pair, index) => (
-                <div key={index} className="border p-4 mb-4 rounded shadow-sm bg-gray-50">
-                    <div className="flex items-center gap-4">
-
-                        <div>
-                            <button type="button" onClick={() => removePotColor(index, pair.id)} className="text-red-500 hover:underline text-sm">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
+                <div
+                    key={index}
+                    className="relative border p-4 mb-4 rounded shadow-sm bg-gray-50"
+                >
+                    <IconButton
+                        size="small"
+                        onClick={() => removePotColor(index, pair.id)}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: 'white',
+                            '&:hover': {
+                                backgroundColor: '#fdd',
+                            },
+                        }}
+                    >
+                        <CloseIcon fontSize="small" sx={{ color: 'red' }} />
+                    </IconButton>
 
                     <div className="mt-2">
                         <label className="block text-sm font-medium mb-1">Color</label>

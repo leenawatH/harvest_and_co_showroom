@@ -66,6 +66,7 @@ export async function getSuggestedPlants() {
 
 // ✅ เพิ่มใหม่
 export async function addPlant(data: Plant): Promise<Plant> {
+  console.log("data" + data.name);
   const res = await fetch(`${getBaseUrl()}/api/plant`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

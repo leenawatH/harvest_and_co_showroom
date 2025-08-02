@@ -10,7 +10,9 @@ import {
     ListItemText,
     Checkbox,
     CircularProgress,
+    IconButton,
 } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { getAllPots } from '@/lib/service/potService';
@@ -102,8 +104,8 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         setPotPairs(updated);
     }
 
-    function removePotPair(index: number , pairId: string | null) {
-        if(pairId != null) {
+    function removePotPair(index: number, pairId: string | null) {
+        if (pairId != null) {
             setDeletePotPairImages(prev => [...prev, potPairs[index].url]);
         }
         const updated = [...potPairs];
@@ -290,7 +292,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         const deletedPotOptionIds = await Promise.all(
             originalPotPairs
                 .filter(o => !potPairs.some(p => p.id === o.id))  // ตรวจหาว่ามีหรือไม่ใน potPairs
-                .map(async (o) => o.id )
+                .map(async (o) => o.id)
         );
 
         console.log('📦 SUBMIT PAYLOAD:', {
@@ -463,8 +465,23 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Matched Pots</h3>
             {potPairs.map((pair, index) => (
-                <div key={index} className="border p-4 mb-4 rounded shadow-sm bg-gray-50">
-                    <div className="flex items-center gap-4">
+                <div key={index} className="relative border p-4 mb-4 rounded shadow-sm bg-gray-50">
+                    <IconButton
+                        size="small"
+                        onClick={() => removePotPair(index, pair.id)}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: 'white',
+                            '&:hover': {
+                                backgroundColor: '#fdd',
+                            },
+                        }}
+                    >
+                        <CloseIcon fontSize="small" sx={{ color: 'red' }} />
+                    </IconButton>
+                    <div className="flex items-center gap-4 mt-5">
                         <div className="flex-1">
                             <label className="block text-sm font-medium mb-1">Pot</label>
                             <select
@@ -487,12 +504,6 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                                 onChange={(e) => handlePotChange(index, 'height_with_pot', e.target.value)}
                                 className="border px-3 py-2"
                             />
-                        </div>
-
-                        <div>
-                            <button type="button" onClick={() => removePotPair(index , pair.id)} className="text-red-500 hover:underline text-sm">
-                                Remove
-                            </button>
                         </div>
                     </div>
 
