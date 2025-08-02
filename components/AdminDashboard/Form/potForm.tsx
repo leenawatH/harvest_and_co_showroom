@@ -16,7 +16,6 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { getAllPots, getPotById } from '@/lib/service/potService';
 import { uploadImage, deleteImage } from '@/lib/service/cloudinaryService';
 import { Pot, Pot_Img, Color } from '@/lib/types/types';
-import { on } from 'events';
 
 interface PotFormProps {
     initialData: string; // ใช้ potId

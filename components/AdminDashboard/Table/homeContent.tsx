@@ -168,7 +168,7 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
     const handleAddPot = (index: number, pot: SinglePotInCard) => {
         const updated = [...potItems];
         updated[index] = pot;
-        setPlantItems(updated);
+        setPotItems(updated);
     };
 
     const handleDeletePlant = (index: number) => {
@@ -179,7 +179,7 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
     const handleDeletePot = (index: number) => {
         const updated = [...potItems];
         updated[index] = null;
-        setPlantItems(updated);
+        setPotItems(updated);
     };
 
     const handleDragEndPlant = (event: any) => {
