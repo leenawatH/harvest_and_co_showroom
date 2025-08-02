@@ -32,6 +32,7 @@ export interface SinglePotInCard {
     price: number;
     circumference: number;
     url?: string;
+    is_suggested: number;
 }
 export interface Pot {
     id: string;

@@ -18,12 +18,14 @@ import {
     horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SinglePlantWithPotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard , SinglePotInCard } from "@/lib/types/types";
 import { updateSuggestedPlant } from "@/lib/service/plantService";
 
 type Props = {
     suggest_plant: SinglePlantWithPotInCard[];
     plants: SinglePlantWithPotInCard[];
+    suggest_pot: SinglePotInCard[];
+    pots: SinglePotInCard[];
     refreshData: () => void;
 };
 
@@ -86,7 +88,6 @@ function SortableItem({
                     )}
                     <Box sx={{ p: 1 }}>
                         <Typography align="center" fontWeight="bold" fontSize={14}>{plant.name}</Typography>
-                        <Typography align="center" fontSize={12} color="textSecondary">ความสูง {plant.height} cm</Typography>
                         <Typography align="center" fontSize={12} color="textSecondary">ราคา {plant.price} บาท</Typography>
                     </Box>
                     <IconButton
@@ -121,7 +122,7 @@ function SortableItem({
     );
 }
 
-export default function HomeContent({ suggest_plant, plants, refreshData }: Props) {
+export default function HomeContent({ suggest_plant, plants, suggest_pot , pots , refreshData }: Props) {
     const [items, setItems] = useState<SlotItem[]>(() => {
         const filled = Array(6).fill(null);
         for (const plant of suggest_plant) {
@@ -206,6 +207,7 @@ export default function HomeContent({ suggest_plant, plants, refreshData }: Prop
         ) : (
           <>
             <h2 className="text-xl font-bold">Home Content</h2>
+            <h5 className="text-l font-bold mt-5">Plant Suggestion</h5>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext
                     items={items.map((_, index) => `slot-${index}`)}

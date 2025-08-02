@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { SinglePlantWithPotInCard, Pot, SinglePotInCard } from "@/lib/types/types";
-import { getAllPots, getAllSinglePotInCard } from "@/lib/service/potService";
+import { getSuggestedPots, getAllSinglePotInCard } from "@/lib/service/potService";
 import { getAllSinglePlantWithPotInCard, getSuggestedPlants } from "@/lib/service/plantService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [plants, setPlants] = useState<SinglePlantWithPotInCard[]>([]);
   const [pots, setPots] = useState<SinglePotInCard[]>([]);
   const [suggest_plant, setSuggestPlant] = useState<SinglePlantWithPotInCard[]>([]);
+  const [suggest_pot, setSuggestPot] = useState<SinglePotInCard[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,10 +34,12 @@ export default function AdminDashboard() {
     try {
       const fetchedPlants = await getAllSinglePlantWithPotInCard();
       const fetchedSuggestPlant = await getSuggestedPlants();
+      const fetchedSuggestPot = await getSuggestedPots();
       const fetchedPots = await getAllSinglePotInCard();
 
       setPlants(fetchedPlants);
       setSuggestPlant(fetchedSuggestPlant);
+      setSuggestPot(fetchedSuggestPot);
       setPots(fetchedPots);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -76,6 +79,8 @@ export default function AdminDashboard() {
               <HomeContent
                 suggest_plant={suggest_plant}
                 plants={plants}
+                suggest_pot={suggest_pot}
+                pots={pots}
                 refreshData={fetchData}
               />
             )}
