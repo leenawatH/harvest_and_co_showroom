@@ -20,6 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { SinglePlantWithPotInCard , SinglePotInCard } from "@/lib/types/types";
 import { updateSuggestedPlant } from "@/lib/service/plantService";
+import { updateSuggestedPot } from "@/lib/service/potService";
 
 type Props = {
     suggest_plant: SinglePlantWithPotInCard[];
@@ -29,20 +30,20 @@ type Props = {
     refreshData: () => void;
 };
 
-type SlotItem = SinglePlantWithPotInCard | null;
+type SlotItem = SinglePlantWithPotInCard | SinglePotInCard | null;
 
 function SortableItem({
-    plant,
+    item,
     index,
     onDelete,
     onAdd,
-    availablePlants,
+    available,
 }: {
-    plant: SlotItem;
+    item: SlotItem;
     index: number;
     onDelete: (index: number) => void;
-    onAdd: (index: number, plant: SinglePlantWithPotInCard) => void;
-    availablePlants: SinglePlantWithPotInCard[];
+    onAdd: (index: number, item: any) => void;
+    available: SinglePlantWithPotInCard[] | SinglePotInCard[];
 }) {
     const {
         attributes,
@@ -77,18 +78,18 @@ function SortableItem({
                 },
             }}
         >
-            {plant ? (
+            {item ? (
                 <>
-                    {plant.url ? (
-                        <img src={plant.url} alt={plant.name} className="w-full h-120 object-cover" />
+                    {item.url ? (
+                        <img src={item.url} alt={item.name} className="w-full h-120 object-cover" />
                     ) : (
                         <Box sx={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#eee" }}>
                             <Typography variant="caption" color="textSecondary">No image</Typography>
                         </Box>
                     )}
                     <Box sx={{ p: 1 }}>
-                        <Typography align="center" fontWeight="bold" fontSize={14}>{plant.name}</Typography>
-                        <Typography align="center" fontSize={12} color="textSecondary">ราคา {plant.price} บาท</Typography>
+                        <Typography align="center" fontWeight="bold" fontSize={14}>{item.name}</Typography>
+                        <Typography align="center" fontSize={12} color="textSecondary">ราคา {item.price} บาท</Typography>
                     </Box>
                     <IconButton
                         onClick={() => onDelete(index)}
@@ -100,19 +101,19 @@ function SortableItem({
                 </>
             ) : (
                 <Box sx={{ p: 2 }}>
-                    <Typography variant="body2" textAlign="center" mb={1}>เพิ่มต้นไม้</Typography>
+                    <Typography variant="body2" textAlign="center" mb={1}>Add New</Typography>
                     <Select
                         displayEmpty
                         fullWidth
                         onChange={(e) => {
-                            const selected = availablePlants.find(p => p.id === e.target.value);
+                            const selected = available.find(p => p.id === e.target.value);
                             if (selected) onAdd(index, selected);
                         }}
                         value=""
                         sx={{ fontSize: 14 }}
                     >
                         <MenuItem disabled value="">-- เลือก --</MenuItem>
-                        {availablePlants.map(p => (
+                        {available.map(p => (
                             <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
                         ))}
                     </Select>
@@ -123,7 +124,7 @@ function SortableItem({
 }
 
 export default function HomeContent({ suggest_plant, plants, suggest_pot , pots , refreshData }: Props) {
-    const [items, setItems] = useState<SlotItem[]>(() => {
+    const [plantItems, setPlantItems] = useState<SlotItem[]>(() => {
         const filled = Array(6).fill(null);
         for (const plant of suggest_plant) {
             const i = plant.is_suggested - 1;
@@ -132,7 +133,17 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         return filled;
     });
 
+    const [potItems, setPotItems] = useState<SlotItem[]>(() => {
+        const filled = Array(6).fill(null);
+        for (const pot of suggest_pot) {
+            const i = pot.is_suggested - 1;
+            if (i >= 0 && i < 6) filled[i] = pot;
+        }
+        return filled;
+    });
+
     const [allPlants] = useState<SinglePlantWithPotInCard[]>(plants);
+    const [allPots] = useState<SinglePlantWithPotInCard[]>(pots);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -141,36 +152,61 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
     );
 
     const getAvailablePlants = () => {
-        const selectedIds = items.filter(Boolean).map(i => (i as SinglePlantWithPotInCard).id);
+        const selectedIds = plantItems.filter(Boolean).map(i => (i as SinglePlantWithPotInCard).id);
         return allPlants.filter(p => !selectedIds.includes(p.id));
+    };
+    const getAvailablePots = () => {
+        const selectedIds = potItems.filter(Boolean).map(i => (i as SinglePotInCard).id);
+        return allPots.filter(p => !selectedIds.includes(p.id));
     };
 
     const handleAddPlant = (index: number, plant: SinglePlantWithPotInCard) => {
-        const updated = [...items];
+        const updated = [...plantItems];
         updated[index] = plant;
-        setItems(updated);
+        setPlantItems(updated);
+    };
+    const handleAddPot = (index: number, pot: SinglePotInCard) => {
+        const updated = [...potItems];
+        updated[index] = pot;
+        setPlantItems(updated);
     };
 
-    const handleDelete = (index: number) => {
-        const updated = [...items];
+    const handleDeletePlant = (index: number) => {
+        const updated = [...plantItems];
         updated[index] = null;
-        setItems(updated);
+        setPlantItems(updated);
+    };
+    const handleDeletePot = (index: number) => {
+        const updated = [...potItems];
+        updated[index] = null;
+        setPlantItems(updated);
     };
 
-    const handleDragEnd = (event: any) => {
+    const handleDragEndPlant = (event: any) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
         const from = parseInt(active.id.replace("slot-", ""));
         const to = parseInt(over.id.replace("slot-", ""));
-
-        const reordered = arrayMove(items, from, to);
-        setItems(reordered);
+        
+        const reordered = arrayMove(plantItems, from, to);
+        setPlantItems(reordered);
     };
 
-    const handleSave = async () => {
+    const handleDragEndPot = (event: any) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const from = parseInt(active.id.replace("slot-", ""));
+        const to = parseInt(over.id.replace("slot-", ""));
+        
+        const reordered = arrayMove(potItems, from, to);
+        setPotItems(reordered);
+    };
+
+    const handleSavePlant = async () => {
         setIsLoading(true);
-        const payload = items
+        const payload = plantItems
             .map((plant, index) => {
                 if (!plant) return null;
                 const original = suggest_plant.find(p => p.id === plant.id);
@@ -197,31 +233,60 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         setIsLoading(false);
     };
 
+    const handleSavePot = async () => {
+        setIsLoading(true);
+        const payload = potItems
+            .map((pot, index) => {
+                if (!pot) return null;
+                const original = suggest_pot.find(p => p.id === pot.id);
+                const isSamePosition = original?.is_suggested === index + 1;
+                const wasInOriginal = !!original;
+
+                if (!wasInOriginal || !isSamePosition) {
+                    return {
+                        id: pot.id,
+                        is_suggested: index + 1,
+                    };
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        console.log("💾 Saving changed payload only:", payload);
+        for (const item of payload) {
+            if(item != null){
+                await updateSuggestedPot(item.id, item.is_suggested);
+            }
+        }
+        await refreshData();
+        setIsLoading(false);
+    };
+
     return (
         
         <Box sx={{ px: 1, py: 3 }}>
             {isLoading ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex justify-center plantItems-center h-full">
             <CircularProgress />
           </div>
         ) : (
           <>
             <h2 className="text-xl font-bold">Home Content</h2>
             <h5 className="text-l font-bold mt-5">Plant Suggestion</h5>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPlant}>
                 <SortableContext
-                    items={items.map((_, index) => `slot-${index}`)}
+                    items={plantItems.map((_, index) => `slot-${index}`)}
                     strategy={horizontalListSortingStrategy}
                 >
                     <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
-                        {items.map((plant, index) => (
+                        {plantItems.map((plant, index) => (
                             <SortableItem
                                 key={`slot-${index}`}
-                                plant={plant}
+                                item={plant}
                                 index={index}
-                                onDelete={handleDelete}
+                                onDelete={handleDeletePlant}
                                 onAdd={handleAddPlant}
-                                availablePlants={getAvailablePlants()}
+                                available={getAvailablePlants()}
                             />
                         ))}
                     </Box>
@@ -229,7 +294,34 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
             </DndContext>
 
             <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave}>
+                <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePlant}>
+                    Save
+                </Button>
+            </Box>
+
+            <h5 className="text-l font-bold mt-5">Pot Suggestion</h5>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPot}>
+                <SortableContext
+                    items={potItems.map((_, index) => `slot-${index}`)}
+                    strategy={horizontalListSortingStrategy}
+                >
+                    <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
+                        {potItems.map((pot, index) => (
+                            <SortableItem
+                                key={`slot-${index}`}
+                                item={pot}
+                                index={index}
+                                onDelete={handleDeletePot}
+                                onAdd={handleAddPot}
+                                available={getAvailablePots()}
+                            />
+                        ))}
+                    </Box>
+                </SortableContext>
+            </DndContext>
+
+            <Box sx={{ textAlign: "center", mt: 3 }}>
+                <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePot}>
                     Save
                 </Button>
             </Box>

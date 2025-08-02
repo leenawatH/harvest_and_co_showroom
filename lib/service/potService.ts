@@ -87,6 +87,24 @@ export async function updatePot(id: string, data: Partial<Pot>): Promise<Pot> {
   return res.json();
 }
 
+
+// ✅ UPDATE Suggested Plant
+export async function updateSuggestedPot(id: string, suggest_number: number) {
+    try {
+        const response = await fetch('/api/pot/updateSuggested', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id, suggest_number }),  // ส่ง id และ suggest_number ไป
+        });
+
+        console.log('Updated successfully:');
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 // ✅ DELETE
 export async function deletePot(id: string): Promise<void> {
   const res = await fetch(`${getBaseUrl()}/api/pot/${id}`, {
