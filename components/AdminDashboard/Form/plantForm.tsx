@@ -312,7 +312,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl max-h-[calc(100vh-100px)] overflow-y-auto">
             {isPending && (
                 <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
                     <CircularProgress />

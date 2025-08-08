@@ -1,5 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
-import { Port , Port_Middle_Sections, Port_Bottom_Groups , Port_Bottom_Images } from '@/lib/types/types';
+import { Port , Port_Middle_Sections, Port_Bottom_Groups , Port_Bottom_Images, SinglePortInCard } from '@/lib/types/types';
 
 export async function getAllPort(): Promise<Port[]> {
   const res = await fetch(`${getBaseUrl()}/api/port`);
@@ -8,19 +8,18 @@ export async function getAllPort(): Promise<Port[]> {
 }
 
 // ✅ ดึงข้อมูลทั้งหมด
-export async function getAllSinglePortInCard(): Promise<Port[]> {
+export async function getAllSinglePortInCard(): Promise<SinglePortInCard[]> {
   const res = await fetch(`${getBaseUrl()}/api/port`);
   if (!res.ok) throw new Error('Failed to fetch port data');
 
   const data = await res.json();
 
-  const result: Port[] = data
+  const result: SinglePortInCard[] = data
     .map((item: any) => ({
       id: item.id,
       title: item.title,
       location: item.location,
       image_cover: item.image_cover,
-      description: item.description,
       is_suggested: item.is_suggested,
     }))
     .sort((a: { title: string; }, b: { title: string; }) => a.title.localeCompare(b.title)); // ✅ sort ชื่อ A-Z
@@ -65,7 +64,7 @@ export async function getSuggestedPorts() {
 
 
 // ✅ เพิ่มใหม่
-export async function addPort(data: Port): Promise<Port> {
+export async function addNewPort(data: Port): Promise<Port> {
   console.log("data" + data.title);
   const res = await fetch(`${getBaseUrl()}/api/port`, {
     method: 'POST',
@@ -77,7 +76,7 @@ export async function addPort(data: Port): Promise<Port> {
 }
 
 // ✅ UPDATE
-export async function updateport(id: string, data: Partial<Port>): Promise<Port> {
+export async function updatePort(id: string, data: Partial<Port>): Promise<Port> {
 
   console.log("data" + data);
   //Edit port Info

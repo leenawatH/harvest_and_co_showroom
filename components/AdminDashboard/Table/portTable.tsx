@@ -1,15 +1,15 @@
 'use client';
 import { useState } from 'react';
-import { getAllSinglePotInCard, deletePot, updatePot, addPot, addNewPotColor, updatePotColor, deletePotColor } from '@/lib/service/potService';
+import { getAllSinglePortInCard, deletePort, updatePort, addNewPort,  } from '@/lib/service/portService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
+import { Port, SinglePortInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
-import PotForm from '@/components/AdminDashboard/Form/potForm';
+import PortForm from "@/components/AdminDashboard/Form/portForm";
 import { CircularProgress } from '@mui/material';
-import { SinglePotInCard } from '@/lib/types/types';
 
-export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard[], refreshData: () => Promise<void>; }) {
+export default function PortTable({ ports, refreshData  }: { ports: SinglePortInCard[], refreshData: () => Promise<void>; }) {
 
-  const [potsData, setpotsData] = useState<SinglePotInCard[]>(pots);
+  const [PortsData, setPortsData] = useState<SinglePortInCard[]>(ports);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedName, setSelectedName] = useState<string[]>([]);
@@ -20,7 +20,7 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
   const [targetName, setTargetName] = useState<string>("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPotId, seteditingPotId] = useState<string>("");
+  const [editingPortId, seteditingPortId] = useState<string>("");
 
   const [isPending, setIsPending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-    const path = 'Pot/' + name;
+    const path = 'Port/' + name;
     setSelectedName((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== path) : [...prev, path]
     );
@@ -51,8 +51,8 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
   const refresh = async () => {
     setIsRefreshing(true);
     try {
-      const NewPot = await getAllSinglePotInCard();
-      setpotsData(NewPot);
+      const NewPort = await getAllSinglePortInCard();
+      setPortsData(NewPort);
     } catch (err) {
       console.error(err);
     }
@@ -65,9 +65,8 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
       if (selected.length > 0) {
         setIsPending(true);
         try {
-          await Promise.all(selected.map(id => deletePot(id)));
+          await Promise.all(selected.map(id => deletePort(id)));
           await Promise.all(selectedName.map(path => deleteFolder(path)));
-          refresh();
           setSelected([]);
           setSelectedName([]);
         } catch (err) {
@@ -78,15 +77,16 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
       if (targetId) {
         setIsPending(true);
         try {
-          console.log("Deleting Pot with ID:", targetId, "and name:", targetName);
-          await deleteFolder('Pot/' + targetName);
-          await deletePot(targetId);
-          refresh();
+          console.log("Deleting Port with ID:", targetId, "and name:", targetName);
+          await deleteFolder('Port/' + targetName);
+          await deletePort(targetId);
         } catch (err) {
           console.error(err);
         }
       }
     }
+    refresh();
+    await refreshData();
     setIsPending(false);
     setConfirmOpen(false);
   };
@@ -99,94 +99,94 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
         </div>
       )}
       {isFormOpen ? (
-        <PotForm
-          initialData={editingPotId}
-          onSubmit={async ({ finalUpdatePotData, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
+        <PortForm
+          initialData={editingPortId}
+          onSubmit={async ({ finalUpdatePortData, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
             setIsLoading(true);
-            if (finalUpdatePotData) {
-              if (editingPotId === "") {
-                // สร้าง Pot ใหม่
-                const Pot = await addPot(finalUpdatePotData);
+            // if (finalUpdatePortData) {
+            //   if (editingPortId === "") {
+            //     // สร้าง Port ใหม่
+            //     const Port = await addNewPort(finalUpdatePortData);
 
-                // ตั้งค่า Pot_id ให้กับ newPotOptions หลังจากสร้าง Pot
-                if (newPotOptions != null) {
-                  for (const pair of newPotOptions) {
-                    pair.Pot_id = Pot.id; // ใช้ id ที่ได้จากการสร้าง Pot
-                    try {
-                      await addNewPotColor(pair);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-              } else {
-                // อัปเดต Pot ที่มีอยู่แล้ว
-                await updatePot(editingPotId, finalUpdatePotData);
+            //     // ตั้งค่า Port_id ให้กับ newPotOptions หลังจากสร้าง Port
+            //     if (newPotOptions != null) {
+            //       for (const pair of newPotOptions) {
+            //         pair.Port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
+            //         try {
+            //           await addNewPort(pair);
+            //         } catch (error) {
+            //           console.error("Error adding new pot option:", error);
+            //         }
+            //       }
+            //     }
+            //   } else {
+            //     // อัปเดต Port ที่มีอยู่แล้ว
+            //     await updatePort(editingPortId, finalUpdatePortData);
 
-                // ตั้งค่า Pot_id ของ newPotOptions โดยใช้ editingPotId
-                if (newPotOptions != null) {
-                  for (const pair of newPotOptions) {
-                    pair.Pot_id = editingPotId; // ใช้ id ที่เป็น editingPotId
-                    try {
-                      await addNewPotColor(pair);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-              }
-            } else {
-              // ถ้าไม่มีการอัปเดต Pot ก็ใช้ editingPotId สำหรับ Pot_id
-              if (newPotOptions != null) {
-                for (const pair of newPotOptions) {
-                  pair.Pot_id = editingPotId; // ใช้ id ที่เป็น editingPotId
-                  try {
-                    await addNewPotColor(pair);
-                  } catch (error) {
-                    console.error("Error adding new pot option:", error);
-                  }
-                }
-              }
-            }
-            if (updatedPotOptions != null) {
-              for (const pair of updatedPotOptions) {
-                try {
-                  await updatePotColor(pair);
-                }
-                catch (error) {
-                  console.error("Error updating pot option:", error);
-                }
-              }
+            //     // ตั้งค่า Port_id ของ newPotOptions โดยใช้ editingPortId
+            //     if (newPotOptions != null) {
+            //       for (const pair of newPotOptions) {
+            //         pair.Port_id = editingPortId; // ใช้ id ที่เป็น editingPortId
+            //         try {
+            //           await addNewPort(pair);
+            //         } catch (error) {
+            //           console.error("Error adding new pot option:", error);
+            //         }
+            //       }
+            //     }
+            //   }
+            // } else {
+            //   // ถ้าไม่มีการอัปเดต Port ก็ใช้ editingPortId สำหรับ Port_id
+            //   if (newPotOptions != null) {
+            //     for (const pair of newPotOptions) {
+            //       pair.Port_id = editingPortId; // ใช้ id ที่เป็น editingPortId
+            //       try {
+            //         await addNewPortPotOption(pair);
+            //       } catch (error) {
+            //         console.error("Error adding new pot option:", error);
+            //       }
+            //     }
+            //   }
+            // }
+            // if (updatedPotOptions != null) {
+            //   for (const pair of updatedPotOptions) {
+            //     try {
+            //       await updatePortPotOption(pair);
+            //     }
+            //     catch (error) {
+            //       console.error("Error updating pot option:", error);
+            //     }
+            //   }
 
-            }
-            if (deletedPotOptionIds != null) {
-              for (const id of deletedPotOptionIds) {
-                try {
-                  await deletePotColor(id);
-                }
-                catch (error) {
-                  console.error("Error deleting pot option:", error);
-                }
-              }
+            // }
+            // if (deletedPotOptionIds != null) {
+            //   for (const id of deletedPotOptionIds) {
+            //     try {
+            //       await deletePortPotOption(id);
+            //     }
+            //     catch (error) {
+            //       console.error("Error deleting pot option:", error);
+            //     }
+            //   }
 
-            }
+            // }
             await refresh();
             await refreshData();
             setIsFormOpen(false);
-            seteditingPotId("");
+            seteditingPortId("");
             setIsLoading(false);
           }
           }
           onCancel={() => {
             setIsFormOpen(false);
-            seteditingPotId("");
+            seteditingPortId("");
           }} />
       ) : (
         <>
           {/* ✅ Top Bar */}
           <div className="sticky top-0 z-10 bg-white py-4">
             <div className="flex justify-between items-center mb-2 px-2">
-              <h2 className="text-xl font-bold">Pot List</h2>
+              <h2 className="text-xl font-bold">Port List</h2>
               <div className="flex gap-4">
                 {selected.length > 0 && (
                   <button
@@ -207,11 +207,11 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
                 <button
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   onClick={() => {
-                    seteditingPotId("");
+                    seteditingPortId("");
                     setIsFormOpen(true);
                   }}
                 >
-                  New Pot
+                  New Port
                 </button>
               </div>
             </div>
@@ -224,29 +224,27 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
                 <tr>
                   <th className="p-4 w-12"></th>
                   <th className="p-4 w-36">Cover Image</th>
-                  <th className="p-4 w-32">Name</th>
-                  <th className="p-4 text-center w-32">Height</th>
-                  <th className="p-4 text-center w-32">Price</th>
-                  <th className="p-4 text-center w-32">Circumference</th>
+                  <th className="p-4 w-50">Title</th>
+                  <th className="p-4 text-center w-32">Location</th>
                   <th className="p-4 text-center w-36">Action</th>
                 </tr>
               </thead>
               <tbody className="text-sm text-gray-700">
-                {potsData.map((item) => (
+                {PortsData.map((item) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 text-center align-middle">
                       <input
                         type="checkbox"
                         checked={item.id ? selected.includes(item.id) : false}
-                        onChange={() => item.id && toggleSelect(item.id, item.name)}
+                        onChange={() => item.id && toggleSelect(item.id, item.title)}
                       />
                     </td>
                     <td className="p-4">
                       <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
-                        {item.url ? (
+                        {item.image_cover ? (
                           <img
-                            src={item.url}
-                            alt={item.name}
+                            src={item.image_cover}
+                            alt={item.title}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -254,15 +252,13 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
                         )}
                       </div>
                     </td>
-                    <td className="p-4 align-middle">{item.name}</td>
-                    <td className="p-4 text-center align-middle">{item.height} cm</td>
-                    <td className="p-4 text-center align-middle">฿{item.price}</td>
-                    <td className="p-4 text-center align-middle">{item.circumference} cm</td>
+                    <td className="p-4 align-middle">{item.title}</td>
+                    <td className="p-4 text-center align-middle">{item.location} cm</td>
                     <td className="p-4 text-center align-middle">
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => {
-                            seteditingPotId(item.id);      // กรณี Edit
+                            seteditingPortId(item.id);      // กรณี Edit
                             setIsFormOpen(true);
                           }}
                           className="px-4 py-3 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -270,7 +266,7 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(item.id!, item.name)}
+                          onClick={() => handleDeleteClick(item.id!, item.title)}
                           className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                         >
                           Delete

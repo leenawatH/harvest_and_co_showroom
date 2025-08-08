@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import { SinglePlantWithPotInCard, Pot, SinglePotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard, SinglePotInCard, Port, SinglePortInCard } from "@/lib/types/types";
 import { getSuggestedPots, getAllSinglePotInCard } from "@/lib/service/potService";
 import { getAllSinglePlantWithPotInCard, getSuggestedPlants } from "@/lib/service/plantService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
 import PotTable from "@/components/AdminDashboard/Table/potTable";
+import PortTable from "@/components/AdminDashboard/Table/portTable";
 import HomeContent from "@/components/AdminDashboard/Table/homeContent";
 
 import { CircularProgress } from '@mui/material';
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("Home Content");
   const [plants, setPlants] = useState<SinglePlantWithPotInCard[]>([]);
   const [pots, setPots] = useState<SinglePotInCard[]>([]);
+  const [ports, setPorts] = useState<SinglePortInCard[]>([]);
   const [suggest_plant, setSuggestPlant] = useState<SinglePlantWithPotInCard[]>([]);
   const [suggest_pot, setSuggestPot] = useState<SinglePotInCard[]>([]);
 
@@ -91,12 +93,8 @@ export default function AdminDashboard() {
                 refreshData={fetchData}
               />
             )}
-            {activeTab === "Pot" && <PotTable pots={pots} setPots={setPots} />}
-            {activeTab === "Port" && (
-              <div>
-                <p className="text-gray-600">Port section coming soon...</p>
-              </div>
-            )}
+            {activeTab === "Pot" && <PotTable pots={pots} refreshData={fetchData} />}
+            {activeTab === "Port" && <PortTable ports={ports} refreshData={fetchData} />}
           </>
         )}
       </main>

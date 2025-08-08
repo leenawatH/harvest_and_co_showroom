@@ -68,6 +68,14 @@ export interface Pot_Img {
     file: File | null;      
 }
 
+export interface SinglePortInCard{
+    id: string;
+    title: string;
+    location: string;
+    image_cover: string;
+    is_suggested: number;
+}
+
 export interface Port {
     id: string;
     title: string;
@@ -75,8 +83,9 @@ export interface Port {
     image_cover: string;
     description: string;
     is_suggested: number;
-    port_bottom_images: Port_Bottom_Groups[];
+    port_bottom_groups: Port_Bottom_Groups[];
     port_middle_sections: Port_Middle_Sections[];
+    file: File | null;
 }
 
 export interface Port_Middle_Sections {
@@ -85,11 +94,12 @@ export interface Port_Middle_Sections {
     detail: string;
     image_url: string;
     position: number;
+    file: File | null;
 }
 
 export interface Port_Bottom_Groups {
     id: string;
-    pattern: string;
+    pattern: 1 | 2 | 3; // 1: pattern1, 2: pattern2, 3: pattern3
     position: number;
     port_bottom_images: Port_Bottom_Images[];
 }
@@ -98,4 +108,5 @@ export interface Port_Bottom_Images {
     id: string;
     position: number;
     image_url: string;
+    file: File | null;
 }
