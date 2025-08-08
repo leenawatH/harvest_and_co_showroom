@@ -1,3 +1,5 @@
+import exp from "constants";
+
 export enum Color {
   Black = 'black',
   White = 'white',
@@ -64,4 +66,36 @@ export interface Pot_Img {
     pot_color: Color | null;
     url: string;   
     file: File | null;      
+}
+
+export interface Port {
+    id: string;
+    title: string;
+    location: string;
+    image_cover: string;
+    description: string;
+    is_suggested: number;
+    port_bottom_images: Port_Bottom_Groups[];
+    port_middle_sections: Port_Middle_Sections[];
+}
+
+export interface Port_Middle_Sections {
+    id: string;
+    title: string;
+    detail: string;
+    image_url: string;
+    position: number;
+}
+
+export interface Port_Bottom_Groups {
+    id: string;
+    pattern: string;
+    position: number;
+    port_bottom_images: Port_Bottom_Images[];
+}
+
+export interface Port_Bottom_Images {
+    id: string;
+    position: number;
+    image_url: string;
 }
