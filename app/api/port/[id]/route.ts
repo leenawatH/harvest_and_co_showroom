@@ -34,6 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
              )
           `)
     .eq('id', id).single();
+
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   return NextResponse.json(data);
 }

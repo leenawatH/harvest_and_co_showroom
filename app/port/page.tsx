@@ -1,61 +1,80 @@
 'use client';
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
-const portfolioItems = [
-    {
-        title: "Community Garden Project",
-        location: "Bangkok",
-        description:
-            "Our team volunteered to design and build a sustainable community garden, promoting urban agriculture and healthy living.",
-        image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg",
-    },
-    {
-        title: "Local Art Exhibition",
-        location: "ICON SIAM, Bangkok",
-        description:
-            "We hosted an art exhibition featuring local artists, supporting creativity and cultural engagement in our neighborhood.",
-        image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_7820_vl1vlo.jpg",
-    },
-    {
-        title: "Charity Bake Sale",
-        location: "Bangkok, Thailand",
-        description:
-            "Organized a bake sale to raise funds for local charities, bringing together employees and the community for a good cause.",
-        image: "https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893614/IMG_2129_vzgqdk.jpg",
-    },
-];
+import { SinglePortInCard } from '@/lib/types/types';
+import { getAllSinglePortInCard } from "@/lib/service/portService";
 
 export default function PortfolioPage() {
     const [current, setCurrent] = useState(0);
+    const [allPorts, setPorts] = useState<SinglePortInCard[]>([]);
+    const [loading, setLoading] = useState(true);
 
+    // โหลดข้อมูล
     useEffect(() => {
+        let mounted = true;
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const fetchedPorts = await getAllSinglePortInCard();
+                if (!mounted) return;
+                setPorts(fetchedPorts || []);
+                setCurrent(0); // รีเซ็ต index เมื่อข้อมูลมาใหม่
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+        fetchData();
+        return () => { mounted = false; };
+    }, []);
+
+    // ป้องกัน current เกินขอบเขต เมื่อความยาว array เปลี่ยน
+    useEffect(() => {
+        if (allPorts.length === 0) return;
+        if (current >= allPorts.length) setCurrent(0);
+    }, [allPorts.length, current]);
+
+    // สไลด์อัตโนมัติ: ผูกกับความยาวข้อมูล (ไม่รันถ้าไม่มีข้อมูล)
+    useEffect(() => {
+        if (allPorts.length === 0) return;
+        const len = allPorts.length;
         const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % portfolioItems.length);
+            setCurrent(prev => (prev + 1) % len);
         }, 3500);
         return () => clearInterval(timer);
-    }, []);
+    }, [allPorts.length]);
+
+    if (loading) {
+        return <div className="text-center py-20">Loading...</div>;
+    }
+
+    if (allPorts.length === 0) {
+        return <div className="text-center py-20">No Portfolio Data</div>;
+    }
+
+    // ใช้ safeIndex ป้องกัน out-of-range
+    const safeIndex = Math.min(current, allPorts.length - 1);
+    const hero = allPorts[safeIndex];
 
     return (
         <main>
             {/* Slideshow Section */}
             <section className="relative w-full h-[60vw] max-h-[600px] min-h-[320px] overflow-hidden">
                 <img
-                    src={portfolioItems[current].image}
-                    alt={portfolioItems[current].title}
+                    src={hero.image_cover || ""}
+                    alt={hero.title || "portfolio"}
                     className="w-full h-full object-cover transition-all duration-700"
                 />
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/40" />
-          
-        
                 {/* Project Name bottom-left */}
                 <div className="absolute left-8 bottom-[10%] md:left-16 md:bottom-[10%]">
                     <h1 className="text-white text-xl md:text-3xl font-semibold">
-                        {portfolioItems[current].title}
+                        {hero.title}
                     </h1>
                     <h1 className="text-white text-m md:text-xl mt-2">
-                        {portfolioItems[current].location}
+                        {hero.location}
                     </h1>
                 </div>
             </section>
@@ -63,17 +82,23 @@ export default function PortfolioPage() {
             {/* Portfolio Grid */}
             <div className="max-w-6xl mx-auto py-12 px-4 mt-10 mb-20">
                 <div className="grid gap-20 md:grid-cols-2">
-                    {portfolioItems.map((item, idx) => (
-                        <Link key={idx} href={`/port/${item.title}`} className="flex flex-col items-center hover:opacity-90 transition">
+                    {allPorts.map((item) => (
+                        <Link
+                            key={item.id}
+                            href={`/port/${item.id}`}  // ✅ ใช้ id จะปลอดภัยกว่า title
+                            className="flex flex-col items-center hover:opacity-90 transition"
+                        >
                             <div className="w-full aspect-[8/5] max-w-[500px]">
                                 <img
-                                    src={item.image}
-                                    alt={item.title}
+                                    src={item.image_cover || ""}
+                                    alt={item.title || "portfolio item"}
                                     className="w-full h-full object-cover shadow-md"
                                 />
                             </div>
                             <h2 className="text-center text-l mt-5">{item.title}</h2>
-                            <p className="text-center text-sm text-gray-600 mt-1 mb-2">{item.location}</p>
+                            <p className="text-center text-sm text-gray-600 mt-1 mb-2">
+                                {item.location}
+                            </p>
                         </Link>
                     ))}
                 </div>
