@@ -170,6 +170,7 @@ export async function addNewPortBottomGroups(data: Port_Bottom_Groups): Promise<
   const newData = { 
     //id : data.id,
     pattern : data.pattern,
+    position: data.position,
     port_id : data.port_id,
     image_url_1: data.image_url_1,
     image_url_2: data.image_url_2,

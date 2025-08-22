@@ -18,9 +18,10 @@ import {
     horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SinglePlantWithPotInCard , SinglePortInCard, SinglePotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from "@/lib/types/types";
 import { updateSuggestedPlant } from "@/lib/service/plantService";
 import { updateSuggestedPot } from "@/lib/service/potService";
+import { updateSuggestedPort } from "@/lib/service/portService";
 
 type Props = {
     suggest_plant: SinglePlantWithPotInCard[];
@@ -32,7 +33,8 @@ type Props = {
     refreshData: () => void;
 };
 
-type SlotItem = SinglePlantWithPotInCard | SinglePotInCard | null;
+type SlotItem = SinglePlantWithPotInCard | SinglePotInCard | SinglePortInCard | null;
+
 
 function SortableItem({
     item,
@@ -45,7 +47,7 @@ function SortableItem({
     index: number;
     onDelete: (index: number) => void;
     onAdd: (index: number, item: any) => void;
-    available: SinglePlantWithPotInCard[] | SinglePotInCard[];
+    available: SinglePlantWithPotInCard[] | SinglePotInCard[] | SinglePortInCard[];
 }) {
     const {
         attributes,
@@ -82,16 +84,36 @@ function SortableItem({
         >
             {item ? (
                 <>
-                    {item.url ? (
-                        <img src={item.url} alt={item.name} className="w-full h-120 object-cover" />
+                    {"url" in item && item.url ? (
+                        <img
+                            src={item.url}
+                            alt={item.name}
+                            className="w-full h-120 object-cover"
+                        />
+                    ) : "image_cover" in item && item.image_cover ? (
+                        <img
+                            src={item.image_cover}
+                            alt={item.title}
+                            className="w-full h-120 object-cover"
+                        />
                     ) : (
                         <Box sx={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#eee" }}>
                             <Typography variant="caption" color="textSecondary">No image</Typography>
                         </Box>
                     )}
                     <Box sx={{ p: 1 }}>
-                        <Typography align="center" fontWeight="bold" fontSize={14}>{item.name}</Typography>
-                        <Typography align="center" fontSize={12} color="textSecondary">ราคา {item.price} บาท</Typography>
+                        <Typography align="center" fontWeight="bold" fontSize={14}>
+                            {"name" in item ? item.name : item.title}
+                        </Typography>
+
+                        <Typography align="center" fontSize={12} color="textSecondary">
+                            {"price" in item
+                                ? `ราคา ${item.price} บาท`
+                                : "location" in item
+                                    ? item.location
+                                    : ""}
+                        </Typography>
+
                     </Box>
                     <IconButton
                         onClick={() => onDelete(index)}
@@ -116,7 +138,7 @@ function SortableItem({
                     >
                         <MenuItem disabled value="">-- เลือก --</MenuItem>
                         {available.map(p => (
-                            <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+                            <MenuItem key={p.id} value={p.id}>{"name" in p ? p.name : p.title}</MenuItem>
                         ))}
                     </Select>
                 </Box>
@@ -125,7 +147,7 @@ function SortableItem({
     );
 }
 
-export default function HomeContent({ suggest_plant, plants, suggest_pot , pots ,suggest_port, ports, refreshData }: Props) {
+export default function HomeContent({ suggest_plant, plants, suggest_pot, pots, suggest_port, ports, refreshData }: Props) {
     const [plantItems, setPlantItems] = useState<SlotItem[]>(() => {
         const filled = Array(6).fill(null);
         for (const plant of suggest_plant) {
@@ -144,8 +166,18 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         return filled;
     });
 
+    const [portItems, setPortItems] = useState<SlotItem[]>(() => {
+        const filled = Array(6).fill(null);
+        for (const port of suggest_port) {
+            const i = port.is_suggested - 1;
+            if (i >= 0 && i < 6) filled[i] = port;
+        }
+        return filled;
+    });
+
     const [allPlants] = useState<SinglePlantWithPotInCard[]>(plants);
-    const [allPots] = useState<SinglePlantWithPotInCard[]>(pots);
+    const [allPots] = useState<SinglePotInCard[]>(pots);
+    const [allPorts] = useState<SinglePortInCard[]>(ports);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -161,6 +193,10 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         const selectedIds = potItems.filter(Boolean).map(i => (i as SinglePotInCard).id);
         return allPots.filter(p => !selectedIds.includes(p.id));
     };
+    const getAvailablePorts = () => {
+        const selectedIds = portItems.filter(Boolean).map(i => (i as SinglePortInCard).id);
+        return allPorts.filter(p => !selectedIds.includes(p.id));
+    };
 
     const handleAddPlant = (index: number, plant: SinglePlantWithPotInCard) => {
         const updated = [...plantItems];
@@ -171,6 +207,11 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         const updated = [...potItems];
         updated[index] = pot;
         setPotItems(updated);
+    };
+    const handleAddPort = (index: number, port: SinglePortInCard) => {
+        const updated = [...portItems];
+        updated[index] = port;
+        setPortItems(updated);
     };
 
     const handleDeletePlant = (index: number) => {
@@ -183,6 +224,11 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         updated[index] = null;
         setPotItems(updated);
     };
+    const handleDeletePort = (index: number) => {
+        const updated = [...portItems];
+        updated[index] = null;
+        setPortItems(updated);
+    };
 
     const handleDragEndPlant = (event: any) => {
         const { active, over } = event;
@@ -190,7 +236,7 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
 
         const from = parseInt(active.id.replace("slot-", ""));
         const to = parseInt(over.id.replace("slot-", ""));
-        
+
         const reordered = arrayMove(plantItems, from, to);
         setPlantItems(reordered);
     };
@@ -201,9 +247,19 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
 
         const from = parseInt(active.id.replace("slot-", ""));
         const to = parseInt(over.id.replace("slot-", ""));
-        
+
         const reordered = arrayMove(potItems, from, to);
         setPotItems(reordered);
+    };
+    const handleDragEndPort = (event: any) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const from = parseInt(active.id.replace("slot-", ""));
+        const to = parseInt(over.id.replace("slot-", ""));
+
+        const reordered = arrayMove(portItems, from, to);
+        setPortItems(reordered);
     };
 
     const handleSavePlant = async () => {
@@ -227,7 +283,7 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
 
         console.log("💾 Saving changed payload only:", payload);
         for (const item of payload) {
-            if(item != null){
+            if (item != null) {
                 await updateSuggestedPlant(item.id, item.is_suggested);
             }
         }
@@ -256,7 +312,7 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
 
         console.log("💾 Saving changed payload only:", payload);
         for (const item of payload) {
-            if(item != null){
+            if (item != null) {
                 await updateSuggestedPot(item.id, item.is_suggested);
             }
         }
@@ -264,71 +320,127 @@ export default function HomeContent({ suggest_plant, plants, suggest_pot , pots 
         setIsLoading(false);
     };
 
+    const handleSavePort = async () => {
+        setIsLoading(true);
+        const payload = portItems
+            .map((port, index) => {
+                if (!port) return null;
+                const original = suggest_port.find(p => p.id === port.id);
+                const isSamePosition = original?.is_suggested === index + 1;
+                const wasInOriginal = !!original;
+
+                if (!wasInOriginal || !isSamePosition) {
+                    return {
+                        id: port.id,
+                        is_suggested: index + 1,
+                    };
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        console.log("💾 Saving changed payload only:", payload);
+        for (const item of payload) {
+            if (item != null) {
+                await updateSuggestedPort(item.id, item.is_suggested);
+            }
+        }
+        await refreshData();
+        setIsLoading(false);
+    };
+
     return (
-        
+
         <Box sx={{ px: 1, py: 3, height: 'calc(100vh - 128px)', overflowY: 'auto' }}>
             {isLoading ? (
-          <div className="flex justify-center plantItems-center">
-            <CircularProgress />
-          </div>
-        ) : (
-          <>
-            <h2 className="text-xl font-bold">Home Content</h2>
-            <h5 className="text-l font-bold mt-5">Plant Suggestion</h5>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPlant}>
-                <SortableContext
-                    items={plantItems.map((_, index) => `slot-${index}`)}
-                    strategy={horizontalListSortingStrategy}
-                >
-                    <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
-                        {plantItems.map((plant, index) => (
-                            <SortableItem
-                                key={`slot-${index}`}
-                                item={plant}
-                                index={index}
-                                onDelete={handleDeletePlant}
-                                onAdd={handleAddPlant}
-                                available={getAvailablePlants()}
-                            />
-                        ))}
+                <div className="flex justify-center plantItems-center">
+                    <CircularProgress />
+                </div>
+            ) : (
+                <>
+                    <h2 className="text-xl font-bold">Home Content</h2>
+                    <h5 className="text-l font-bold mt-5">Plant Suggestion</h5>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPlant}>
+                        <SortableContext
+                            items={plantItems.map((_, index) => `slot-${index}`)}
+                            strategy={horizontalListSortingStrategy}
+                        >
+                            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
+                                {plantItems.map((plant, index) => (
+                                    <SortableItem
+                                        key={`slot-${index}`}
+                                        item={plant}
+                                        index={index}
+                                        onDelete={handleDeletePlant}
+                                        onAdd={handleAddPlant}
+                                        available={getAvailablePlants()}
+                                    />
+                                ))}
+                            </Box>
+                        </SortableContext>
+                    </DndContext>
+
+                    <Box sx={{ textAlign: "center", mt: 3 }}>
+                        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePlant}>
+                            Save
+                        </Button>
                     </Box>
-                </SortableContext>
-            </DndContext>
 
-            <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePlant}>
-                    Save
-                </Button>
-            </Box>
+                    <h5 className="text-l font-bold mt-5">Pot Suggestion</h5>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPot}>
+                        <SortableContext
+                            items={potItems.map((_, index) => `slot-${index}`)}
+                            strategy={horizontalListSortingStrategy}
+                        >
+                            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
+                                {potItems.map((pot, index) => (
+                                    <SortableItem
+                                        key={`slot-${index}`}
+                                        item={pot}
+                                        index={index}
+                                        onDelete={handleDeletePot}
+                                        onAdd={handleAddPot}
+                                        available={getAvailablePots()}
+                                    />
+                                ))}
+                            </Box>
+                        </SortableContext>
+                    </DndContext>
 
-            <h5 className="text-l font-bold mt-5">Pot Suggestion</h5>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPot}>
-                <SortableContext
-                    items={potItems.map((_, index) => `slot-${index}`)}
-                    strategy={horizontalListSortingStrategy}
-                >
-                    <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
-                        {potItems.map((pot, index) => (
-                            <SortableItem
-                                key={`slot-${index}`}
-                                item={pot}
-                                index={index}
-                                onDelete={handleDeletePot}
-                                onAdd={handleAddPot}
-                                available={getAvailablePots()}
-                            />
-                        ))}
+                    <Box sx={{ textAlign: "center", mt: 3 }}>
+                        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePot}>
+                            Save
+                        </Button>
                     </Box>
-                </SortableContext>
-            </DndContext>
 
-            <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePot}>
-                    Save
-                </Button>
-            </Box>
-            </>
-        )}
+                    <h5 className="text-l font-bold mt-5">Port Suggestion</h5>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndPort}>
+                        <SortableContext
+                            items={portItems.map((_, index) => `slot-${index}`)}
+                            strategy={horizontalListSortingStrategy}
+                        >
+                            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", mt: 5, gap: 1 }}>
+                                {portItems.map((port, index) => (
+                                    <SortableItem
+                                        key={`slot-${index}`}
+                                        item={port}
+                                        index={index}
+                                        onDelete={handleDeletePort}
+                                        onAdd={handleAddPort}
+                                        available={getAvailablePorts()}
+                                    />
+                                ))}
+                            </Box>
+                        </SortableContext>
+                    </DndContext>
+
+                    <Box sx={{ textAlign: "center", mt: 3 }}>
+                        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSavePort}>
+                            Save
+                        </Button>
+                    </Box>
+                </>
+            )}
         </Box>
     );
 }

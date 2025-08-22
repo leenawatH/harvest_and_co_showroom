@@ -114,7 +114,7 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
             title: '',
             detail: '',
             image_url: '',
-            position: 1,
+            position: port_middle_sections.length + 1,
             file: null
         }]);
     }
@@ -126,6 +126,7 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
             id: '',
             port_id: port.id,
             pattern: 1,
+            position: port_bottom_groups.length + 1,
             image_url_1: '',
             image_url_2: '',
             image_url_3: '',

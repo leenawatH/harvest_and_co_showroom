@@ -102,6 +102,7 @@ export interface Port_Middle_Sections {
 export interface Port_Bottom_Groups {
     id: string;
     pattern: 1 | 2 | 3; // 1: pattern1, 2: pattern2, 3: pattern3
+    position: number;
     port_id: string;
     image_url_1 : string;
     image_url_2 : string;
