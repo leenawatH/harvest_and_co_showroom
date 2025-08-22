@@ -18,7 +18,7 @@ import {
     horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SinglePlantWithPotInCard , SinglePotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard , SinglePortInCard, SinglePotInCard } from "@/lib/types/types";
 import { updateSuggestedPlant } from "@/lib/service/plantService";
 import { updateSuggestedPot } from "@/lib/service/potService";
 
@@ -27,6 +27,8 @@ type Props = {
     plants: SinglePlantWithPotInCard[];
     suggest_pot: SinglePotInCard[];
     pots: SinglePotInCard[];
+    suggest_port: SinglePortInCard[];
+    ports: SinglePortInCard[];
     refreshData: () => void;
 };
 
@@ -123,7 +125,7 @@ function SortableItem({
     );
 }
 
-export default function HomeContent({ suggest_plant, plants, suggest_pot , pots , refreshData }: Props) {
+export default function HomeContent({ suggest_plant, plants, suggest_pot , pots ,suggest_port, ports, refreshData }: Props) {
     const [plantItems, setPlantItems] = useState<SlotItem[]>(() => {
         const filled = Array(6).fill(null);
         for (const plant of suggest_plant) {

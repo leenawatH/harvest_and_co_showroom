@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SinglePlantWithPotInCard, SinglePotInCard, Port, SinglePortInCard } from "@/lib/types/types";
 import { getSuggestedPots, getAllSinglePotInCard } from "@/lib/service/potService";
 import { getAllSinglePlantWithPotInCard, getSuggestedPlants } from "@/lib/service/plantService";
+import { getAllSinglePortInCard , getSuggestedPorts } from "@/lib/service/portService";
 
 import PlantTable from "@/components/AdminDashboard/Table/plantTable";
 import PotTable from "@/components/AdminDashboard/Table/potTable";
@@ -12,6 +13,7 @@ import PortTable from "@/components/AdminDashboard/Table/portTable";
 import HomeContent from "@/components/AdminDashboard/Table/homeContent";
 
 import { CircularProgress } from '@mui/material';
+
 
 
 const menuItems = ["Home Content", "Plant", "Pot", "Port"];
@@ -24,6 +26,7 @@ export default function AdminDashboard() {
   const [ports, setPorts] = useState<SinglePortInCard[]>([]);
   const [suggest_plant, setSuggestPlant] = useState<SinglePlantWithPotInCard[]>([]);
   const [suggest_pot, setSuggestPot] = useState<SinglePotInCard[]>([]);
+  const [suggest_port, setSuggestPort] = useState<SinglePortInCard[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,13 +39,22 @@ export default function AdminDashboard() {
     try {
       const fetchedPlants = await getAllSinglePlantWithPotInCard();
       const fetchedSuggestPlant = await getSuggestedPlants();
-      const fetchedSuggestPot = await getSuggestedPots();
+      
       const fetchedPots = await getAllSinglePotInCard();
+      const fetchedSuggestPot = await getSuggestedPots();
+
+      const fetchedPorts = await getAllSinglePortInCard();
+      const fetchedSuggestPort = await getSuggestedPorts();
 
       setPlants(fetchedPlants);
       setSuggestPlant(fetchedSuggestPlant);
-      setSuggestPot(fetchedSuggestPot);
+      
       setPots(fetchedPots);
+      setSuggestPot(fetchedSuggestPot);
+
+      setPorts(fetchedPorts);
+      setSuggestPort(fetchedSuggestPort);
+
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -51,7 +63,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="fixed h-full flex overflow-hidden">
+    <div className="fixed h-full w-full flex overflow-hidden">
       {/* Sidebar */}
       <aside className="w-[200px] h-full border-r p-4 flex-shrink-0 bg-white">
         <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
@@ -70,7 +82,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Scrollable Content */}
-      <main className="flex-1 overflow-y-auto pl-5 h-full">
+      <main className="flex-1 w-overflow-y-auto max-w-5xl pl-5 h-full">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <CircularProgress />
@@ -83,6 +95,8 @@ export default function AdminDashboard() {
                 plants={plants}
                 suggest_pot={suggest_pot}
                 pots={pots}
+                suggest_port={suggest_port}
+                ports={ports}
                 refreshData={fetchData}
               />
             )}

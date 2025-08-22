@@ -83,6 +83,7 @@ export interface Port {
     image_cover: string;
     description: string;
     is_suggested: number;
+    similar_port?: string[];
     port_bottom_groups: Port_Bottom_Groups[];
     port_middle_sections: Port_Middle_Sections[];
     file: File | null;
@@ -90,6 +91,7 @@ export interface Port {
 
 export interface Port_Middle_Sections {
     id: string;
+    port_id: string;
     title: string;
     detail: string;
     image_url: string;
@@ -100,13 +102,12 @@ export interface Port_Middle_Sections {
 export interface Port_Bottom_Groups {
     id: string;
     pattern: 1 | 2 | 3; // 1: pattern1, 2: pattern2, 3: pattern3
-    position: number;
-    port_bottom_images: Port_Bottom_Images[];
+    port_id: string;
+    image_url_1 : string;
+    image_url_2 : string;
+    image_url_3 : string;
+    file1: File | null;
+    file2: File | null;
+    file3: File | null;
 }
 
-export interface Port_Bottom_Images {
-    id: string;
-    position: number;
-    image_url: string;
-    file: File | null;
-}

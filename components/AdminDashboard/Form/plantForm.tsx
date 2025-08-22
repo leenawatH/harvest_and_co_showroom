@@ -312,7 +312,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl max-h-[calc(100vh-100px)] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 max-w-3xl pb-1 max-h-[calc(100vh-100px)] overflow-y-auto">
             {isPending && (
                 <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 z-50 flex items-center justify-center">
                     <CircularProgress />
@@ -558,13 +558,17 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 + Add Pot
             </button>
 
-            <div className="pt-6 flex justify-end gap-4">
+            {/* Bottom Floating Button */}
+            <div className="sticky bottom-0 bg-white pt-6 pb-4 flex justify-end gap-4 border-t mt-10 z-10">
                 {onCancel && (
                     <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">
                         Cancel
                     </button>
                 )}
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
                     Save
                 </button>
             </div>

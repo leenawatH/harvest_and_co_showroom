@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       location,
       description,
       image_cover,
-      is_suggested,
+      is_suggested
     `);
 
   if (onlySuggested) {
@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const body = await req.json();
+  console.log("🔧 body : " + body);
   const { data, error } = await supabase.from('port').insert(body).select();
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

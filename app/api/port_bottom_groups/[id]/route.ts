@@ -22,7 +22,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // ✅ อนุญาตเฉพาะ field ที่ database มีจริง
     const allowedFields = [
         'pattern',
-        'position',
+        'image_url_1',
+        'image_url_2',
+        'image_url_3',
     ];
 
     const cleanData = Object.fromEntries(

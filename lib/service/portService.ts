@@ -1,5 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
-import { Port , Port_Middle_Sections, Port_Bottom_Groups , Port_Bottom_Images, SinglePortInCard } from '@/lib/types/types';
+import { Port , Port_Middle_Sections, Port_Bottom_Groups , SinglePortInCard } from '@/lib/types/types';
 
 export async function getAllPort(): Promise<Port[]> {
   const res = await fetch(`${getBaseUrl()}/api/port`);
@@ -167,7 +167,9 @@ export async function addNewPortBottomGroups(data: Port_Bottom_Groups): Promise<
   const newData = { 
     id : data.id,
     pattern : data.pattern,
-    position: data.position,
+    image_url_1: data.image_url_1,
+    image_url_2: data.image_url_2,
+    image_url_3: data.image_url_3,
   };
 
   console.log("newData");
@@ -205,46 +207,3 @@ export async function deletePortBottomGroups(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete port');
 }
 
-//New Bottom Image
-export async function addNewPortBottomImages(data: Port_Bottom_Images): Promise<Port_Bottom_Images> {
-
-  const newData = { 
-    id : data.id,
-    position: data.position,
-    image_url: data.image_url,
-  };
-
-  console.log("newData");
-  console.log(newData);
-  console.log(JSON.stringify(newData));
-  
-  const res = await fetch(`${getBaseUrl()}/api/port_bottom_images`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newData),
-  });
-  if (!res.ok) throw new Error('Failed to add port');
-  return res.json();
-}
-
-// ✅ UPDATE Bottom Image
-export async function updatePortBottomImages(data: Port_Bottom_Images): Promise<Port_Bottom_Images> {
-  console.log("data" + data);
-  //Edit port Info
-  const res = await fetch(`${getBaseUrl()}/api/port_bottom_images/${data.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update port');
-  return res.json();
-}
-
-// ✅ DELETE Bottom Image
-export async function deletePortBottomImages(id: string): Promise<void> {
-  const res = await fetch(`${getBaseUrl()}/api/port_bottom_images/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
-  if (!res.ok) throw new Error('Failed to delete port');
-}
