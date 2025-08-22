@@ -330,6 +330,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     type="text"
                     value={plant.name || ''}
                     onChange={(e) => handleChangePlant('name', e.target.value)}
+                    disabled={initialData !== ""}
                     className="w-full border px-3 py-2"
                 />
             </div>

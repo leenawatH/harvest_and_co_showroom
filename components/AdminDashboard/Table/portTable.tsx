@@ -119,32 +119,28 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                                         deletedPort_bottom_group,
                                         }) => {
                         setIsLoading(true);
-                        console.log("finalUpdatePortData : " + finalUpdatePortData);
-                        console.log("newPort_middle_sections : " + newPort_middle_sections);
-                        console.log("updatedPort_middle_sections : " + updatedPort_middle_sections);
-                        console.log("deletedPort_middle_sections : " + deletedPort_middle_sections);
-                        console.log("newPort_bottom_group : " + newPort_bottom_group);
-                        console.log("updatedPort_bottom_group : " + updatedPort_bottom_group);
-                        console.log("deletedPort_bottom_group : " + deletedPort_bottom_group);
                         if (finalUpdatePortData) {
                           if (editingPortId === "") {
                             // สร้าง Port ใหม่
                             const Port = await addNewPort(finalUpdatePortData);
+                            console.log("Port created with ID:", Port.id);
 
                             // ตั้งค่า Port_id ให้กับ new port หลังจากสร้าง Port
-                            if (newPort_middle_sections != null) {
+                            if (newPort_middle_sections) {
                               for (const midsection of newPort_middle_sections) {
-                                midsection.Port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
+                                
+                                midsection.port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
+                                  console.log("Adding new middle :", midsection);
                                   await addNewPortMiddleSections(midsection);
                                 } catch (error) {
                                   console.error("Error adding new pot option:", error);
                                 }
                               }
                             }
-                            if (newPort_bottom_group != null) {
+                            if (newPort_bottom_group) {
                               for (const botgroup of newPort_bottom_group) {
-                                botgroup.Port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
+                                botgroup.port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
                                   await addNewPortBottomGroups(botgroup);
                                 } catch (error) {
@@ -158,7 +154,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
 
                             if (newPort_middle_sections != null) {
                               for (const midsection of newPort_middle_sections) {
-                                midsection.Port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
+                                midsection.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
                                   await addNewPortMiddleSections(midsection);
                                 } catch (error) {
@@ -166,9 +162,9 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                                 }
                               }
                             }
-                            if (newPort_bottom_group != null) {
+                            if (newPort_bottom_group) {
                               for (const botgroup of newPort_bottom_group) {
-                                botgroup.Port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
+                                botgroup.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
                                   await addNewPortBottomGroups(botgroup);
                                 } catch (error) {
@@ -180,9 +176,9 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                           }
                         } else {
                           // ถ้าไม่มีการอัปเดต Port ก็ใช้ editingPortId สำหรับ Port_id
-                          if (newPort_middle_sections != null) {
+                          if (newPort_middle_sections) {
                               for (const midsection of newPort_middle_sections) {
-                                midsection.Port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
+                                midsection.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
                                   await addNewPortMiddleSections(midsection);
                                 } catch (error) {
@@ -190,9 +186,9 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                                 }
                               }
                             }
-                            if (newPort_bottom_group != null) {
+                            if (newPort_bottom_group) {
                               for (const botgroup of newPort_bottom_group) {
-                                botgroup.Port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
+                                botgroup.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
                                 try {
                                   await addNewPortBottomGroups(botgroup);
                                 } catch (error) {
@@ -201,7 +197,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                               }
                             }
                         }
-                        if (updatedPort_middle_sections != null) {
+                        if (updatedPort_middle_sections) {
                           for (const midsection of updatedPort_middle_sections) {
                             try {
                               await updatePortMiddleSections(midsection);
@@ -212,7 +208,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                           }
 
                         }
-                        if (updatedPort_bottom_group != null) {
+                        if (updatedPort_bottom_group) {
                           for (const botgroup of updatedPort_bottom_group) {
                             try {
                               await updatePortBottomGroups(botgroup);

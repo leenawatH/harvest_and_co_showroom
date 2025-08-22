@@ -69,12 +69,11 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
                 setPort(portData);
                 setOriginalPort(portData);
 
-                setPort_middle_sections(portData?.port_middle_sections || []);
-                setOriginalPort_middle_sections(portData?.port_middle_sections || []);
-
-                setPort_bottom_groups(portData?.port_bottom_groups || []);
-                setOriginalPort_bottom_groups(portData?.port_bottom_groups || []);
-
+                setPort_middle_sections(JSON.parse(JSON.stringify(portData.port_middle_sections ?? [])));
+                setOriginalPort_middle_sections(JSON.parse(JSON.stringify(portData.port_middle_sections ?? [])));
+              
+                setPort_bottom_groups(JSON.parse(JSON.stringify(portData.port_bottom_groups ?? [])));
+                setOriginalPort_bottom_groups(JSON.parse(JSON.stringify(portData.port_bottom_groups ?? [])));
 
                 setAllPorts(portList);
 
@@ -88,23 +87,23 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
         fetchData();
     }, [initialData]);
 
-    async function handleChangePort(field: keyof Port, value: string) {
+    function handleChangePort(field: keyof Port, value: string) {
         if (!port) return;
-        await setPort({ ...port, [field]: value });
+        setPort({ ...port, [field]: value });
     }
 
-    async function handleChangePort_Middle_Sections(index: number, field: keyof Port_Middle_Sections, value: any) {
+    function handleChangePort_Middle_Sections(index: number, field: keyof Port_Middle_Sections, value: any) {
         const updated = [...port_middle_sections];
         if (field == 'image_url') {
-            await setDeleteImages(prev => [...prev, port_middle_sections[index].image_url]);
+            setDeleteImages(prev => [...prev, port_middle_sections[index].image_url]);
         }
         (updated[index] as any)[field] = value;
-        await setPort_middle_sections(updated);
+        setPort_middle_sections(updated);
     }
-    async function handleChangePort_Bottom_Groups(index: number, field: keyof Port_Bottom_Groups, value: any) {
+    function handleChangePort_Bottom_Groups(index: number, field: keyof Port_Bottom_Groups, value: any) {
         const updated = [...port_bottom_groups];
         (updated[index] as any)[field] = value;
-        await setPort_bottom_groups(updated);
+        setPort_bottom_groups(updated);
     }
 
     function addPort_Middle_Sections() {
@@ -136,13 +135,13 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
         }]);
     }
 
-    async function removeMiddleSection(index: number, port_middle_section_Id: string | null) {
+    function removeMiddleSection(index: number, port_middle_section_Id: string | null) {
         if (port_middle_section_Id != null) {
-            await setDeleteImages(prev => [...prev, port_middle_sections[index].image_url]);
+            setDeleteImages(prev => [...prev, port_middle_sections[index].image_url]);
         }
         const updated = [...port_middle_sections];
         updated.splice(index, 1);
-        await setPort_middle_sections(updated);
+        setPort_middle_sections(updated);
     }
 
     async function removeBottomGroup(groupIdx: number) {
@@ -150,20 +149,20 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
         const groupToRemove = updatedGroups.splice(groupIdx, 1)[0];
         // ลบ port_bottom_images ของกลุ่มนี้ด้วย
         if (port_bottom_groups[groupIdx].image_url_1.startsWith("https://")) {
-            await setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_1]);
+            setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_1]);
         }
         if (port_bottom_groups[groupIdx].image_url_2.startsWith("https://")) {
-            await setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_2]);
+            setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_2]);
         }
         if (port_bottom_groups[groupIdx].image_url_3.startsWith("https://")) {
-            await setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_3]);
+            setDeleteImages(prev => [...prev, port_bottom_groups[groupIdx].image_url_3]);
         }
 
 
-        await setPort_bottom_groups(updatedGroups);
+        setPort_bottom_groups(updatedGroups);
     }
 
-    const handleSelectSimilarChange = async (
+    const handleSelectSimilarChange = (
         event: React.ChangeEvent<HTMLInputElement> | (Event & { target: { value: string[]; name?: string } }),
         child?: React.ReactNode
     ) => {
@@ -172,9 +171,9 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
                 ? event.target.value.split(',')
                 : (event.target.value as string[]);
         if (value.length <= 3) {
-            await setSelectedSimilar(value);
+            setSelectedSimilar(value);
             if (port) {
-                await setPort({ ...port, similar_port: value });
+                setPort({ ...port, similar_port: value });
             }
         }
     };
@@ -193,80 +192,52 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
         handleChangePort_Bottom_Groups(groupIdx, "pattern", pattern);
 
     };
-// onChange={async (e) => {
-                                //     const file = e.target.files?.[0];
-                                //     if (!file) return;
-                                //     const previewUrl = URL.createObjectURL(file);
-                                //     handleChangePort_Middle_Sections(index, "image_url", previewUrl);
-                                //     handleChangePort_Middle_Sections(index, "file", file);
-                                //     // const updated = [...port.port_middle_sections];
-                                //     // updated[index].image_url = previewUrl;
-                                //     // updated[index].file = file;
-                                //     // setPort({ ...port, port_middle_sections: updated });
-                                // }} 
-
-    // onChange={(e) => {
-    //                                                 const file = e.target.files?.[0];
-    //                                                 if (!file) return;
-
-    //                                                 const previewUrl = URL.createObjectURL(file);
-    //                                                 if (imgIdx === 0) {
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'image_url_1', previewUrl);
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'file1', file);
-    //                                                 } else if (imgIdx === 1) {
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'image_url_2', previewUrl);
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'file2', file);
-    //                                                 } else {
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'image_url_3', previewUrl);
-    //                                                     handleChangePort_Bottom_Groups(groupIdx, 'file3', file);
-    //                                                 }
-
-    //                                             }}
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, imgID: number , index: number , type: string) => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, imgID: number, index: number, type: string) => {
         const file = e.target.files?.[0];
-        console.log("file : " + file);
         if (file) {
-            console.log("In if ");
             if (type === 'cover') {
-                console.log("In cover ");
-                if (port && port.image_cover != null) {
-                    setDeleteImages(prev => [...prev, port.image_cover]);
+                if (port) {
+                    if (port.image_cover && !port.image_cover.includes('blob')) {
+                        setDeleteImages(prev => [...prev, port.image_cover]);
+                    }
                     const previewUrl = URL.createObjectURL(file);
-                    console.log("previewUrl : " + previewUrl);
                     setPort({ ...port, image_cover: previewUrl, file: file });
                 }
 
-            }else if (type === 'middle') {
-                if(port_middle_sections[index].image_url != null) {
+            } else if (type === 'middle') {
+                if (port_middle_sections[index].image_url && !port_middle_sections[index].image_url.includes('blob')) {
                     setDeleteImages(prev => [...prev, port_middle_sections[index].image_url]);
                 }
                 const previewUrl = URL.createObjectURL(file);
                 handleChangePort_Middle_Sections(index, "image_url", previewUrl);
                 handleChangePort_Middle_Sections(index, "file", file);
-            }else if (type === 'bottom') {
-                if(imgID === 0) {
-                    if (port_bottom_groups[index].image_url_1 != null) {
+            } else if (type === 'bottom') {
+                if (imgID === 0) {
+                    if (port_bottom_groups[index].image_url_1 && !port_bottom_groups[index].image_url_1.includes('blob')) {
                         setDeleteImages(prev => [...prev, port_bottom_groups[index].image_url_1]);
                     }
                     const previewUrl = URL.createObjectURL(file);
                     handleChangePort_Bottom_Groups(index, 'image_url_1', previewUrl);
+                    handleChangePort_Bottom_Groups(index, "file1", file);
                 }
-                if(imgID === 1) {
-                    if (port_bottom_groups[index].image_url_2 != null) {
+                if (imgID === 1) {
+                    if (port_bottom_groups[index].image_url_2 && !port_bottom_groups[index].image_url_2.includes('blob')) {
                         setDeleteImages(prev => [...prev, port_bottom_groups[index].image_url_2]);
                     }
                     const previewUrl = URL.createObjectURL(file);
                     handleChangePort_Bottom_Groups(index, 'image_url_2', previewUrl);
+                    handleChangePort_Bottom_Groups(index, "file2", file);
                 }
-                if(imgID === 2) {
-                    if (port_bottom_groups[index].image_url_3 != null) {
+                if (imgID === 2) {
+                    if (port_bottom_groups[index].image_url_3 && !port_bottom_groups[index].image_url_3.includes('blob')) {
                         setDeleteImages(prev => [...prev, port_bottom_groups[index].image_url_3]);
                     }
                     const previewUrl = URL.createObjectURL(file);
                     handleChangePort_Bottom_Groups(index, 'image_url_3', previewUrl);
+                    handleChangePort_Bottom_Groups(index, "file3", file);
                 }
             }
-            
+
         }
     };
 
@@ -337,8 +308,11 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
             }
         });
 
-        // ลบ Pot Pair ที่ถูกลบ
+        console.log('📦 DELETE IMAGES:', deleteImages);
+
         await Promise.all(deleteImages.map(async (url) => {
+            console.log("🔧 Deleting image:", url);
+            if (url == "") return;
             if (url.includes('blob')) return; // Ignore blob URLs
             const urlParts = url.split('Port');
             const public_id = "Port" + urlParts[urlParts.length - 1].split('.')[0];
@@ -350,6 +324,9 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
         await Promise.all(bottomPromises);
 
         const newPort_middle_sections = port_middle_sections.filter(p => !p.id);
+
+        console.log('originalPort_middle_sections', originalPort_middle_sections);
+        console.log('port_middle_sections', port_middle_sections);
 
         const updatedPort_middle_sections = port_middle_sections.filter(p => {
             const original = originalPort_middle_sections.find(o => o.id === p.id);
@@ -487,7 +464,7 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
             {/* Title */}
             <div>
                 <label className="block text-sm font-medium mb-1">Title</label>
-                <input type="text" value={port?.title || ''} onChange={(e) => handleChangePort('title', e.target.value)} className="w-full border px-3 py-2" />
+                <input type="text" value={port?.title || ''} onChange={(e) => handleChangePort('title', e.target.value)} disabled={initialData !== ""} className="w-full border px-3 py-2" />
             </div>
 
             {/* Location */}
@@ -509,7 +486,7 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
                     <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleImageChange(e, 0, 0 , 'cover')}
+                        onChange={(e) => handleImageChange(e, 0, 0, 'cover')}
                         className="w-full border px-3 py-2"
                     />
                 </div>
@@ -571,23 +548,17 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
                         <div key={index} className="border p-4 mb-4 rounded flex gap-6">
                             <div className="w-1/2 space-y-2">
                                 <input type="text" placeholder="Section Title" value={port_ms.title} onChange={(e) => {
-                                    handleChangePort_Middle_Sections(index, "title", e.target.value)
-                                    // const updated = [...port.port_middle_sections];
-                                    // updated[index].title = e.target.value;
-                                    // setPort({ ...port, port_middle_sections: updated });
+                                    handleChangePort_Middle_Sections(index, "title", e.target.value);
                                 }} className="w-full border px-3 py-2" />
                                 <textarea placeholder="Section Detail" value={port_ms.detail} onChange={(e) => {
-                                    handleChangePort_Middle_Sections(index, "detail", e.target.value)
-                                    // const updated = [...port.port_middle_sections];
-                                    // updated[index].detail = e.target.value;
-                                    // setPort({ ...port, port_middle_sections: updated });
+                                    handleChangePort_Middle_Sections(index, "detail", e.target.value);
                                 }} rows={4} className="w-full border px-3 py-2" />
                             </div>
                             <div className="w-1/2 space-y-2">
                                 <label className="block text-sm font-medium">Section Image</label>
-                                <input type="file" accept="image/*" 
-                                onChange={(e) => handleImageChange(e,0, index , 'middle')}
-                                className="w-full" />
+                                <input type="file" accept="image/*"
+                                    onChange={(e) => handleImageChange(e, 0, index, 'middle')}
+                                    className="w-full" />
                                 {port_ms.image_url ? (
                                     <img src={port_ms.image_url} alt={`Middle Section ${index + 1}`} className="w-full h-48 object-cover border rounded" />
                                 ) : (
@@ -650,7 +621,7 @@ export default function PortForm({ initialData, onSubmit, onCancel }: PortFormPr
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e) => handleImageChange(e , imgIdx  ,groupIdx , 'bottom')}
+                                                onChange={(e) => handleImageChange(e, imgIdx, groupIdx, 'bottom')}
                                                 className="w-full border px-3 py-2"
                                             />
                                         </div>

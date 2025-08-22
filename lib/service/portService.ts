@@ -1,5 +1,6 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 import { Port , Port_Middle_Sections, Port_Bottom_Groups , SinglePortInCard } from '@/lib/types/types';
+import { Description } from '@mui/icons-material';
 
 export async function getAllPort(): Promise<Port[]> {
   const res = await fetch(`${getBaseUrl()}/api/port`);
@@ -65,11 +66,18 @@ export async function getSuggestedPorts() {
 
 // ✅ เพิ่มใหม่
 export async function addNewPort(data: Port): Promise<Port> {
-  console.log("data" + data.title);
+  const newData = { 
+    //id : data.id,
+    title : data.title,
+    location: data.location,
+    image_cover: data.image_cover,
+    description: data.description,
+    similar_port: data.similar_port,
+  };
   const res = await fetch(`${getBaseUrl()}/api/port`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(newData),
   });
   if (!res.ok) throw new Error('Failed to add port');
   return res.json();
@@ -114,21 +122,17 @@ export async function deletePort(id: string): Promise<void> {
   });
   if (!res.ok) throw new Error('Failed to delete port');
 }
-
 //New Middle Section
 export async function addNewPortMiddleSections(data: Port_Middle_Sections): Promise<Port_Middle_Sections> {
 
   const newData = { 
-    id : data.id,
+    //id : data.id,
+    port_id : data.port_id,
     title : data.title,
     detail: data.detail,
     image_url: data.image_url,
     position: data.position,
   };
-
-  console.log("newData");
-  console.log(newData);
-  console.log(JSON.stringify(newData));
   
   const res = await fetch(`${getBaseUrl()}/api/port_middle_sections`, {
     method: 'POST',
@@ -141,7 +145,6 @@ export async function addNewPortMiddleSections(data: Port_Middle_Sections): Prom
 
 // ✅ UPDATE Middle Section
 export async function updatePortMiddleSections(data: Port_Middle_Sections): Promise<Port_Middle_Sections> {
-  console.log("data" + data);
   //Edit port Info
   const res = await fetch(`${getBaseUrl()}/api/port_middle_sections/${data.id}`, {
     method: 'PUT',
@@ -165,16 +168,13 @@ export async function deletePortMiddleSections(id: string): Promise<void> {
 export async function addNewPortBottomGroups(data: Port_Bottom_Groups): Promise<Port_Bottom_Groups> {
 
   const newData = { 
-    id : data.id,
+    //id : data.id,
     pattern : data.pattern,
+    port_id : data.port_id,
     image_url_1: data.image_url_1,
     image_url_2: data.image_url_2,
     image_url_3: data.image_url_3,
   };
-
-  console.log("newData");
-  console.log(newData);
-  console.log(JSON.stringify(newData));
   
   const res = await fetch(`${getBaseUrl()}/api/port_bottom_groups`, {
     method: 'POST',

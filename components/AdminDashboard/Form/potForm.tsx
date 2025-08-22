@@ -311,6 +311,7 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
                     type="text"
                     value={pot.name || ''}
                     onChange={(e) => handleChangePot('name', e.target.value)}
+                    disabled={initialData !== ""}
                     className="w-full border px-3 py-2"
                 />
             </div>

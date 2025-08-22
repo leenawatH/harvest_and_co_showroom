@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const body = await req.json();
+  console.log("🔧 body : " + JSON.stringify(body, null, 2));
 
   const { data, error } = await supabase.from('port_middle_sections').insert(body).select();
 
