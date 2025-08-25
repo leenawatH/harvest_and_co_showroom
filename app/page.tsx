@@ -11,14 +11,16 @@ import { getTransformedImage } from '@/components/ImageUrl_Transformed';
 import { topPickItems, potItems, bigTreeItems, portfolioItems } from '@/components/Homepage_data/data';
 import { getSuggestedPlants } from '@/lib/service/plantService';
 import { getSuggestedPots } from '@/lib/service/potService';
+import { getSuggestedPorts } from '@/lib/service/portService';
 
-import { SinglePlantWithPotInCard, SinglePotInCard } from '@/lib/types/types';
+import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from '@/lib/types/types';
 import { useEffect, useState } from 'react';
 
 
 export default function HomePage() {
     const [suggestedPlant, setSuggestedPlant] = useState<SinglePlantWithPotInCard[]>([]);
-    const [suggestedPot, setSuggestedPot] = useState<SinglePlantWithPotInCard[]>([]);
+    const [suggestedPot, setSuggestedPot] = useState<SinglePotInCard[]>([]);
+    const [suggestedPort, setSuggestedPort] = useState<SinglePortInCard[]>([]);
 
 
     const topPickScroll = HorizontalScroll(450);
@@ -30,8 +32,10 @@ export default function HomePage() {
         const fetchData = async () => {
             const plant = await getSuggestedPlants();
             const pot = await getSuggestedPots();
+            const port = await getSuggestedPorts();
             setSuggestedPot(pot);
             setSuggestedPlant(plant);
+            setSuggestedPort(port);
         };
         fetchData();
     }, []);
@@ -334,18 +338,18 @@ export default function HomePage() {
                             className="overflow-y-hidden scroll-smooth"
                         >
                             <div className="flex gap-6 min-w-max">
-                                {portfolioItems.map(([url, name, describe]) => (
-                                    <Link key={decodeURIComponent(name)} href={`/port/${name}`} className="flex-shrink-0 w-[0px] md:w-[420px]">
+                                {suggestedPort.map((port , index) => (
+                                    <Link key={decodeURIComponent(port.title)} href={`/port/${port.id}`} className="flex-shrink-0 w-[0px] md:w-[420px]">
                                         <div className="overflow-hidden hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full aspect-[3/2] overflow-hidden mb-2">
                                                 <img
-                                                    src={url}
-                                                    alt={decodeURIComponent(name)}
-                                                    className="w-full h-full object-cover"
+                                                    src={port.image_cover}
+                                                    alt={decodeURIComponent(port.title)}
+                                                    className="w-full h-full object-cover" 
                                                 />
                                             </div>
-                                            <h2 className="text-lg font-semibold px-4">{decodeURIComponent(name)}</h2>
-                                            <p className="text-sm text-gray-600 px-4 mb-2">{describe}</p>
+                                            <h2 className="text-lg font-semibold px-4">{decodeURIComponent(port.title)}</h2>
+                                            <p className="text-sm text-gray-600 px-4 mb-2">{port.location}</p>
                                         </div>
                                     </Link>
                                 ))}

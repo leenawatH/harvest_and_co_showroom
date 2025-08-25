@@ -120,7 +120,7 @@ export default function PotFilterClient({ pots }: { pots: SinglePotInCard[] }) {
                         const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
                         return (
-                            <Link key={item.id} href={`/product/plant/${slug}`} className="h-full">
+                            <Link key={item.id} href={`/product/pot/${slug}`} className="h-full">
                                 <div className="w_[150px] hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                     <img
                                         src={imageUrl}

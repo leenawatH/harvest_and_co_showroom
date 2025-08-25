@@ -20,9 +20,6 @@ export default function PlantFilterClient({ plants }: { plants: SinglePlantWithP
         setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    function valuetext(value: number, index: number): string {
-        return `${value}"`;
-    }
     const [valuePriceSilde, setPriceValueSilde] = useState<number[]>([500, 15000]);
 
     function handlePriceSlideChange(event: Event, newValue: number | number[]) {
@@ -189,15 +186,13 @@ export default function PlantFilterClient({ plants }: { plants: SinglePlantWithP
                         // ❌ ถ้าไม่มี URL ข้ามการ render ไปเลย
                         if (!item.url) return null;
 
-                        const imageUrl = item.url;
-                        const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
 
                         return (
-                            <Link key={item.id} href={`/product/plant/${slug}`} className="h-full">
+                            <Link key={item.id} href={`/product/plant/${item.id}`} className="h-full">
                                 <div className="w_[150px] hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                     <img
-                                        src={getTransformedImageUrl(item.height, imageUrl)}
+                                        src={getTransformedImageUrl(item.height, item.url)}
                                         alt={item.name}
                                         className="w-full h-[400px] object-contain mb-4"
                                     />
