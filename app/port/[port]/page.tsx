@@ -8,6 +8,7 @@ import { getPortById } from '@/lib/service/portService';
 
 import Port_Templete_Title from '@/components/Templete_Port_Component/Port_Templete_Title';
 import Port_Templete_Component from '@/components/Templete_Port_Component/Port_Templete_Component';
+import { CircularProgress } from '@mui/material';
 
 export default function PortfolioDetailPage() {
   const params = useParams();
@@ -35,13 +36,7 @@ export default function PortfolioDetailPage() {
     fetchDataPort();
   }, [params]);
 
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </main>
-    );
-  }
+  if (loading) return <main className="min-h-screen flex items-center justify-center"><CircularProgress /></main>;
 
   if (error || !port) {
     return (

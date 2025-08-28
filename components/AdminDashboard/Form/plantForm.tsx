@@ -136,19 +136,19 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     const handleSelectSimilarChange = (
         event: React.ChangeEvent<HTMLInputElement> | (Event & { target: { value: string[]; name?: string } }),
-        child?: React.ReactNode
     ) => {
         const value =
-            typeof event.target.value === 'string'
-                ? event.target.value.split(',')
-                : (event.target.value as string[]);
-        if (value.length <= 3) {
-            setSelectedSimilar(value);
-            if (plant) {
-                setPlant({ ...plant, similar_plant: value }); // Update similar_plant_ids in plant
-            }
-        }
+            typeof (event as any).target.value === 'string'
+                ? (event as any).target.value.split(',')
+                : ((event as any).target.value as string[]);
+
+        // จำกัดสูงสุด 3 อัน
+        const ids = value.slice(0, 3);
+
+        setSelectedSimilar(ids);
+        setPlant(prev => (prev ? { ...prev, similar_plant: ids } : prev));
     };
+
 
     const handleAdditionImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const file = e.target.files?.[0];
@@ -346,6 +346,16 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             </div>
 
             <div>
+                <label className="block text-sm font-medium mb-1">Width</label>
+                <input
+                    type="text"
+                    value={plant.width || ''}
+                    onChange={(e) => handleChangePlant('width', e.target.value)}
+                    className="w-full border px-3 py-2"
+                />
+            </div>
+
+            <div>
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
                     type="text"
@@ -451,18 +461,21 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     value={selectedSimilar}
                     onChange={handleSelectSimilarChange}
                     input={<OutlinedInput label="Similar Plants" />}
-                    renderValue={(selected) => selected.join(', ')}
+                    renderValue={(selected) =>
+                        (selected as string[])
+                            .map(id => allPlants.find(p => p.id === id)?.name ?? id)
+                            .join(', ')
+                    }
                     MenuProps={MenuProps}
                 >
-                    {allPlants.map((plant) => (
-                        <MenuItem key={plant.id} value={plant.name}>
-                            <Checkbox checked={selectedSimilarSet.has(plant.name)} />
-                            <ListItemText primary={plant.name} />
+                    {allPlants.map((p) => (
+                        <MenuItem key={p.id} value={p.id}>
+                            <Checkbox checked={selectedSimilarSet.has(p.id)} />
+                            <ListItemText primary={p.name} />
                         </MenuItem>
                     ))}
                 </Select>
             </FormControl>
-
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Matched Pots</h3>
             {potPairs.map((pair, index) => (

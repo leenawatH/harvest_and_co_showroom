@@ -13,6 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           id,
           name,
           height,
+          width,
           price,
           is_suggested,
           addition_img,
@@ -43,6 +44,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     'name',
     'price',
     'height',
+    'width',
     'similar_plant',
     'addition_img',
     'is_suggested'

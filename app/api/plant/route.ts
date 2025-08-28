@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
       id,
       name,
       height,
+      width,
       price,
       is_suggested,
       plant_pot_options (
@@ -38,6 +39,7 @@ export async function GET(req: NextRequest) {
       id: plant.id,
       name: plant.name,
       height: plant.height,
+      width: plant.width,
       price: plant.price,
       is_suggested: plant.is_suggested,
       url: cover?.url,

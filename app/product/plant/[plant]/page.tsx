@@ -7,13 +7,22 @@ import Link from 'next/link';
 import { Color, Plant, plant_pot_options } from '@/lib/types/types';
 import { getPlantById } from '@/lib/service/plantService';
 import { getPotById } from '@/lib/service/potService';
+import { CircularProgress } from '@mui/material';
 
 type ColorChip = { color: Color; url: string };
+
 type PlantPot = {
   pot_id: string;
   pot_name?: string;
   height_with_pot: string;
   colors: ColorChip[]; // รวมจาก plant_pot_options ของ pot_id นั้น (unique ตาม color)
+};
+
+type SimilarPlant = {
+  id: string;
+  name: string;
+  height: number;
+  url: string;
 };
 
 export default function PlantDetail() {
@@ -23,6 +32,8 @@ export default function PlantDetail() {
   const [plantPots, setPlantPots] = useState<PlantPot[]>([]);
   const [selectedPotId, setSelectedPotId] = useState<string | null>(null);
   const [selectedColorUrl, setSelectedColorUrl] = useState<string | null>(null);
+
+  const [similar_plant, setSimilar_plant] = useState<SimilarPlant[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,11 +52,28 @@ export default function PlantDetail() {
         setPlant(data);
 
         const grouped = await groupOptionsByPotId(data.plant_pot_options ?? []);
+
+        const suggestedPotId =
+          (data.plant_pot_options ?? []).find(o => Boolean(o.is_suggested))?.pot_id ?? null;
+
+        grouped.sort((a, b) =>
+          Number(b.pot_id === suggestedPotId) - Number(a.pot_id === suggestedPotId)
+        );
+
         setPlantPots(grouped);
+
 
         if (grouped.length > 0) {
           setSelectedPotId(grouped[0].pot_id);
           setSelectedColorUrl(grouped[0].colors[0]?.url ?? null);
+        }
+
+        if (data.similar_plant) {
+          data.similar_plant.map(async (id) => {
+            const data = await getPlantById(id);
+            setSimilar_plant(prev => [...prev, { id: data.id, name: data.name, height: data.height, url: data?.plant_pot_options?.find(opt => opt.is_suggested === true)?.url ?? '' }]);
+
+          });
         }
       } catch (e: any) {
         console.error(e);
@@ -91,7 +119,7 @@ export default function PlantDetail() {
         group.colors.push({ color, url });
       }
 
-     
+
     }
 
     return Array.from(map.values());
@@ -120,20 +148,21 @@ export default function PlantDetail() {
   const colorToCss = (c: Color) => String(c); // enum ค่าเป็นชื่อสี css แล้ว: 'black' | 'white' | 'beige' | 'stone'
 
   // Cloudinary transform ตามความสูงพืช
-  const getTransformedImageUrl = (): string => {
-    if (!imageUrl || !plant) return imageUrl || '';
+  const getTransformedImageUrl = (Url: string): string => {
+    if (!Url || !plant) return Url || '';
     if (plant.height <= 150 && plant.height >= 100) {
-      return imageUrl.replace('/upload/', '/upload/c_crop,h_1000,g_south/');
+      return Url.replace('/upload/', '/upload/c_crop,h_1000,g_south/');
     } else if (plant.height < 100) {
-      return imageUrl.replace('/upload/', '/upload/c_crop,h_900,g_south/c_crop,w_600,h_600/');
+      return Url.replace('/upload/', '/upload/c_crop,h_900,g_south/c_crop,w_600,h_600/');
     } else if (plant.height <= 200 && plant.height >= 150) {
-      return imageUrl.replace('/upload/', '/upload/c_crop,h_1500,g_south/');
+      return Url.replace('/upload/', '/upload/c_crop,h_1500,g_south/');
     }
-    return imageUrl;
+    return Url;
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error || !plant) return <div className="p-6">No data</div>;
+  if (loading) return <main className="min-h-screen flex items-center justify-center"><CircularProgress /></main>;
+
+  if (error || !plant) return <main className="min-h-screen flex items-center justify-center"> No data</main>;
 
   return (
     <main className="min-h-screen flex flex-col items-center mt-15 mb-20 px-10">
@@ -147,12 +176,17 @@ export default function PlantDetail() {
           <p className="text-lg font-semibold mb-4">ราคา: {plant.price?.toLocaleString()} บาท</p>
 
           <div className="mb-2">
-            <span className="font-semibold">ขนาดต้นไม้:</span>
+            <span className="font-semibold">ความสูงต้นไม้:</span>
             <span className="ml-2 text-gray-700">: {plant.height} cm</span>
           </div>
 
           <div className="mb-2">
-            <span className="font-semibold">ขนาดรวมกระถาง:</span>
+            <span className="font-semibold">ความกว้างพุ่มไม้:</span>
+            <span className="ml-2 text-gray-700">: {plant.width} cm</span>
+          </div>
+
+          <div className="mb-2">
+            <span className="font-semibold">ความสูงรวมกระถาง:</span>
             <span className="ml-2 text-gray-700">: {selectedGroup?.height_with_pot ?? '-'} cm</span>
           </div>
 
@@ -175,9 +209,8 @@ export default function PlantDetail() {
               {plantPots.map((g) => (
                 <div
                   key={g.pot_id}
-                  className={`flex flex-col items-center cursor-pointer border rounded-lg p-2 min-w-[60px] ${
-                    selectedPotId === g.pot_id ? 'border-green-700 bg-green-50' : 'border-gray-200'
-                  }`}
+                  className={`flex flex-col items-center cursor-pointer border rounded-lg p-2 min-w-[60px] ${selectedPotId === g.pot_id ? 'border-green-700 bg-green-50' : 'border-gray-200'
+                    }`}
                   onClick={() => handlePotClick(g.pot_id)}
                 >
                   {/* ใช้รูปจากสีแรกของกระถางนั้น */}
@@ -204,9 +237,8 @@ export default function PlantDetail() {
                 <button
                   key={idx}
                   onClick={() => handleColorChange(chip)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                    imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
-                  } hover:opacity-70`}
+                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
+                    } hover:opacity-70`}
                   style={{ backgroundColor: colorToCss(chip.color) }}
                   title={String(chip.color)}
                 />
@@ -220,7 +252,7 @@ export default function PlantDetail() {
           <div className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
             {imageUrl ? (
               <img
-                src={getTransformedImageUrl()}
+                src={getTransformedImageUrl(imageUrl)}
                 alt={plant.name}
                 className="w-full h-full object-contain object-bottom transition-transform duration-300"
               />
@@ -235,9 +267,8 @@ export default function PlantDetail() {
               <button
                 key={idx}
                 onClick={() => handleColorChange(chip)}
-                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                  imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
-                } hover:opacity-70`}
+                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
+                  } hover:opacity-70`}
                 style={{ backgroundColor: colorToCss(chip.color) }}
                 title={String(chip.color)}
               />
@@ -258,25 +289,28 @@ export default function PlantDetail() {
       </section>
 
       {/* รูปตัวอย่าง 2 รูป */}
-      <div className="w-full max-w-6xl flex flex-col px-5 md:flex-row gap-10 bg-white rounded-xl p-6">
+      <div className="w-full max-w-6xl flex flex-col md:flex-row gap-10 bg-white mt-10 rounded-xl">
         <div className="flex-1 flex flex-col items-center">
           <div className="flex flex-row gap-4 w-full justify-center">
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden"
-              >
-                {imageUrl ? (
-                  <img
-                    src={plant.addition_img[i]}
-                    alt={plant.name}
-                    className="w-full h-full object-contain object-bottom transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="text-gray-400">No image available</div>
-                )}
-              </div>
-            ))}
+            {[0, 1].map((i) => {
+              const url = plant.addition_img?.[i] ?? null;
+              return (
+                <div
+                  key={i}
+                  className="w-full rounded-lg flex items-center justify-center mb-4 overflow-hidden"
+                >
+                  {url ? (
+                    <img
+                      src={url}
+                      alt={plant.name}
+                      className="w-full object-contain object-bottom transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="text-gray-400">No image available</div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -289,17 +323,17 @@ export default function PlantDetail() {
           <div className="relative">
             <div className="overflow-y-hidden scroll-smooth">
               <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
-                {[0, 1, 2].map((i) => (
+                {similar_plant.map((plant) => (
                   <Link
-                    key={i}
+                    key={plant.id}
                     href={`/product/plant/`}
                     className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5"
                   >
                     <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                       <div className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[460px] aspect-[3/4] rounded-lg flex items-center justify-center mb-4 overflow-hidden">
-                        {imageUrl ? (
+                        {plant.url ? (
                           <img
-                            src={getTransformedImageUrl()}
+                            src={getTransformedImageUrl(plant.url)}
                             alt={plant.name}
                             className="w-full h-full object-contain object-bottom transition-transform duration-300"
                           />

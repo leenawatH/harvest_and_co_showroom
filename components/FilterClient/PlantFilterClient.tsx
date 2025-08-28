@@ -1,191 +1,155 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Box, Slider, Checkbox, FormControlLabel } from "@mui/material";
 import { SinglePlantWithPotInCard } from "@/lib/types/types";
 import { getTransformedImage } from "@/components/ImageUrl_Transformed";
 
+type Bucket = { label: string; min: number; max: number };
+
+const HEIGHT_BUCKETS: Bucket[] = [
+    { label: "40-100", min: 40, max: 100 },
+    { label: "100-130", min: 100, max: 130 },
+    { label: "130-150", min: 130, max: 150 },
+    { label: "150-170", min: 150, max: 170 },
+    { label: "170-200", min: 170, max: 200 },
+    { label: "200+", min: 200, max: Infinity },
+];
+
+const WIDTH_BUCKETS: Bucket[] = [
+    { label: "20-40", min: 20, max: 40 },
+    { label: "40-60", min: 40, max: 60 },
+    { label: "60-80", min: 60, max: 80 },
+    { label: "80-100", min: 80, max: 100 },
+    { label: "100-120", min: 100, max: 120 },
+    { label: "120+", min: 120, max: Infinity },
+];
+
 export default function PlantFilterClient({ plants }: { plants: SinglePlantWithPotInCard[] }) {
 
+    const [selectedHeightLabels, setSelectedHeightLabels] = useState<string[]>([]);
+    const selectedHeightSet = useMemo(() => new Set(selectedHeightLabels), [selectedHeightLabels]);
+
+    const [selectedWidthLabels, setSelectedWidthLabels] = useState<string[]>([]);
+    const selectedWidthSet = useMemo(() => new Set(selectedWidthLabels), [selectedWidthLabels]);
+
     const [open, setOpen] = useState({
-        availability: false,
-        collection: false,
-        type: false,
-        price: false,
         height: false,
-        light: false,
+        width: false,
     });
 
     const toggleSection = (key: keyof typeof open) => {
         setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    const [valuePriceSilde, setPriceValueSilde] = useState<number[]>([500, 15000]);
+    const toggleHeightLabel = (label: string) => {
+        setSelectedHeightLabels((prev) =>
+            prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+        );
+    };
 
-    function handlePriceSlideChange(event: Event, newValue: number | number[]) {
-        setPriceValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
-    }
+    const toggleWidthLabel = (label: string) => {
+        setSelectedWidthLabels((prev) =>
+            prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+        );
+    };
 
-    const [valueHeightSilde, setHeightValueSilde] = useState<number[]>([20, 37]);
+    const inBucket = (value: number, bucket: Bucket) => {
+        if (bucket.max === Infinity) return value >= bucket.min;
+        return value >= bucket.min && value <= bucket.max;
+    };
 
-    function handleHeightSlideChange(event: Event, newValue: number | number[], activeThumb: number): void {
-        setHeightValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
-    }
+    const matchesSelectedHeights = (h: number) => {
+        if (selectedHeightSet.size === 0) return true;
+        return HEIGHT_BUCKETS.some((b) => selectedHeightSet.has(b.label) && inBucket(h, b));
+    };
+
+    const matchesSelectedWidths = (w: number) => {
+        if (selectedWidthSet.size === 0) return true;
+        return WIDTH_BUCKETS.some((b) => selectedWidthSet.has(b.label) && inBucket(w, b));
+    };
+
+    const filteredPlants = useMemo(
+        () => plants.filter((p) => {
+            return matchesSelectedHeights(p.height) && matchesSelectedWidths(p.width);
+        }),
+        [plants, selectedHeightSet, selectedWidthSet]
+    );
 
     const getTransformedImageUrl = (height: number, imageUrl: string): string => {
         if (!plants) return "";
         return getTransformedImage(height, imageUrl);
     }
 
-
     return (
         <main className="min-h-screen mt-20 mx-10 mb-10 px-5 py-6 flex flex-col lg:flex-row gap-8">
             <aside className="w-full lg:w-[180px] space-y-6 ml-4 mt-5">
                 <h2 className="text-lg font-bold mb-1">Filter</h2>
 
-                {/* Availability */}
-                <div>
-                    <button
-                        onClick={() => toggleSection('availability')}
-                        className="w-full text-left border-b pb-3 font-medium"
-                    >
-                        Availability {open.availability ? '−' : '+'}
-                    </button>
-                    {open.availability && (
-                        <div className="pl-2 pt-2 space-y-1">
-                            <FormControlLabel
-                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
-                                label="In stock"
-                            />
-                            <FormControlLabel
-                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
-                                label="Out of stock"
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Price */}
-                <div>
-                    <button
-                        onClick={() => toggleSection('price')}
-                        className="w-full text-left border-b pb-3 font-medium"
-                    >
-                        Price {open.price ? '−' : '+'}
-                    </button>
-                    {open.price && (
-                        <Box
-                            sx={{
-                                p: 2,
-                                mt: 2,
-                                width: '100%',
-                                maxWidth: 220,
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                <span>{valuePriceSilde[0]} ฿</span>
-                                <span>{valuePriceSilde[1]} ฿</span>
-                            </Box>
-                            <Slider
-                                getAriaLabel={() => 'Price range'}
-                                value={valuePriceSilde}
-                                onChange={handlePriceSlideChange}
-                                valueLabelDisplay="auto"
-                                min={500}
-                                max={15000}
-                                sx={{
-                                    color: 'black',
-                                    '& .MuiSlider-thumb': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-track': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-rail': {
-                                        backgroundColor: '#ccc',
-                                    },
-                                }}
-                            />
-                        </Box>
-                    )}
-                </div>
-
-
-                {/* Plant Collection */}
-                <div>
-                    <button
-                        onClick={() => toggleSection('collection')}
-                        className="w-full text-left border-b pb-3 font-medium"
-                    >
-                        Plant Collection {open.collection ? '−' : '+'}
-                    </button>
-                    {open.collection && (
-                        <div className="pl-2 pt-2 space-y-1">
-                            <FormControlLabel
-                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
-                                label="Collection 1"
-                            />
-                            <FormControlLabel
-                                control={<Checkbox sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
-                                label="Collection 2"
-                            />
-                        </div>
-                    )}
-                </div>
-
                 {/* Height */}
                 <div>
                     <button
-                        onClick={() => toggleSection('height')}
+                        onClick={() => toggleSection("height")}
                         className="w-full text-left border-b pb-3 font-medium"
                     >
-                        Height {open.height ? '−' : '+'}
+                        ความสูงต้นไม้ {open.height ? "−" : "+"}
                     </button>
                     {open.height && (
-                        <Box
-                            sx={{
-                                p: 2,
-                                mt: 2,
-                                width: '100%',
-                                maxWidth: 220,
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                <span>{valueHeightSilde[0]} cm</span>
-                                <span>{valueHeightSilde[1]} cm</span>
-                            </Box>
-                            <Slider
-                                getAriaLabel={() => 'Size range'}
-                                value={valueHeightSilde}
-                                onChange={handleHeightSlideChange}
-                                valueLabelDisplay="auto"
-                                min={20}
-                                max={250}
-                                sx={{
-                                    color: 'black',
-                                    '& .MuiSlider-thumb': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-track': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-rail': {
-                                        backgroundColor: '#ccc',
-                                    },
-                                }}
-                            />
-                        </Box>
+                        <div className="pl-2 pt-2 space-y-1">
+                            {HEIGHT_BUCKETS.map((b) => (
+                                <FormControlLabel
+                                    key={b.label}
+                                    control={
+                                        <Checkbox
+                                            sx={{ color: "black", "&.Mui-checked": { color: "black" } }}
+                                            checked={selectedHeightSet.has(b.label)}
+                                            onChange={() => toggleHeightLabel(b.label)}
+                                        />
+                                    }
+                                    label={b.label}
+                                />
+                            ))}
+                        </div>
                     )}
                 </div>
+
+                {/* Width */}
+                <div>
+                    <button
+                        onClick={() => toggleSection("width")}
+                        className="w-full text-left border-b pb-3 font-medium"
+                    >
+                        ความกว้างพุ่ม {open.width ? "−" : "+"}
+                    </button>
+                    {open.width && (
+                        <div className="pl-2 pt-2 space-y-1">
+                            {WIDTH_BUCKETS.map((b) => (
+                                <FormControlLabel
+                                    key={b.label}
+                                    control={
+                                        <Checkbox
+                                            sx={{ color: "black", "&.Mui-checked": { color: "black" } }}
+                                            checked={selectedWidthSet.has(b.label)}
+                                            onChange={() => toggleWidthLabel(b.label)}
+                                        />
+                                    }
+                                    label={b.label}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+
 
             </aside>
             {/* Product grid */}
             <section className="flex-1">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-10 ml-10">
-                    {plants.map((item) => {
+                    {filteredPlants.map((item) => {
                         // ❌ ถ้าไม่มี URL ข้ามการ render ไปเลย
-                        if (!item.url) return null;
 
+                        if (!item.url) return null;
+                        console.log("Rendering plant item:", item);
                         const name = item.name.replace("-", " ");
 
                         return (

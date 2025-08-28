@@ -11,6 +11,7 @@ export interface Plant {
     id: string; 
     name: string;
     height: number;
+    width: number;
     price: number;
     is_suggested: number;
     similar_plant: string[];
@@ -22,6 +23,7 @@ export interface SinglePlantWithPotInCard {
     id: string;
     name: string;
     height: number;
+    width: number;
     price: number;
     url?: string;
     is_suggested: number;

@@ -1,5 +1,6 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { Wifi } from 'lucide-react';
 
 export async function getAllPlant(): Promise<Plant[]> {
   const res = await fetch(`${getBaseUrl()}/api/plant`);
@@ -19,6 +20,7 @@ export async function getAllSinglePlantWithPotInCard(): Promise<SinglePlantWithP
       id: item.id,
       name: item.name,
       height: item.height,
+      width: item.width,
       price: item.price,
       is_suggested: item.is_suggested,
       url: item.url,

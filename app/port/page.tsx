@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { SinglePortInCard } from '@/lib/types/types';
 import { getAllSinglePortInCard } from "@/lib/service/portService";
+import { CircularProgress } from "@mui/material";
 
 export default function PortfolioPage() {
     const [current, setCurrent] = useState(0);
@@ -45,12 +46,10 @@ export default function PortfolioPage() {
         return () => clearInterval(timer);
     }, [allPorts.length]);
 
-    if (loading) {
-        return <div className="text-center py-20">Loading...</div>;
-    }
+    if (loading) return <main className="min-h-screen flex items-center justify-center"><CircularProgress /></main>;
 
     if (allPorts.length === 0) {
-        return <div className="text-center py-20">No Portfolio Data</div>;
+        return <main className="min-h-screen flex items-center justify-center">No Portfolio Data</main>;
     }
 
     // ใช้ safeIndex ป้องกัน out-of-range
