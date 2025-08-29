@@ -211,6 +211,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         updatedPlantData.id = finalPlant.id;
         if (plant.name !== originalPlant.name) updatedPlantData.name = finalPlant.name;
+        if (plant.eng_name !== originalPlant.eng_name) updatedPlantData.eng_name = finalPlant.eng_name;
         if (plant.height !== originalPlant.height) updatedPlantData.height = finalPlant.height;
         if (plant.price !== originalPlant.price) updatedPlantData.price = finalPlant.price;
         if (plant.is_suggested !== originalPlant.is_suggested) updatedPlantData.is_suggested = finalPlant.is_suggested;
@@ -331,6 +332,16 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     value={plant.name || ''}
                     onChange={(e) => handleChangePlant('name', e.target.value)}
                     disabled={initialData !== ""}
+                    className="w-full border px-3 py-2"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">Eng Name</label>
+                <input
+                    type="text"
+                    value={plant.eng_name || ''}
+                    onChange={(e) => handleChangePlant('eng_name', e.target.value)}
                     className="w-full border px-3 py-2"
                 />
             </div>

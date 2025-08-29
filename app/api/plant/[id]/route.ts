@@ -12,6 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     .select(`
           id,
           name,
+          eng_name,
           height,
           width,
           price,
@@ -42,6 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   // ✅ อนุญาตเฉพาะ field ที่ database มีจริง
   const allowedFields = [
     'name',
+    'eng_name',
     'price',
     'height',
     'width',

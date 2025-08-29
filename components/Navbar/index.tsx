@@ -226,7 +226,7 @@ export default function Navbar() {
           </Box>
           {/* Right side (Search bar) */}
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', pr: 6 }}>
-            <Paper
+            {/* <Paper
               component="form"
               sx={{
                 display: 'flex',
@@ -254,7 +254,7 @@ export default function Navbar() {
               <IconButton type="submit" sx={{ p: '5px', color: isWhiteMode ? "#fff" : "#222", transition: "color 0.3s" }} aria-label="search">
                 <SearchIcon />
               </IconButton>
-            </Paper>
+            </Paper> */}
           </Box>
         </Box>
       )}

@@ -4,24 +4,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { useEffect, useState } from 'react';
+import { CircularProgress } from '@mui/material';
 
 import HorizontalScroll from '@/components/HorizontalScroll';
 import { getTransformedImage } from '@/components/ImageUrl_Transformed';
 
-import { topPickItems, potItems, bigTreeItems, portfolioItems } from '@/components/Homepage_data/data';
 import { getSuggestedPlants } from '@/lib/service/plantService';
 import { getSuggestedPots } from '@/lib/service/potService';
 import { getSuggestedPorts } from '@/lib/service/portService';
 
-import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from '@/lib/types/types';
-import { useEffect, useState } from 'react';
+import { bigTreeItems } from '@/components/Homepage_data/data';
 
+import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from '@/lib/types/types';
 
 export default function HomePage() {
     const [suggestedPlant, setSuggestedPlant] = useState<SinglePlantWithPotInCard[]>([]);
     const [suggestedPot, setSuggestedPot] = useState<SinglePotInCard[]>([]);
     const [suggestedPort, setSuggestedPort] = useState<SinglePortInCard[]>([]);
-
+    const [isPending, setIsPending] = useState(true);
 
     const topPickScroll = HorizontalScroll(450);
     const potScroll = HorizontalScroll(450);
@@ -29,16 +30,38 @@ export default function HomePage() {
     const portfolioScroll = HorizontalScroll(420 + 24);
 
     useEffect(() => {
-        const fetchData = async () => {
-            const plant = await getSuggestedPlants();
-            const pot = await getSuggestedPots();
-            const port = await getSuggestedPorts();
-            setSuggestedPot(pot);
-            setSuggestedPlant(plant);
-            setSuggestedPort(port);
+        let cancelled = false;
+        (async () => {
+            try {
+                // ✅ โหลดพร้อมกัน
+                const [plants, pots, ports] = await Promise.all([
+                    getSuggestedPlants(),
+                    getSuggestedPots(),
+                    getSuggestedPorts(),
+                ]);
+                if (cancelled) return;
+                setSuggestedPlant(plants ?? []);
+                setSuggestedPot(pots ?? []);
+                setSuggestedPort(ports ?? []);
+            } catch (err) {
+                console.error('Fetch error:', err);
+            } finally {
+                if (!cancelled) setIsPending(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
         };
-        fetchData();
     }, []);
+
+    // ✅ หน้า Loader เต็มจอ จนกว่าจะโหลดครบ
+    if (isPending) {
+        return (
+            <main className="min-h-screen w-full flex items-center justify-center">
+                <CircularProgress />
+            </main>
+        );
+    }
 
     return (
         <div className="min-h-screen w-full items-center">
@@ -48,6 +71,7 @@ export default function HomePage() {
                     src="/banner/banner.jpg"
                     alt="Pot Banner"
                     fill
+                    priority  // ช่วย LCP
                     className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -62,14 +86,14 @@ export default function HomePage() {
                     <p className="text-[17px] mt-1 mb-4 text-left">Artificial potted plants</p>
 
                     <div className="relative">
-                        <div ref={topPickScroll.ref} className=" overflow-y-hidden scroll-smooth">
+                        <div ref={topPickScroll.ref} className="overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
                                 {suggestedPlant
                                     .filter((plant) => !!plant.url)
                                     .map((plant) => (
                                         <Link
                                             key={plant.id}
-                                            href={`/product/plant/${plant.name}`}
+                                            href={`/product/plant/${plant.id}`}
                                             className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5"
                                         >
                                             <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
@@ -80,7 +104,9 @@ export default function HomePage() {
                                                         className="object-contain max-h-full max-w-full h-auto"
                                                     />
                                                 </div>
-                                                <h2 className="flex items-center justify-center text-center mt-2">{decodeURIComponent(plant.name)}</h2>
+                                                <h2 className="flex items-center justify-center text-center mt-2">
+                                                    {decodeURIComponent(plant.name)}
+                                                </h2>
                                                 <p className="text-sm text-center text-gray-600">ความสูง {plant.height} cm</p>
                                             </div>
                                         </Link>
@@ -93,10 +119,10 @@ export default function HomePage() {
                             onClick={topPickScroll.scrollLeftByOne}
                             disabled={!topPickScroll.canLeft}
                             className={`absolute -left-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${topPickScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
+                text-black transition-transform duration-200 ease-in-out
+                ${topPickScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowBackIosNewIcon fontSize="small" />
                         </button>
@@ -104,10 +130,10 @@ export default function HomePage() {
                             onClick={topPickScroll.scrollRightByOne}
                             disabled={!topPickScroll.canRight}
                             className={`absolute -right-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${topPickScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
+                text-black transition-transform duration-200 ease-in-out
+                ${topPickScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowForwardIosIcon fontSize="small" />
                         </button>
@@ -147,25 +173,31 @@ export default function HomePage() {
                     <h1 className="text-[27px] font-semibold mt-10 text-left">กระถางต้นไม้</h1>
                     <p className="text-[17px] mt-1 mb-4 text-left">Planters</p>
                     <div className="relative">
-                        <div ref={potScroll.ref} className=" overflow-y-hidden scroll-smooth">
+                        <div ref={potScroll.ref} className="overflow-y-hidden scroll-smooth">
                             <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
-                                 {suggestedPot
+                                {suggestedPot
                                     .filter((pot) => !!pot.url)
                                     .map((pot) => (
-                                    <Link key={pot.id} href={`/product/plant/${pot.name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
-                                        <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
-                                            <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
-                                                <img
-                                                    src={getTransformedImage(pot.height, pot.url ?? "")}
-                                                    alt={decodeURIComponent(pot.name)}
-                                                    className="object-contain max-h-full max-w-full h-auto"
-                                                />
+                                        <Link
+                                            key={pot.id}
+                                            href={`/product/pot/${pot.id}`}  // ✅ แก้ลิงก์ให้ถูก
+                                            className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5"
+                                        >
+                                            <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
+                                                <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
+                                                    <img
+                                                        src={getTransformedImage(pot.height, pot.url ?? "")}
+                                                        alt={decodeURIComponent(pot.name)}
+                                                        className="object-contain max-h-full max-w-full h-auto"
+                                                    />
+                                                </div>
+                                                <h2 className="flex items-center justify-center text-center mt-2">
+                                                    {decodeURIComponent(pot.name)}
+                                                </h2>
+                                                <p className="text-sm text-center text-gray-600">ความสูง {pot.height} cm</p>
                                             </div>
-                                            <h2 className="flex items-center justify-center text-center mt-2">{decodeURIComponent(pot.name)}</h2>
-                                            <p className="text-sm text-center text-gray-600">ความสูง {pot.height} cm</p>
-                                        </div>
-                                    </Link>
-                                ))}
+                                        </Link>
+                                    ))}
                             </div>
                         </div>
                         {/* Arrow buttons */}
@@ -173,10 +205,10 @@ export default function HomePage() {
                             onClick={potScroll.scrollLeftByOne}
                             disabled={!potScroll.canLeft}
                             className={`absolute -left-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${potScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
+                text-black transition-transform duration-200 ease-in-out
+                ${potScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowBackIosNewIcon fontSize="small" />
                         </button>
@@ -184,10 +216,10 @@ export default function HomePage() {
                             onClick={potScroll.scrollRightByOne}
                             disabled={!potScroll.canRight}
                             className={`absolute -right-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${potScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
+                text-black transition-transform duration-200 ease-in-out
+                ${potScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowForwardIosIcon fontSize="small" />
                         </button>
@@ -310,7 +342,6 @@ export default function HomePage() {
                     />
                 </div>
             </section>
-
             {/* Banner */}
             <section className="py-10">
                 <div className="container mx-auto px-10">
@@ -333,19 +364,16 @@ export default function HomePage() {
                 <div className="container mx-auto px-10 mt-10">
                     <h2 className="text-3xl font-semibold mb-6 text-left">Portfolio</h2>
                     <div className="relative">
-                        <div
-                            ref={portfolioScroll.ref}
-                            className="overflow-y-hidden scroll-smooth"
-                        >
+                        <div ref={portfolioScroll.ref} className="overflow-y-hidden scroll-smooth">
                             <div className="flex gap-6 min-w-max">
-                                {suggestedPort.map((port , index) => (
-                                    <Link key={decodeURIComponent(port.title)} href={`/port/${port.id}`} className="flex-shrink-0 w-[0px] md:w-[420px]">
+                                {suggestedPort.map((port) => (
+                                    <Link key={port.id} href={`/port/${port.id}`} className="flex-shrink-0 w-[0px] md:w-[420px]">
                                         <div className="overflow-hidden hover:shadow-lg transition-transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                             <div className="w-full aspect-[3/2] overflow-hidden mb-2">
                                                 <img
                                                     src={port.image_cover}
                                                     alt={decodeURIComponent(port.title)}
-                                                    className="w-full h-full object-cover" 
+                                                    className="w-full h-full object-cover"
                                                 />
                                             </div>
                                             <h2 className="text-lg font-semibold px-4">{decodeURIComponent(port.title)}</h2>
@@ -355,15 +383,16 @@ export default function HomePage() {
                                 ))}
                             </div>
                         </div>
+
                         {/* Arrow buttons */}
                         <button
                             onClick={portfolioScroll.scrollLeftByOne}
                             disabled={!portfolioScroll.canLeft}
                             className={`absolute -left-8 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${portfolioScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                            `}
+                text-black transition-transform duration-200 ease-in-out
+                ${portfolioScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowBackIosNewIcon fontSize="small" />
                         </button>
@@ -371,16 +400,20 @@ export default function HomePage() {
                             onClick={portfolioScroll.scrollRightByOne}
                             disabled={!portfolioScroll.canRight}
                             className={`absolute -right-8 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${portfolioScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                            `}
+                text-black transition-transform duration-200 ease-in-out
+                ${portfolioScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
+                scale-70 hover:scale-125 active:scale-125
+              `}
                         >
                             <ArrowForwardIosIcon fontSize="small" />
                         </button>
                     </div>
+
                     <div className="flex justify-center mt-20 mb-10">
-                        <Link href="/port" className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center">
+                        <Link
+                            href="/port"
+                            className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center"
+                        >
                             See More
                         </Link>
                     </div>

@@ -1,31 +1,83 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Box, Slider } from "@mui/material";
-import { SinglePotInCard } from "@/lib/types/types";
+import { Box, Checkbox, FormControlLabel, Slider } from "@mui/material";
+import { SinglePotInCard, Bucket } from "@/lib/types/types";
+import { getTransformedImage } from "@/components/ImageUrl_Transformed";
+
+const HEIGHT_BUCKETS: Bucket[] = [
+    { label: "40-100", min: 40, max: 100 },
+    { label: "100-130", min: 100, max: 130 },
+    { label: "130-150", min: 130, max: 150 },
+    { label: "150-170", min: 150, max: 170 },
+    { label: "170-200", min: 170, max: 200 },
+    { label: "200+", min: 200, max: Infinity },
+];
+
+const CIRCUMFERENCE_BUCKETS: Bucket[] = [
+    { label: "20-40", min: 20, max: 40 },
+    { label: "40-60", min: 40, max: 60 },
+    { label: "60-80", min: 60, max: 80 },
+    { label: "80-100", min: 80, max: 100 },
+    { label: "100-120", min: 100, max: 120 },
+    { label: "120+", min: 120, max: Infinity },
+];
 
 export default function PotFilterClient({ pots }: { pots: SinglePotInCard[] }) {
 
+
+    const [selectedHeightLabels, setSelectedHeightLabels] = useState<string[]>([]);
+    const selectedHeightSet = useMemo(() => new Set(selectedHeightLabels), [selectedHeightLabels]);
+
+    const [selectedCircumferenceLabels, setSelectedCircumferenceLabels] = useState<string[]>([]);
+    const selectedCircumferenceSet = useMemo(() => new Set(selectedCircumferenceLabels), [selectedCircumferenceLabels]);
+
     const [open, setOpen] = useState({
-        availability: false,
-        collection: false,
-        type: false,
-        size: false,
-        light: false,
+        height: false,
+        circumference: false,
     });
 
     const toggleSection = (key: keyof typeof open) => {
         setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    function valuetext(value: number, index: number): string {
-        return `${value}"`;
-    }
+    const toggleHeightLabel = (label: string) => {
+        setSelectedHeightLabels((prev) =>
+            prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+        );
+    };
 
-    const [valueSilde, setValueSilde] = useState<number[]>([20, 37]);
+    const toggleCircumferenceLabel = (label: string) => {
+        setSelectedCircumferenceLabels((prev) =>
+            prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+        );
+    };
 
-    function handleSlideChange(event: Event, newValue: number | number[], activeThumb: number): void {
-        setValueSilde(Array.isArray(newValue) ? newValue : [newValue]);
+    const inBucket = (value: number, bucket: Bucket) => {
+        if (bucket.max === Infinity) return value >= bucket.min;
+        return value >= bucket.min && value <= bucket.max;
+    };
+
+    const matchesSelectedHeights = (h: number) => {
+        if (selectedHeightSet.size === 0) return true;
+        return HEIGHT_BUCKETS.some((b) => selectedHeightSet.has(b.label) && inBucket(h, b));
+    };
+
+    const matchesSelectedCircumference = (w: number) => {
+        if (selectedCircumferenceSet.size === 0) return true;
+        return CIRCUMFERENCE_BUCKETS.some((b) => selectedCircumferenceSet.has(b.label) && inBucket(w, b));
+    };
+
+    const filteredPots = useMemo(
+        () => pots.filter((p) => {
+            return matchesSelectedHeights(p.height) && matchesSelectedCircumference(p.circumference);
+        }),
+        [pots, selectedHeightSet, selectedCircumferenceSet]
+    );
+
+    const getTransformedImageUrl = (height: number, imageUrl: string): string => {
+        if (!pots) return "";
+        return getTransformedImage(height, imageUrl);
     }
 
     return (
@@ -33,97 +85,73 @@ export default function PotFilterClient({ pots }: { pots: SinglePotInCard[] }) {
             <aside className="w-full lg:w-[180px] space-y-6 ml-4 mt-5">
                 <h2 className="text-lg font-bold mb-1">Filter</h2>
 
-                {/* Availability */}
+                {/* Height */}
                 <div>
                     <button
-                        onClick={() => toggleSection('availability')}
+                        onClick={() => toggleSection("height")}
                         className="w-full text-left border-b pb-3 font-medium"
                     >
-                        Availability {open.availability ? '−' : '+'}
+                        ความสูงกระถาง {open.height ? "−" : "+"}
                     </button>
-                    {open.availability && (
+                    {open.height && (
                         <div className="pl-2 pt-2 space-y-1">
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                In stock
-                            </label>
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Out of stock
-                            </label>
+                            {HEIGHT_BUCKETS.map((b) => (
+                                <FormControlLabel
+                                    key={b.label}
+                                    control={
+                                        <Checkbox
+                                            sx={{ color: "gray", "&.Mui-checked": { color: "gray" } }}
+                                            checked={selectedHeightSet.has(b.label)}
+                                            onChange={() => toggleHeightLabel(b.label)}
+                                        />
+                                    }
+                                    label={b.label}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* pot Collection */}
+                {/* Width */}
                 <div>
                     <button
-                        onClick={() => toggleSection('collection')}
+                        onClick={() => toggleSection("circumference")}
                         className="w-full text-left border-b pb-3 font-medium"
                     >
-                        pot Collection {open.collection ? '−' : '+'}
+                        เส้นรอบวงปากกระถาง {open.circumference ? "−" : "+"}
                     </button>
-                    {open.collection && (
+                    {open.circumference && (
                         <div className="pl-2 pt-2 space-y-1">
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Collection 1
-                            </label>
-                            <label className="block">
-                                <input type="checkbox" className="mr-2" />
-                                Collection 2
-                            </label>
+                            {CIRCUMFERENCE_BUCKETS.map((b) => (
+                                <FormControlLabel
+                                    key={b.label}
+                                    control={
+                                        <Checkbox
+                                            sx={{ color: "gray", "&.Mui-checked": { color: "gray" } }}
+                                            checked={selectedCircumferenceSet.has(b.label)}
+                                            onChange={() => toggleCircumferenceLabel(b.label)}
+                                        />
+                                    }
+                                    label={b.label}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* Size */}
-                <div>
-                    <button
-                        onClick={() => toggleSection('size')}
-                        className="w-full text-left border-b pb-3 font-medium"
-                    >
-                        Size {open.size ? '−' : '+'}
-                    </button>
-                    {open.size && (
-
-                        <Box sx={{ width: 180, mr: 2 }}>
-                            <Slider
-                                getAriaLabel={() => 'Size range'}
-                                value={valueSilde}
-                                onChange={handleSlideChange}
-                                valueLabelDisplay="auto"
-                                getAriaValueText={valuetext}
-                                sx={{
-                                    color: 'black',
-                                    '& .MuiSlider-thumb': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-track': {
-                                        backgroundColor: 'black',
-                                    },
-                                    '& .MuiSlider-rail': {
-                                        backgroundColor: '#ccc',
-                                    },
-                                }}
-                            />
-                        </Box>
-                    )}
-                </div>
             </aside>
             {/* Product grid */}
             <section className="flex-1">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-10 ml-10">
-                    {pots.map((item) => {
+                    {filteredPots.map((item) => {
                         if (!item.url) return null;
                         const imageUrl = item.url;
-                        const slug = encodeURIComponent(item.name);
                         const name = item.name.replace("-", " ");
                         return (
-                            <Link key={item.id} href={`/product/pot/${slug}`} className="h-full">
+                            <Link key={item.id} href={`/product/pot/${item.id}`} className="h-full">
                                 <div className="w_[150px] hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
                                     <img
-                                        src={imageUrl}
+                                        src={getTransformedImageUrl(item.height, imageUrl)}
                                         alt={item.name}
                                         className="w-full h-[400px] object-contain mb-4"
                                     />

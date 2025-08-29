@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     .select(`
       id,
       name,
+      eng_name,
       height,
       width,
       price,

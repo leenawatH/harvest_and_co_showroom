@@ -6,10 +6,13 @@ export enum Color {
   Stone = 'stone',
 }
 
+export type Bucket = { label: string; min: number; max: number };
+
 //ใช้ในหน้า detail ที่จะใส่ทุกอย่างไว้ในนี้
 export interface Plant {
     id: string; 
     name: string;
+    eng_name: string;
     height: number;
     width: number;
     price: number;
@@ -47,7 +50,7 @@ export interface Pot {
     addition_img?: string[];
     similar_pot?: string[];
     is_suggested: boolean;
-    pot_colors?: Pot_Img[]; 
+    pot_colors: Pot_Img[]; 
 }
 
 export interface plant_pot_options {
@@ -65,6 +68,7 @@ export interface Pot_Img {
     id: string;
     pot_id: string;
     pot_color: Color | null;
+    is_suggested: boolean;
     url: string;   
     file: File | null;      
 }

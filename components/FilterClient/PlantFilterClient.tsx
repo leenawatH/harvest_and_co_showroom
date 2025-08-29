@@ -2,10 +2,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Box, Slider, Checkbox, FormControlLabel } from "@mui/material";
-import { SinglePlantWithPotInCard } from "@/lib/types/types";
+import { SinglePlantWithPotInCard , Bucket } from "@/lib/types/types";
 import { getTransformedImage } from "@/components/ImageUrl_Transformed";
-
-type Bucket = { label: string; min: number; max: number };
 
 const HEIGHT_BUCKETS: Bucket[] = [
     { label: "40-100", min: 40, max: 100 },
@@ -101,7 +99,7 @@ export default function PlantFilterClient({ plants }: { plants: SinglePlantWithP
                                     key={b.label}
                                     control={
                                         <Checkbox
-                                            sx={{ color: "black", "&.Mui-checked": { color: "black" } }}
+                                            sx={{ color: "gray", "&.Mui-checked": { color: "gray" } }}
                                             checked={selectedHeightSet.has(b.label)}
                                             onChange={() => toggleHeightLabel(b.label)}
                                         />
@@ -128,7 +126,7 @@ export default function PlantFilterClient({ plants }: { plants: SinglePlantWithP
                                     key={b.label}
                                     control={
                                         <Checkbox
-                                            sx={{ color: "black", "&.Mui-checked": { color: "black" } }}
+                                            sx={{ color: "gray", "&.Mui-checked": { color: "gray" } }}
                                             checked={selectedWidthSet.has(b.label)}
                                             onChange={() => toggleWidthLabel(b.label)}
                                         />

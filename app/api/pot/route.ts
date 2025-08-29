@@ -34,7 +34,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
- // map ให้เหลือเฉพาะ cover_image ที่ is_suggested
   const result = data.map((pot: any) => {
     const cover = pot.pot_colors?.find((p: any) => p.pot_color == pot.onShow_color && p.url != null);
     return {

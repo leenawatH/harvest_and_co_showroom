@@ -115,6 +115,7 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
             id: '',
             pot_id: '',
             pot_color: null,
+            is_suggested: false,
             url: '',
             file: null
         }]);

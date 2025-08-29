@@ -15,6 +15,8 @@ type PlantPot = {
   pot_id: string;
   pot_name?: string;
   height_with_pot: string;
+  potHeight?: number;
+  potCircumference?: number;
   colors: ColorChip[]; // รวมจาก plant_pot_options ของ pot_id นั้น (unique ตาม color)
 };
 
@@ -40,7 +42,7 @@ export default function PlantDetail() {
 
   // โหลดข้อมูล plant ตาม id, และ group options → PlantPot[]
   useEffect(() => {
-    const run = async () => {
+    const setUp = async () => {
       try {
         const id = params?.plant as string; // สมมติ dynamic route เป็น /product/plant/[plant]
         if (!id) {
@@ -68,13 +70,35 @@ export default function PlantDetail() {
           setSelectedColorUrl(grouped[0].colors[0]?.url ?? null);
         }
 
-        if (data.similar_plant) {
-          data.similar_plant.map(async (id) => {
-            const data = await getPlantById(id);
-            setSimilar_plant(prev => [...prev, { id: data.id, name: data.name, height: data.height, url: data?.plant_pot_options?.find(opt => opt.is_suggested === true)?.url ?? '' }]);
+        // ก่อนเริ่มโหลด similar ล้าง state เก่าไว้กันซ้อน
+        setSimilar_plant([]);
 
-          });
+        if (Array.isArray(data.similar_plant) && data.similar_plant.length) {
+          const sims = await Promise.all(
+            data.similar_plant.map(async (pid) => {
+              try {
+                return await getPlantById(pid);
+              } catch {
+                return null;
+              }
+            })
+          );
+
+          const simCards = sims
+            .filter((p): p is Plant => !!p)
+            .map((p) => ({
+              id: p.id,
+              name: p.name,
+              height: p.height,
+              url: p.plant_pot_options?.find((opt) => opt.is_suggested)?.url ?? '',
+            }));
+
+          // de-duplicate ตาม id กันรายการซ้ำ
+          const unique = Array.from(new Map(simCards.map((s) => [s.id, s])).values());
+
+          setSimilar_plant(unique);
         }
+
       } catch (e: any) {
         console.error(e);
         setError(e?.message || 'Failed to load');
@@ -82,7 +106,7 @@ export default function PlantDetail() {
         setLoading(false);
       }
     };
-    run();
+    setUp();
   }, [params]);
 
   // สร้างลิสต์ใหม่จาก plant_pot_options ให้เป็น PlantPot[]
@@ -93,11 +117,15 @@ export default function PlantDetail() {
       const key = opt.pot_id;
       let potName = '';
       let height_With_Pot = '';
+      let potHeight = 0;
+      let potCircumference = 0;
       if (!map.has(key)) {
         // Await the pot name only once per pot_id
         try {
           const pot = await getPotById(key);
           potName = pot.name;
+          potHeight = pot.height;
+          potCircumference = pot.circumference;
           height_With_Pot = opt.height_with_pot ?? '';
         } catch {
           potName = '';
@@ -107,6 +135,8 @@ export default function PlantDetail() {
           pot_id: key,
           pot_name: potName,
           height_with_pot: height_With_Pot,
+          potHeight: potHeight,
+          potCircumference: potCircumference,
           colors: [],
         });
       }
@@ -173,6 +203,8 @@ export default function PlantDetail() {
             {plant.name?.replace('-', ' ')}
           </h1>
 
+          <p className="mb-4">{plant.eng_name}</p>
+
           <p className="text-lg font-semibold mb-4">ราคา: {plant.price?.toLocaleString()} บาท</p>
 
           <div className="mb-2">
@@ -194,8 +226,13 @@ export default function PlantDetail() {
             <span className="font-semibold">แบบกระถาง:</span>
             <span className="ml-2 text-gray-700">{selectedGroup?.pot_name ?? '-'}</span>
           </div>
+          
+          <div className="mb-2">
+            <span className="font-semibold">ขนาดกระถาง:</span>
+            <span className="ml-2 text-gray-700">Ø{selectedGroup?.potCircumference ?? '-'}*H{selectedGroup?.potHeight ?? '-'} cm</span>
+          </div>
 
-          <div className="mb-4">
+          <div className="mb-2">
             <span className="font-semibold">สี:</span>
             <span className="ml-2 text-gray-700">
               {availableColors.find((c) => c.url === imageUrl)?.color ?? '-'}
@@ -326,7 +363,7 @@ export default function PlantDetail() {
                 {similar_plant.map((plant) => (
                   <Link
                     key={plant.id}
-                    href={`/product/plant/`}
+                    href={`/product/plant/${plant.id}`}
                     className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5"
                   >
                     <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
