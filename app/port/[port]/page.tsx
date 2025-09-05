@@ -8,15 +8,17 @@ import { getPortById } from '@/lib/service/portService';
 
 import Port_Templete_Title from '@/components/Templete_Port_Component/Port_Templete_Title';
 import Port_Templete_Component from '@/components/Templete_Port_Component/Port_Templete_Component';
-import { CircularProgress } from '@mui/material';
+import { useLoading } from '@/components/LoadingProvider/LoadingProvider';
 
 export default function PortfolioDetailPage() {
   const params = useParams();
   const [port, setPort] = useState<Port | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { setLoading } = useLoading();
+
   useEffect(() => {
+    setLoading(true);
     const fetchDataPort = async () => {
       try {
         const slug = params?.port as string;
@@ -35,8 +37,6 @@ export default function PortfolioDetailPage() {
     };
     fetchDataPort();
   }, [params]);
-
-  if (loading) return <main className="min-h-screen flex items-center justify-center"><CircularProgress /></main>;
 
   if (error || !port) {
     return (

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getAllSinglePotInCard, deletePot, updatePot, addPot, addNewPotColor, updatePotColor, deletePotColor } from '@/lib/service/potService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
@@ -26,6 +26,8 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [search, setSearch] = useState('');
+
   const toggleSelect = (id: string, name: string) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -35,6 +37,12 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
       prev.includes(id) ? prev.filter((x) => x !== path) : [...prev, path]
     );
   };
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return potsData;
+    return potsData.filter(p => (p.name || '').toLowerCase().includes(q));
+  }, [search, potsData]);
 
   const handleDeleteClick = (id: string, name: string) => {
     setTargetId(id);
@@ -187,6 +195,24 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
           <div className="sticky top-0 z-10 bg-white py-4">
             <div className="flex justify-between items-center mb-2 px-2">
               <h2 className="text-xl font-bold">Pot List</h2>
+               {/* 🔎 Search bar */}
+              <div className="flex items-center gap-2 w-full md:w-[360px]">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search name..."
+                  className="w-full rounded border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-gray-400"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200"
+                    title="Clear"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
               <div className="flex gap-4">
                 {selected.length > 0 && (
                   <button
@@ -232,7 +258,7 @@ export default function PotTable({ pots, refreshData  }: { pots: SinglePotInCard
                 </tr>
               </thead>
               <tbody className="text-sm text-gray-700">
-                {potsData.map((item) => (
+                {filteredRows.map((item) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 text-center align-middle">
                       <input

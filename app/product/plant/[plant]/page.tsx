@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Color, Plant, plant_pot_options } from '@/lib/types/types';
 import { getPlantById } from '@/lib/service/plantService';
 import { getPotById } from '@/lib/service/potService';
-import { CircularProgress } from '@mui/material';
+import { useLoading } from '@/components/LoadingProvider/LoadingProvider';
 
 type ColorChip = { color: Color; url: string };
 
@@ -38,10 +38,11 @@ export default function PlantDetail() {
   const [similar_plant, setSimilar_plant] = useState<SimilarPlant[]>([]);
 
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { setLoading } = useLoading();
 
   // โหลดข้อมูล plant ตาม id, และ group options → PlantPot[]
   useEffect(() => {
+    setLoading(true);
     const setUp = async () => {
       try {
         const id = params?.plant as string; // สมมติ dynamic route เป็น /product/plant/[plant]
@@ -189,8 +190,6 @@ export default function PlantDetail() {
     }
     return Url;
   };
-
-  if (loading) return <main className="min-h-screen flex items-center justify-center"><CircularProgress /></main>;
 
   if (error || !plant) return <main className="min-h-screen flex items-center justify-center"> No data</main>;
 

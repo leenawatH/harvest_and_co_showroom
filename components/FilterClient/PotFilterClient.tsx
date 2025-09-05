@@ -5,6 +5,7 @@ import { Box, Checkbox, FormControlLabel, Slider } from "@mui/material";
 import { SinglePotInCard, Bucket } from "@/lib/types/types";
 import { getTransformedImage } from "@/components/ImageUrl_Transformed";
 
+
 const HEIGHT_BUCKETS: Bucket[] = [
     { label: "40-100", min: 40, max: 100 },
     { label: "100-130", min: 100, max: 130 },
@@ -36,6 +37,7 @@ export default function PotFilterClient({ pots }: { pots: SinglePotInCard[] }) {
         height: false,
         circumference: false,
     });
+    
 
     const toggleSection = (key: keyof typeof open) => {
         setOpen((prev) => ({ ...prev, [key]: !prev[key] }));

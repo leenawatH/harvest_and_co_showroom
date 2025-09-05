@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CircularProgress } from '@mui/material';
+import { useLoading } from '@/components/LoadingProvider/LoadingProvider';
 
 import { Color, Pot, Pot_Img } from '@/lib/types/types';
 import { getPotById } from '@/lib/service/potService';
@@ -25,11 +25,13 @@ export default function PotDetail() {
   const [selectedColorUrl, setSelectedColorUrl] = useState<string | null>(null);
 
   const [similarPots, setSimilarPots] = useState<SimilarPot[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { setLoading } = useLoading();
 
   // โหลดข้อมูลกระถาง + จัดเรียงสีตาม onShow_color
   useEffect(() => {
+    setLoading(true);
     const run = async () => {
       try {
         const id = params?.pot as string;
@@ -106,14 +108,6 @@ export default function PotDetail() {
     }
     return Url;
   };
-
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <CircularProgress />
-      </main>
-    );
-  }
 
   if (error || !pot) {
     return (

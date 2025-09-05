@@ -5,7 +5,6 @@ import Link from 'next/link';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useEffect, useState } from 'react';
-import { CircularProgress } from '@mui/material';
 
 import HorizontalScroll from '@/components/HorizontalScroll';
 import { getTransformedImage } from '@/components/ImageUrl_Transformed';
@@ -18,11 +17,14 @@ import { bigTreeItems } from '@/components/Homepage_data/data';
 
 import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from '@/lib/types/types';
 
+import { useLoading } from '@/components/LoadingProvider/LoadingProvider';
+
 export default function HomePage() {
     const [suggestedPlant, setSuggestedPlant] = useState<SinglePlantWithPotInCard[]>([]);
     const [suggestedPot, setSuggestedPot] = useState<SinglePotInCard[]>([]);
     const [suggestedPort, setSuggestedPort] = useState<SinglePortInCard[]>([]);
-    const [isPending, setIsPending] = useState(true);
+
+    const { setLoading } = useLoading();
 
     const topPickScroll = HorizontalScroll(450);
     const potScroll = HorizontalScroll(450);
@@ -30,6 +32,7 @@ export default function HomePage() {
     const portfolioScroll = HorizontalScroll(420 + 24);
 
     useEffect(() => {
+        setLoading(true);
         let cancelled = false;
         (async () => {
             try {
@@ -46,22 +49,13 @@ export default function HomePage() {
             } catch (err) {
                 console.error('Fetch error:', err);
             } finally {
-                if (!cancelled) setIsPending(false);
+                if (!cancelled) setLoading(false);
             }
         })();
         return () => {
             cancelled = true;
         };
     }, []);
-
-    // ✅ หน้า Loader เต็มจอ จนกว่าจะโหลดครบ
-    if (isPending) {
-        return (
-            <main className="min-h-screen w-full flex items-center justify-center">
-                <CircularProgress />
-            </main>
-        );
-    }
 
     return (
         <div className="min-h-screen w-full items-center">
@@ -236,80 +230,6 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Banner */}
-            <section className="relative h-[700px]">
-                <Image
-                    src="/banner/banner.jpg"
-                    alt="Pot Banner"
-                    fill
-                    className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <h2 className="text-3xl text-white font-bold">ต้นไม้ใหญ่</h2>
-                </div>
-            </section>
-
-            {/* Big Tree Section */}
-            <section className="py-4 flex justify-center relative">
-                <div className="container mx-auto px-10">
-                    <h1 className="text-[27px] font-semibold mt-10 text-left">ต้นไม้ใหญ่</h1>
-                    <p className="text-[17px] mt-1 mb-4 text-left">Big Tree</p>
-                    <div className="relative">
-                        <div ref={bigTreeScroll.ref} className=" overflow-y-hidden scroll-smooth">
-                            <div className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1">
-                                {bigTreeItems.map(([url, name, height], index) => (
-                                    <Link key={index} href={`/plant/${name}`} className="flex-shrink-0 w-[50%] sm:w-1/2 md:w-[400px] block md:h-full md:mx-1.5">
-                                        <div className="rounded-3xl p-4 hover:shadow-lg transition transform hover:scale-105 h-full flex flex-col justify-between bg-white">
-                                            <div className="w-full h-[250px] md:h-[380px] flex items-center justify-center">
-                                                <img
-                                                    src={url}
-                                                    alt={decodeURIComponent(name)}
-                                                    className="object-contain max-h-full max-w-full h-auto"
-                                                />
-                                            </div>
-                                            <h2 className="flex items-center justify-center text-center mt-2">{decodeURIComponent(name)}</h2>
-                                            <p className="text-sm text-center text-gray-600">ความสูง {height} cm</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                        {/* Arrow buttons */}
-                        <button
-                            onClick={bigTreeScroll.scrollLeftByOne}
-                            disabled={!bigTreeScroll.canLeft}
-                            className={`absolute -left-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${bigTreeScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
-                        >
-                            <ArrowBackIosNewIcon fontSize="small" />
-                        </button>
-                        <button
-                            onClick={bigTreeScroll.scrollRightByOne}
-                            disabled={!bigTreeScroll.canRight}
-                            className={`absolute -right-1 top-1/2 -translate-y-1/2 z-10 
-                                text-black transition-transform duration-200 ease-in-out
-                                ${bigTreeScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
-                                scale-70 hover:scale-125 active:scale-125
-                                `}
-                        >
-                            <ArrowForwardIosIcon fontSize="small" />
-                        </button>
-                    </div>
-
-                    <div className="flex justify-center mt-10 mb-10">
-                        <Link
-                            href="/product/bigtree"
-                            className="px-6 py-2 border-2 border-green-900 text-green-900 rounded-full text-lg hover:bg-green-900 hover:text-white transition flex items-center justify-center"
-                        >
-                            See More
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
             {/* จัดสวน section */}
             <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px] mb-10">
                 {/* LEFT: TEXT (40%) */}
@@ -342,6 +262,72 @@ export default function HomePage() {
                     />
                 </div>
             </section>
+
+            {/* bigtree section */}
+            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px] mb-10">
+                {/* RIGHT: IMAGE (60%) */}
+                <div className="w-full md:w-[55%] h-[350px] md:h-full relative">
+                    <img
+                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                        alt="Vertical Garden"
+                        className="object-cover w-full h-full"
+                    />
+                </div>
+                {/* LEFT: TEXT (40%) */}
+                <div className="w-full md:w-[45%] bg-black text-white flex items-center justify-center p-6 md:p-12 text-center md:text-left">
+                    <div>
+                        <h2 className="text-xl md:text-2xl tracking-widest mb-2">BIG TREE</h2>
+                        <h3 className="text-md md:text-xl mb-6">บริการจัดสวนแนวตั้งตกแต่งสถานที่</h3>
+                        <p className="mb-3">
+                            เพิ่มสีเขียวให้มุมโปรดของคุณ <br />
+                            ทั้งภายในบ้าน และ นอกบ้าน
+                        </p>
+                        <p className="mb-3">
+                            ด้วยสวนแนวตั้งในแบบฉบับของ Livingstyle
+                        </p>
+                        <p className="mb-6">
+                            ในราคาเริ่มต้นเพียง 6,500 บาท ต่อ ตร.ม.
+                        </p>
+                        <Link href="/product/garden" className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition flex items-center justify-center">
+                            SEE MORE
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* จัดสวน section */}
+            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px] mb-10">
+                {/* LEFT: TEXT (40%) */}
+                <div className="w-full md:w-[45%] bg-black text-white flex items-center justify-center p-6 md:p-12 text-center md:text-left">
+                    <div>
+                        <h2 className="text-xl md:text-2xl tracking-widest mb-2">จัดสวน</h2>
+                        <h3 className="text-md md:text-xl mb-6">บริการจัดสวนแนวตั้งตกแต่งสถานที่</h3>
+                        <p className="mb-3">
+                            เพิ่มสีเขียวให้มุมโปรดของคุณ <br />
+                            ทั้งภายในบ้าน และ นอกบ้าน
+                        </p>
+                        <p className="mb-3">
+                            ด้วยสวนแนวตั้งในแบบฉบับของ Livingstyle
+                        </p>
+                        <p className="mb-6">
+                            ในราคาเริ่มต้นเพียง 6,500 บาท ต่อ ตร.ม.
+                        </p>
+                        <Link href="/product/garden" className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition flex items-center justify-center">
+                            SEE MORE
+                        </Link>
+                    </div>
+                </div>
+
+                {/* RIGHT: IMAGE (60%) */}
+                <div className="w-full md:w-[55%] h-[350px] md:h-full relative">
+                    <img
+                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                        alt="Vertical Garden"
+                        className="object-cover w-full h-full"
+                    />
+                </div>
+            </section>
+
             {/* Banner */}
             <section className="py-10">
                 <div className="container mx-auto px-10">

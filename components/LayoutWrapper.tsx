@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { LoadingProvider } from '@/components/LoadingProvider/LoadingProvider';
+import GlobalLoader from '@/components/LoadingProvider/GlobalLoader';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,9 +22,13 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex flex-col min-h-screen">
+      <LoadingProvider>
       <Navbar />
+      <GlobalLoader />
       <main className="flex-1 overflow-x-hidden">{children}</main>
       {!isAdminPath && <Footer />}
+      </LoadingProvider>
+
     </div>
   );
 }
