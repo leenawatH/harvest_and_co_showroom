@@ -25,7 +25,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
              is_suggested,
              pot_id,
              pot_color,
-             height_with_pot
+             height_with_pot,
+             price_with_pot
           )
           `)
     .eq('id', id).single();

@@ -19,6 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           is_suggested,
           addition_img,
           similar_pot,
+          color_available,
           pot_colors (
              id,
              url,
@@ -47,7 +48,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     'onShow_color',
     'similar_plant',
     'addition_img',
-    'is_suggested'
+    'is_suggested',
+    'color_available',
   ];
 
   const cleanData = Object.fromEntries(

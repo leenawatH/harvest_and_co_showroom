@@ -120,6 +120,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             pot_color: '',
             url: '',
             height_with_pot: '',
+            price_with_pot: '',
             plant_id: '',
             is_suggested: false,
             file: null
@@ -254,6 +255,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     original.pot_id !== p.pot_id ||
                     original.pot_color !== p.pot_color ||
                     original.height_with_pot !== p.height_with_pot ||
+                    original.price_with_pot !== p.price_with_pot ||
                     original.url !== p.url ||
                     original.is_suggested !== p.is_suggested;
 
@@ -274,6 +276,9 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             }
             if (p.height_with_pot !== originalPotPairs.find(o => o.id === p.id)?.height_with_pot) {
                 updatedFields.height_with_pot = p.height_with_pot;
+            }
+            if (p.price_with_pot !== originalPotPairs.find(o => o.id === p.id)?.price_with_pot) {
+                updatedFields.price_with_pot = p.price_with_pot;
             }
             if (p.url !== originalPotPairs.find(o => o.id === p.id)?.url) {
                 updatedFields.url = p.url;
@@ -527,6 +532,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                                 type="text"
                                 value={pair.height_with_pot}
                                 onChange={(e) => handlePotChange(index, 'height_with_pot', e.target.value)}
+                                className="border px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Price with Pot</label>
+                            <input
+                                type="text"
+                                value={pair.price_with_pot}
+                                onChange={(e) => handlePotChange(index, 'price_with_pot', e.target.value)}
                                 className="border px-3 py-2"
                             />
                         </div>

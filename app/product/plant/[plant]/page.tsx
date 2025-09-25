@@ -15,9 +15,11 @@ type PlantPot = {
   pot_id: string;
   pot_name?: string;
   height_with_pot: string;
+  price_with_pot: string;
   potHeight?: number;
   potCircumference?: number;
   colors: ColorChip[]; // รวมจาก plant_pot_options ของ pot_id นั้น (unique ตาม color)
+  available_colors?: Color[];
 };
 
 type SimilarPlant = {
@@ -118,8 +120,10 @@ export default function PlantDetail() {
       const key = opt.pot_id;
       let potName = '';
       let height_With_Pot = '';
+      let price_With_Pot = '';
       let potHeight = 0;
       let potCircumference = 0;
+      let available_colors: Color[] = [];
       if (!map.has(key)) {
         // Await the pot name only once per pot_id
         try {
@@ -128,6 +132,8 @@ export default function PlantDetail() {
           potHeight = pot.height;
           potCircumference = pot.circumference;
           height_With_Pot = opt.height_with_pot ?? '';
+          price_With_Pot = opt.price_with_pot ?? '';
+          available_colors = pot.color_available ?? [];
         } catch {
           potName = '';
         }
@@ -136,9 +142,11 @@ export default function PlantDetail() {
           pot_id: key,
           pot_name: potName,
           height_with_pot: height_With_Pot,
+          price_with_pot: price_With_Pot,
           potHeight: potHeight,
           potCircumference: potCircumference,
           colors: [],
+          available_colors: available_colors,
         });
       }
       const group = map.get(key)!;
@@ -162,7 +170,7 @@ export default function PlantDetail() {
     [plantPots, selectedPotId]
   );
 
-  const availableColors = selectedGroup?.colors ?? [];
+  const availableColors = selectedGroup?.available_colors ?? [];
   const heightWithSelectedPot = selectedGroup?.height_with_pot ?? null;
   const imageUrl = selectedColorUrl;
 
@@ -204,7 +212,16 @@ export default function PlantDetail() {
 
           <p className="mb-4">{plant.eng_name}</p>
 
-          <p className="text-lg font-semibold mb-4">ราคา: {plant.price?.toLocaleString()} บาท</p>
+          <p className="text-lg font-semibold mb-4">
+            ราคาต้นไม้: {plant.price?.toLocaleString()} บาท{' '}
+            <span className="font-normal">
+              (รวมกระถาง: {selectedGroup?.price_with_pot !== undefined ? selectedGroup.price_with_pot.toLocaleString() : '-'} บาท)
+            </span>
+          </p>
+
+          {/* <p className="text-lg font-semibold mb-2">
+            ราคารวมกระถาง: {selectedGroup?.price_with_pot !== undefined ? selectedGroup.price_with_pot.toLocaleString() : '-'} บาท
+          </p> */}
 
           <div className="mb-2">
             <span className="font-semibold">ความสูงต้นไม้:</span>
@@ -225,17 +242,10 @@ export default function PlantDetail() {
             <span className="font-semibold">แบบกระถาง:</span>
             <span className="ml-2 text-gray-700">{selectedGroup?.pot_name ?? '-'}</span>
           </div>
-          
+
           <div className="mb-2">
             <span className="font-semibold">ขนาดกระถาง:</span>
             <span className="ml-2 text-gray-700">Ø{selectedGroup?.potCircumference ?? '-'}*H{selectedGroup?.potHeight ?? '-'} cm</span>
-          </div>
-
-          <div className="mb-2">
-            <span className="font-semibold">สี:</span>
-            <span className="ml-2 text-gray-700">
-              {availableColors.find((c) => c.url === imageUrl)?.color ?? '-'}
-            </span>
           </div>
 
           {/* เลือกกระถาง */}
@@ -267,16 +277,14 @@ export default function PlantDetail() {
 
           {/* เลือกสี */}
           <div>
-            <div className="font-semibold mb-1">เลือกสี:</div>
+            <div className="font-semibold mb-1">สีที่มี:</div>
             <div className="flex gap-2 flex-wrap">
               {availableColors.map((chip, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleColorChange(chip)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
-                    } hover:opacity-70`}
-                  style={{ backgroundColor: colorToCss(chip.color) }}
-                  title={String(chip.color)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200`}
+                  style={{ backgroundColor: colorToCss(chip) }}
+                  title={String(chip)}
                 />
               ))}
             </div>
@@ -295,20 +303,6 @@ export default function PlantDetail() {
             ) : (
               <div className="text-gray-400">No image available</div>
             )}
-          </div>
-
-          {/* แถบเลือกสีซ้ำ (optional) */}
-          <div className="flex gap-2 mt-2">
-            {availableColors.map((chip, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleColorChange(chip)}
-                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${imageUrl === chip.url ? 'border-green-700' : 'border-gray-300'
-                  } hover:opacity-70`}
-                style={{ backgroundColor: colorToCss(chip.color) }}
-                title={String(chip.color)}
-              />
-            ))}
           </div>
         </div>
       </div>

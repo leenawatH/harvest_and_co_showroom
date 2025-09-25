@@ -1,6 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
 import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
-import { Wifi } from 'lucide-react';
 
 export async function getAllPlant(): Promise<Plant[]> {
   const res = await fetch(`${getBaseUrl()}/api/plant`);
@@ -126,6 +125,7 @@ export async function addNewPlantPotOption(data: plant_pot_options): Promise<pla
     plant_id : data.plant_id,
     pot_color: data.pot_color,
     height_with_pot: data.height_with_pot,
+    price_with_pot: data.price_with_pot,
     is_suggested: data.is_suggested,
     url: data.url,
   };

@@ -3,7 +3,7 @@ export enum Color {
   Black = 'black',
   White = 'white',
   Beige = 'beige',
-  Stone = 'stone',
+  LightSteelBlue = 'lightsteelblue',
 }
 
 export type Bucket = { label: string; min: number; max: number };
@@ -51,6 +51,7 @@ export interface Pot {
     similar_pot?: string[];
     is_suggested: boolean;
     pot_colors: Pot_Img[]; 
+    color_available: Color[];
 }
 
 export interface plant_pot_options {
@@ -59,6 +60,7 @@ export interface plant_pot_options {
     pot_id: string;
     pot_color: Color | "";
     height_with_pot?: string;
+    price_with_pot?: string;
     is_suggested: boolean;
     url: string;
     file: File | null; 

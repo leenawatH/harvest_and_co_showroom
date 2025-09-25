@@ -231,7 +231,7 @@ export default function HomePage() {
             </section>
 
             {/* จัดสวน section */}
-            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px] mb-10">
+            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px]">
                 {/* LEFT: TEXT (40%) */}
                 <div className="w-full md:w-[45%] bg-black text-white flex items-center justify-center p-6 md:p-12 text-center md:text-left">
                     <div>
@@ -256,7 +256,7 @@ export default function HomePage() {
                 {/* RIGHT: IMAGE (60%) */}
                 <div className="w-full md:w-[55%] h-[350px] md:h-full relative">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                        src="/banner/banner.jpg"
                         alt="Vertical Garden"
                         className="object-cover w-full h-full"
                     />
@@ -264,11 +264,11 @@ export default function HomePage() {
             </section>
 
             {/* bigtree section */}
-            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px] mb-10">
+            <section className="w-full flex flex-col md:flex-row h-auto md:h-[500px]">
                 {/* RIGHT: IMAGE (60%) */}
                 <div className="w-full md:w-[55%] h-[350px] md:h-full relative">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                        src="/banner/banner.jpg"
                         alt="Vertical Garden"
                         className="object-cover w-full h-full"
                     />
@@ -321,7 +321,7 @@ export default function HomePage() {
                 {/* RIGHT: IMAGE (60%) */}
                 <div className="w-full md:w-[55%] h-[350px] md:h-full relative">
                     <img
-                        src="https://res.cloudinary.com/dtppo2rxs/image/upload/v1747893617/04_60_rkrlcx.jpg"
+                        src="/banner/banner.jpg"
                         alt="Vertical Garden"
                         className="object-cover w-full h-full"
                     />

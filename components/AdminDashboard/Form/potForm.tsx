@@ -110,7 +110,7 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
         setPotColors(updated);
     }
 
-    function addNewPorColor() {
+    function addNewPotColor() {
         setPotColors([...potColors, {
             id: '',
             pot_id: '',
@@ -205,6 +205,8 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
         if (pot.is_suggested !== originalPot.is_suggested) updatedPotData.is_suggested = finalPot.is_suggested;
         if (pot.similar_pot !== originalPot.similar_pot) updatedPotData.similar_pot = finalPot.similar_pot;
         if (pot.addition_img !== originalPot.addition_img) updatedPotData.addition_img = finalPot.addition_img;
+
+        updatedPotData.color_available = [Color.Black , Color.White , Color.Beige];
 
         const finalUpdatePotData = Object.keys(updatedPotData).length > 1 ? updatedPotData : null;
 
@@ -519,7 +521,7 @@ export default function PotForm({ initialData, onSubmit, onCancel }: PotFormProp
                 </div>
             ))}
 
-            <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addNewPorColor}>
+            <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addNewPotColor}>
                 + Add Pot
             </button>
 
