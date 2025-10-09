@@ -27,7 +27,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
              pot_color,
              height_with_pot,
              price_with_pot
-          )
+          ),
+          plant_more_image(
+            id,
+            url)
           `)
     .eq('id', id).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });

@@ -18,7 +18,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { getAllPots } from '@/lib/service/potService';
 import { getAllPlant, getPlantById } from '@/lib/service/plantService';
 import { uploadImage, deleteImage } from '@/lib/service/cloudinaryService';
-import { Plant, plant_pot_options, Color, Pot } from '@/lib/types/types';
+import { Plant, plant_pot_options, plant_more_image, Color, Pot } from '@/lib/types/types';
 
 interface PlantFormProps {
     initialData: string; // ใช้ plantId
@@ -51,9 +51,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     //Match Pots
     const [allPots, setAllPots] = useState<Pot[]>([]);
+
     const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
+    const [plantMoreImages, setPlantMoreImages] = useState<plant_more_image[]>([]);
+
     const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
-    const [deletePotPairImages, setDeletePotPairImages] = useState<string[]>([])
+    const [originalPlantMoreImages, setOriginalPlantMoreImages] = useState<plant_more_image[]>([]);
+
+    const [deletePotPairImages, setDeletePotPairImages] = useState<string[]>([]);
+    const [deletePlantMoreImages, setDeletePlantMoreImages] = useState<string[]>([]);
 
     const [isPending, setIsPending] = useState(false);
 
@@ -70,7 +76,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 setOriginalPlant(plantData);
 
                 setPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
+                setPlantMoreImages(JSON.parse(JSON.stringify(plantData.plant_more_image ?? [])));
+
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
+                setOriginalPlantMoreImages(JSON.parse(JSON.stringify(plantData.plant_more_image ?? [])));
+
                 setAllPots(potsList);
                 setAllPlants(plantsList);
                 if (plantData.addition_img != null) {
@@ -104,6 +114,12 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         setPotPairs(updated);
     }
 
+    function handlePlantMoreImageChange(index: number, field: keyof plant_more_image, value: string) {
+        const updated = [...plantMoreImages];
+        (updated[index] as any)[field] = value;
+        setPlantMoreImages(updated);
+    }
+
     function removePotPair(index: number, pairId: string | null) {
         if (pairId != null) {
             setDeletePotPairImages(prev => [...prev, potPairs[index].url]);
@@ -111,6 +127,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         const updated = [...potPairs];
         updated.splice(index, 1);
         setPotPairs(updated);
+    }
+
+    function removePlantMoreImage(index: number, id: string | null) {
+        if (id != null) {
+            setDeletePlantMoreImages(prev => [...prev, plantMoreImages[index].url]);
+        }
+        const updated = [...plantMoreImages];
+        updated.splice(index, 1);
+        setPlantMoreImages(updated);
     }
 
     function addPotPair() {
@@ -123,6 +148,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             price_with_pot: '',
             plant_id: '',
             is_suggested: false,
+            file: null
+        }]);
+    }
+
+    function addPlantMoreImage() {
+        setPlantMoreImages([...plantMoreImages, {
+            id: '',
+            url: '',
+            plant_id: '',
             file: null
         }]);
     }
@@ -244,6 +278,59 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         // รอจนกระทั่งอัปเดตทุกอย่างเสร็จ
         await Promise.all(potPromises);
 
+        const plantMoreImagePromises = plantMoreImages.map(async (plantMoreImg, index) => {
+            if (plantMoreImg.file) {
+                const plantMoreImgFile = plantMoreImg.file;
+                let plantMoreImgUrl: any;
+                plantMoreImgUrl = await uploadImage(plantMoreImgFile, `Plant/${plant.name}/More_img`);
+                plantMoreImgUrl = plantMoreImgUrl.secure_url || plantMoreImgUrl.url;
+                handlePlantMoreImageChange(index, 'url', plantMoreImgUrl);
+            }
+            handlePlantMoreImageChange(index, 'plant_id', plant.id);
+        });
+
+        await Promise.all(deletePlantMoreImages.map(async (url) => {
+            if (url.includes('blob')) return; // Ignore blob URLs
+            const urlParts = url.split('Plant');
+            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            await deleteImage(public_id);
+        }));
+
+        await Promise.all(plantMoreImagePromises);
+
+        const newPlantMoreImage = plantMoreImages.filter(p => !p.id);
+
+        const updatedPlantMoreImage = plantMoreImages.filter(p => {
+            const original = originalPlantMoreImages.find(o => o.id === p.id);
+
+            if (original) {
+                // เปรียบเทียบฟิลด์ที่สำคัญระหว่าง original และ p
+                const hasChanges =
+                    original.url !== p.url;
+                return hasChanges;
+            }
+            // ถ้าไม่มี original ให้ไม่รวม
+            return false;
+        }).map(p => {
+            // กรองแค่ฟิลด์ที่มีการเปลี่ยนแปลง
+            const updatedFields: any = {};
+
+            if (p.url !== originalPotPairs.find(o => o.id === p.id)?.url) {
+                updatedFields.url = p.url;
+            }
+
+            return {
+                id: p.id,
+                ...updatedFields
+            };
+        });
+
+        const deletedPlantMoreImageIds = await Promise.all(
+            originalPlantMoreImages
+                .filter(o => !plantMoreImages.some(p => p.id === o.id))
+                .map(async (o) => o.id)
+        );
+
         const newPotOptions = potPairs.filter(p => !p.id);
 
         const updatedPotOptions = potPairs.filter(p => {
@@ -305,10 +392,13 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             finalUpdatePlantData,
             newPotOptions,
             updatedPotOptions,
-            deletedPotOptionIds
+            deletedPotOptionIds,
+            newPlantMoreImage,
+            updatedPlantMoreImage,
+            deletedPlantMoreImageIds
         });
 
-        await onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds });
+        await onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds, newPlantMoreImage, updatedPlantMoreImage, deletedPlantMoreImageIds });
         setIsPending(false);
     }
 
@@ -596,6 +686,68 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             <button type="button" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={addPotPair}>
                 + Add Pot
             </button>
+
+            <h3 className="text-lg font-semibold mb-2 mt-6">More Images of Plant</h3>
+            <div className="space-y-4">
+                {plantMoreImages.map((img, index) => (
+                    <div key={index} className="flex items-center gap-4 relative border p-3 rounded shadow-sm bg-gray-50">
+                        {/* Input file */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                const updated = [...plantMoreImages];
+                                // เก็บไฟล์สำหรับ upload
+                                updated[index].file = file;
+                                // ถ้ามี url เดิมให้ลบออก Cloudinary
+                                if (updated[index].url) {
+                                    setDeletePlantMoreImages(prev => [...prev, updated[index].url]);
+                                }
+                                // preview
+                                updated[index].url = URL.createObjectURL(file);
+                                setPlantMoreImages(updated);
+                            }}
+                            className="w-full border px-3 py-2"
+                        />
+
+                        {/* Preview */}
+                        <div className="w-32 h-32 overflow-hidden flex items-center justify-center relative">
+                            {img.url ? (
+                                <>
+                                    <img
+                                        src={img.url}
+                                        alt={`More ${index + 1}`}
+                                        className="w-full h-full object-cover border rounded"
+                                    />
+                                    {/* Delete button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => removePlantMoreImage(index, img.id)}
+                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                        ×
+                                    </button>
+                                </>
+                            ) : (
+                                <span className="text-gray-400 text-sm">No Image</span>
+                            )}
+                        </div>
+                    </div>
+                ))}
+
+                {/* Add More Image button */}
+                <button
+                    type="button"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={addPlantMoreImage}
+                >
+                    + Add More Image
+                </button>
+            </div>
+
 
             {/* Bottom Floating Button */}
             <div className="sticky bottom-0 bg-white pt-6 pb-4 flex justify-end gap-4 border-t mt-10 z-10">

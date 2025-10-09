@@ -1,5 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
-import { Plant, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { Plant, plant_more_image, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
 
 export async function getAllPlant(): Promise<Plant[]> {
   const res = await fetch(`${getBaseUrl()}/api/plant`);
@@ -142,6 +142,26 @@ export async function addNewPlantPotOption(data: plant_pot_options): Promise<pla
   return res.json();
 }
 
+//New Plant_More_Image
+export async function addNewPlantMoreImage(data: plant_more_image): Promise<plant_more_image> {
+
+  const newData = { 
+    plant_id : data.plant_id,
+    url: data.url,
+  };
+  console.log("newData");
+  console.log(newData);
+  console.log(JSON.stringify(newData));
+  
+  const res = await fetch(`${getBaseUrl()}/api/plant_more_image`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newData),
+  });
+  if (!res.ok) throw new Error('Failed to add plant');
+  return res.json();
+}
+
 // ✅ UPDATE Plant Pot Option
 export async function updatePlantPotOption(data: plant_pot_options): Promise<plant_pot_options> {
   console.log("data" + data);
@@ -155,9 +175,31 @@ export async function updatePlantPotOption(data: plant_pot_options): Promise<pla
   return res.json();
 }
 
+// ✅ UPDATE Plant More Image
+export async function updatePlantMoreImage(data: plant_more_image): Promise<plant_more_image> {
+  console.log("data" + data);
+  //Edit plant Info
+  const res = await fetch(`${getBaseUrl()}/api/plant_more_image/${data.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update plant');
+  return res.json();
+}
+
 // ✅ DELETE Plant Pot Option
 export async function deletePlantPotOption(id: string): Promise<void> {
   const res = await fetch(`${getBaseUrl()}/api/plant_pot_options/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Failed to delete plant');
+}
+
+// ✅ DELETE Plant More Image
+export async function deletePlantMoreImage(id: string): Promise<void> {
+  const res = await fetch(`${getBaseUrl()}/api/plant_more_image/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   });

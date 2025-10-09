@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, updatePlantPotOption, deletePlantPotOption } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, updatePlantPotOption, deletePlantPotOption, addNewPlantMoreImage, updatePlantMoreImage, deletePlantMoreImage } from '@/lib/service/plantService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
 import { SinglePlantWithPotInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
@@ -109,7 +109,7 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
       {isFormOpen ? (
         <PlantForm
           initialData={editingPlantId}
-          onSubmit={async ({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds }) => {
+          onSubmit={async ({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds, newPlantMoreImage, updatedPlantMoreImage, deletedPlantMoreImageIds }) => {
             setIsLoading(true);
             if (finalUpdatePlantData) {
               if (editingPlantId === "") {
@@ -122,6 +122,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                     pair.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
                     try {
                       await addNewPlantPotOption(pair);
+                    } catch (error) {
+                      console.error("Error adding new pot option:", error);
+                    }
+                  }
+                }
+
+                if (newPlantMoreImage != null) {
+                  for (const plantMoreImage of newPlantMoreImage) {
+                    plantMoreImage.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
+                    try {
+                      await addNewPlantMoreImage(plantMoreImage);
                     } catch (error) {
                       console.error("Error adding new pot option:", error);
                     }
@@ -142,6 +153,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                     }
                   }
                 }
+
+                if (newPlantMoreImage != null) {
+                  for (const plantMoreImage of newPlantMoreImage) {
+                    plantMoreImage.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                    try {
+                      await addNewPlantMoreImage(plantMoreImage);
+                    } catch (error) {
+                      console.error("Error adding new pot option:", error);
+                    }
+                  }
+                }
               }
             } else {
               // ถ้าไม่มีการอัปเดต Plant ก็ใช้ editingPlantId สำหรับ plant_id
@@ -150,6 +172,16 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   pair.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
                   try {
                     await addNewPlantPotOption(pair);
+                  } catch (error) {
+                    console.error("Error adding new pot option:", error);
+                  }
+                }
+              }
+              if (newPlantMoreImage != null) {
+                for (const plantMoreImage of newPlantMoreImage) {
+                  plantMoreImage.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                  try {
+                    await addNewPlantMoreImage(plantMoreImage);
                   } catch (error) {
                     console.error("Error adding new pot option:", error);
                   }
@@ -167,6 +199,19 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
               }
 
             }
+
+            if (updatedPlantMoreImage != null) {
+              for (const plantMoreImage of updatedPlantMoreImage) {
+                try {
+                  await updatePlantMoreImage(plantMoreImage);
+                }
+                catch (error) {
+                  console.error("Error updating pot option:", error);
+                }
+              }
+
+            }
+
             if (deletedPotOptionIds != null) {
               for (const id of deletedPotOptionIds) {
                 try {
@@ -176,8 +221,19 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   console.error("Error deleting pot option:", error);
                 }
               }
-
             }
+
+            if (deletedPlantMoreImageIds != null) {
+              for (const id of deletedPlantMoreImageIds) {
+                try {
+                  await deletePlantMoreImage(id);
+                }
+                catch (error) {
+                  console.error("Error deleting pot option:", error);
+                }
+              }
+            }
+
             await refresh();
             await refreshData();
             setIsFormOpen(false);
