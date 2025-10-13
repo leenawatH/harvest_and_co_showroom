@@ -26,10 +26,10 @@ export default function HomePage() {
 
     const { setLoading } = useLoading();
 
-    const topPickScroll = HorizontalScroll(450);
-    const potScroll = HorizontalScroll(450);
-    const bigTreeScroll = HorizontalScroll(450);
-    const portfolioScroll = HorizontalScroll(420 + 24);
+    const topPickScroll = HorizontalScroll(450 , 3);
+    const potScroll = HorizontalScroll(450 , 3);
+    const bigTreeScroll = HorizontalScroll(450 , 3);
+    const portfolioScroll = HorizontalScroll(450 , 3);
 
     useEffect(() => {
         setLoading(true);

@@ -1,6 +1,18 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { getAllSinglePlantWithPotInCard, deletePlant, updatePlant, addPlant, addNewPlantPotOption, updatePlantPotOption, deletePlantPotOption, addNewPlantMoreImage, updatePlantMoreImage, deletePlantMoreImage } from '@/lib/service/plantService';
+import { getAllSinglePlantWithPotInCard, 
+         deletePlant, 
+         updatePlant, 
+         addPlant, 
+         addNewPlantPotOption, 
+         updatePlantPotOption, 
+         deletePlantPotOption, 
+         addNewPlantMoreImage, 
+         updatePlantMoreImage, 
+         deletePlantMoreImage,
+         addNewPlantReviewPic,
+         updatePlantReviewPic,
+         deletePlantReviewPic } from '@/lib/service/plantService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
 import { SinglePlantWithPotInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
@@ -109,7 +121,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
       {isFormOpen ? (
         <PlantForm
           initialData={editingPlantId}
-          onSubmit={async ({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds, newPlantMoreImage, updatedPlantMoreImage, deletedPlantMoreImageIds }) => {
+          onSubmit={async ({ finalUpdatePlantData, 
+                             newPotOptions, 
+                             updatedPotOptions, 
+                             deletedPotOptionIds, 
+                             newPlantMoreImage, 
+                             updatedPlantMoreImage, 
+                             deletedPlantMoreImageIds,
+                             newPlantReviewPic, 
+                             updatedPlantReviewPic, 
+                             deletedPlantReviewPicIds ,  
+                            }) => {
             setIsLoading(true);
             if (finalUpdatePlantData) {
               if (editingPlantId === "") {
@@ -135,6 +157,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                       await addNewPlantMoreImage(plantMoreImage);
                     } catch (error) {
                       console.error("Error adding new pot option:", error);
+                    }
+                  }
+                }
+
+                if (newPlantReviewPic != null) {
+                  for (const plantReviewPic of newPlantReviewPic) {
+                    plantReviewPic.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
+                    try {
+                      await addNewPlantReviewPic(plantReviewPic);
+                    } catch (error) {
+                      console.error("Error adding new plant review pic:", error);
                     }
                   }
                 }
@@ -164,6 +197,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                     }
                   }
                 }
+
+                if (newPlantReviewPic != null) {
+                  for (const plantReviewPic of newPlantReviewPic) {
+                    plantReviewPic.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                    try {
+                      await addNewPlantReviewPic(plantReviewPic);
+                    } catch (error) {
+                      console.error("Error adding new pot review:", error);
+                    }
+                  }
+                }
               }
             } else {
               // ถ้าไม่มีการอัปเดต Plant ก็ใช้ editingPlantId สำหรับ plant_id
@@ -187,6 +231,17 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   }
                 }
               }
+
+              if (newPlantReviewPic != null) {
+                for (const plantReviewPic of newPlantReviewPic) {
+                  plantReviewPic.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
+                  try {
+                    await addNewPlantReviewPic(plantReviewPic);
+                  } catch (error) {
+                    console.error("Error adding new plant review pic :", error);
+                  }
+                }
+              }
             }
             if (updatedPotOptions != null) {
               for (const pair of updatedPotOptions) {
@@ -197,7 +252,6 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   console.error("Error updating pot option:", error);
                 }
               }
-
             }
 
             if (updatedPlantMoreImage != null) {
@@ -206,10 +260,20 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   await updatePlantMoreImage(plantMoreImage);
                 }
                 catch (error) {
-                  console.error("Error updating pot option:", error);
+                  console.error("Error updating plant more image:", error);
                 }
               }
+            }
 
+            if (updatedPlantReviewPic != null) {
+              for (const plantReviewPic of updatedPlantReviewPic) {
+                try {
+                  await updatePlantReviewPic(plantReviewPic);
+                }
+                catch (error) {
+                  console.error("Error updating plant review pic:", error);
+                }
+              }
             }
 
             if (deletedPotOptionIds != null) {
@@ -229,7 +293,18 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   await deletePlantMoreImage(id);
                 }
                 catch (error) {
-                  console.error("Error deleting pot option:", error);
+                  console.error("Error deleting plant more image:", error);
+                }
+              }
+            }
+
+            if (deletedPlantReviewPicIds != null) {
+              for (const id of deletedPlantReviewPicIds) {
+                try {
+                  await deletePlantReviewPic(id);
+                }
+                catch (error) {
+                  console.error("Error deleting plant review pic:", error);
                 }
               }
             }

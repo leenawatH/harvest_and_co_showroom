@@ -18,7 +18,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { getAllPots } from '@/lib/service/potService';
 import { getAllPlant, getPlantById } from '@/lib/service/plantService';
 import { uploadImage, deleteImage } from '@/lib/service/cloudinaryService';
-import { Plant, plant_pot_options, plant_more_image, Color, Pot } from '@/lib/types/types';
+import { Plant, plant_pot_options, plant_more_image, plant_review_pic, Color, Pot } from '@/lib/types/types';
 
 interface PlantFormProps {
     initialData: string; // ใช้ plantId
@@ -52,12 +52,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
     //Match Pots
     const [allPots, setAllPots] = useState<Pot[]>([]);
 
+    const [plantReviewPic, setPlantReviewPic] = useState<plant_review_pic[]>([]);
     const [potPairs, setPotPairs] = useState<plant_pot_options[]>([]);
     const [plantMoreImages, setPlantMoreImages] = useState<plant_more_image[]>([]);
 
+    const [originalPlantReviewPic, setOriginalPlantReviewPic] = useState<plant_review_pic[]>([]);
     const [originalPotPairs, setOriginalPotPairs] = useState<plant_pot_options[]>([]);
     const [originalPlantMoreImages, setOriginalPlantMoreImages] = useState<plant_more_image[]>([]);
 
+    const [deletePlantReviewPic, setDeletePlantReviewPic] = useState<string[]>([]);
     const [deletePotPairImages, setDeletePotPairImages] = useState<string[]>([]);
     const [deletePlantMoreImages, setDeletePlantMoreImages] = useState<string[]>([]);
 
@@ -77,9 +80,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
                 setPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setPlantMoreImages(JSON.parse(JSON.stringify(plantData.plant_more_image ?? [])));
+                setPlantReviewPic(JSON.parse(JSON.stringify(plantData.plant_review_pic ?? [])));
 
                 setOriginalPotPairs(JSON.parse(JSON.stringify(plantData.plant_pot_options ?? [])));
                 setOriginalPlantMoreImages(JSON.parse(JSON.stringify(plantData.plant_more_image ?? [])));
+                setOriginalPlantReviewPic(JSON.parse(JSON.stringify(plantData.plant_review_pic ?? [])));
 
                 setAllPots(potsList);
                 setAllPlants(plantsList);
@@ -94,6 +99,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     setSelectedSimilar([]);
                 }
                 setDeleteAdditionImages([]);
+
 
             } catch (err) {
                 console.error('Error loading plant data:', err);
@@ -120,6 +126,12 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         setPlantMoreImages(updated);
     }
 
+    function handlePlantReviewPicChange(index: number, field: keyof plant_review_pic, value: string) {
+        const updated = [...plantReviewPic];
+        (updated[index] as any)[field] = value;
+        setPlantReviewPic(updated);
+    }
+
     function removePotPair(index: number, pairId: string | null) {
         if (pairId != null) {
             setDeletePotPairImages(prev => [...prev, potPairs[index].url]);
@@ -138,6 +150,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         setPlantMoreImages(updated);
     }
 
+    function removePlantReviewPic(index: number, id: string | null) {
+        if (id != null) {
+            setDeletePlantReviewPic(prev => [...prev, plantReviewPic[index].url]);
+        }
+        const updated = [...plantReviewPic];
+        updated.splice(index, 1);
+        setPlantReviewPic(updated);
+    }
+
     function addPotPair() {
         setPotPairs([...potPairs, {
             id: '',
@@ -154,6 +175,15 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
     function addPlantMoreImage() {
         setPlantMoreImages([...plantMoreImages, {
+            id: '',
+            url: '',
+            plant_id: '',
+            file: null
+        }]);
+    }
+
+    function addPlantReviewPic() {
+        setPlantReviewPic([...plantReviewPic, {
             id: '',
             url: '',
             plant_id: '',
@@ -220,6 +250,13 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         if (!originalPotPairs) return;
 
+        const validReviewPics = plantReviewPic.filter(pic => pic.url || pic.file);
+        if (validReviewPics.length < 2) {
+            alert('Review Pic ต้องมีอย่างน้อย 2 รูป');
+            setIsPending(false);
+            return;
+        }
+
         // plant info Update
         let resultsUrl = [];
         for (let i = 0; i < additionImageFileRef.current.length; i++) {
@@ -254,6 +291,27 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
         if (plant.addition_img !== originalPlant.addition_img) updatedPlantData.addition_img = finalPlant.addition_img;
 
         const finalUpdatePlantData = Object.keys(updatedPlantData).length > 1 ? updatedPlantData : null;
+
+        const plantReviewPicPromises = plantReviewPic.map(async (plantReviewPic, index) => {
+            if (plantReviewPic.file) {
+                const plantReviewPicFile = plantReviewPic.file;
+                let plantReviewPicUrl: any;
+                plantReviewPicUrl = await uploadImage(plantReviewPicFile, `Plant/${plant.name}/Review_pic`);
+                plantReviewPicUrl = plantReviewPicUrl.secure_url || plantReviewPicUrl.url;
+                handlePlantReviewPicChange(index, 'url', plantReviewPicUrl);
+            }
+            handlePlantReviewPicChange(index, 'plant_id', plant.id);
+        });
+
+        await Promise.all(deletePlantReviewPic.map(async (url) => {
+            if (url.includes('blob')) return; // Ignore blob URLs
+            const urlParts = url.split('Plant');
+            const public_id = "Plant" + urlParts[urlParts.length - 1].split('.')[0];
+            await deleteImage(public_id);
+        }));
+
+        await Promise.all(plantReviewPicPromises);
+
 
         // อัปเดตข้อมูล Pot
         const potPromises = potPairs.map(async (pair, index) => {
@@ -298,6 +356,39 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
 
         await Promise.all(plantMoreImagePromises);
 
+        const newPlantReviewPic = plantReviewPic.filter(p => !p.id);
+
+        const updatedPlantReviewPic = plantReviewPic.filter(p => {
+            const original = originalPlantReviewPic.find(o => o.id === p.id);
+
+            if (original) {
+                // เปรียบเทียบฟิลด์ที่สำคัญระหว่าง original และ p
+                const hasChanges =
+                    original.url !== p.url;
+                return hasChanges;
+            }
+            // ถ้าไม่มี original ให้ไม่รวม
+            return false;
+        }).map(p => {
+            // กรองแค่ฟิลด์ที่มีการเปลี่ยนแปลง
+            const updatedFields: any = {};
+
+            if (p.url !== originalPlantReviewPic.find(o => o.id === p.id)?.url) {
+                updatedFields.url = p.url;
+            }
+
+            return {
+                id: p.id,
+                ...updatedFields
+            };
+        });
+
+        const deletedPlantReviewPicIds = await Promise.all(
+            originalPlantReviewPic
+                .filter(o => !plantReviewPic.some(p => p.id === o.id))
+                .map(async (o) => o.id)
+        );
+
         const newPlantMoreImage = plantMoreImages.filter(p => !p.id);
 
         const updatedPlantMoreImage = plantMoreImages.filter(p => {
@@ -315,7 +406,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             // กรองแค่ฟิลด์ที่มีการเปลี่ยนแปลง
             const updatedFields: any = {};
 
-            if (p.url !== originalPotPairs.find(o => o.id === p.id)?.url) {
+            if (p.url !== originalPlantMoreImages.find(o => o.id === p.id)?.url) {
                 updatedFields.url = p.url;
             }
 
@@ -395,10 +486,22 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
             deletedPotOptionIds,
             newPlantMoreImage,
             updatedPlantMoreImage,
-            deletedPlantMoreImageIds
+            deletedPlantMoreImageIds,
+            newPlantReviewPic,
+            updatedPlantReviewPic,
+            deletedPlantReviewPicIds
         });
 
-        await onSubmit({ finalUpdatePlantData, newPotOptions, updatedPotOptions, deletedPotOptionIds, newPlantMoreImage, updatedPlantMoreImage, deletedPlantMoreImageIds });
+        await onSubmit({ finalUpdatePlantData, 
+                         newPotOptions,
+                         updatedPotOptions, 
+                         deletedPotOptionIds, 
+                         newPlantMoreImage, 
+                         updatedPlantMoreImage, 
+                         deletedPlantMoreImageIds, 
+                         newPlantReviewPic, 
+                         updatedPlantReviewPic, 
+                         deletedPlantReviewPicIds });
         setIsPending(false);
     }
 
@@ -509,6 +612,74 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                     </div>
                 </div>
             )}
+
+            <h3 className="text-lg font-semibold mb-2 mt-6">Review Pic</h3>
+            <div className="space-y-4">
+                {plantReviewPic.map((img, index) => (
+                    <div key={index} className="flex items-center gap-4 relative border p-3 rounded shadow-sm bg-gray-50">
+                        {/* Input file */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                const updated = [...plantReviewPic];
+                                // เก็บไฟล์สำหรับ upload
+                                updated[index].file = file;
+                                // ถ้ามี url เดิมให้ลบออก Cloudinary
+                                if (updated[index].url) {
+                                    setDeletePlantReviewPic(prev => [...prev, updated[index].url]);
+                                }
+                                // preview
+                                updated[index].url = URL.createObjectURL(file);
+                                setPlantReviewPic(updated);
+                            }}
+                            className="w-full border px-3 py-2"
+                        />
+
+                        {/* Preview */}
+                        <div className="w-32 h-32 overflow-hidden flex items-center justify-center relative">
+                            {img.url ? (
+                                <>
+                                    <img
+                                        src={img.url}
+                                        alt={`More ${index + 1}`}
+                                        className="w-full h-full object-cover border rounded"
+                                    />
+                                    {/* Delete button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => removePlantReviewPic(index, img.id)}
+                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                        ×
+                                    </button>
+                                </>
+                            ) : (
+                                <span className="text-gray-400 text-sm">No Image</span>
+                            )}
+                             <button
+                                        type="button"
+                                        onClick={() => removePlantReviewPic(index, img.id)}
+                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                        ×
+                                    </button>
+                        </div>
+                    </div>
+                ))}
+
+                {/* Add More Image button */}
+                <button
+                    type="button"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={addPlantReviewPic}
+                >
+                    + Add More Image
+                </button>
+            </div>
 
             <h3 className="text-lg font-semibold mb-2 mt-6">Image with Environment</h3>
             <div className="space-y-6">

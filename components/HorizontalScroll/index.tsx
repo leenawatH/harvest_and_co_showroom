@@ -1,68 +1,121 @@
 "use client";
+import { check } from 'prettier';
 import { useRef, useEffect, useState } from 'react';
 
-export default function HorizontalScroll(baseItemWidth: number) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [canLeft, setCanLeft] = useState(false);
-    const [canRight, setCanRight] = useState(true);
-    const [itemWidth, setItemWidth] = useState(baseItemWidth);
+export default function HorizontalScroll(baseItemWidth: number, numOfItem: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+  const [itemWidth, setItemWidth] = useState(baseItemWidth);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (typeof window !== "undefined") {
-                const width = window.innerWidth;
-                if (width < 640) {
-                    setItemWidth(baseItemWidth / 3); 
-                } else {
-                    setItemWidth(baseItemWidth);
-                }
-            }
-            if(baseItemWidth < 449) {
-                setItemWidth(baseItemWidth-120);
-            }
-        };
+  // 🧩 ฟังก์ชันตรวจ scroll ซ้าย/ขวา
+  const checkScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    const tolerance = 5;
+    setCanLeft(scrollLeft > tolerance);
+    setCanRight(scrollLeft < maxScrollLeft - tolerance);
+    console.log({ scrollLeft, scrollWidth, clientWidth, maxScrollLeft, canLeft, canRight })
+  };
 
-        handleResize(); 
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, [baseItemWidth]);
-
-    const checkScroll = () => {
-        if (ref.current) {
-            const { scrollLeft, scrollWidth, clientWidth } = ref.current;
-            setCanLeft(scrollLeft > 0);
-            setCanRight(scrollLeft + clientWidth < scrollWidth - 1);
-        }
+  // 🧩 Resize listener ปรับ itemWidth และตรวจ scroll
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) setItemWidth(baseItemWidth / numOfItem);
+      else setItemWidth(baseItemWidth);
+      if (baseItemWidth < 449) setItemWidth(baseItemWidth - 120);
+      checkScroll();
     };
 
-    useEffect(() => {
-        const container = ref.current;
-        if (!container) return;
-        container.addEventListener('scroll', checkScroll);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [baseItemWidth]);
+
+  // 🧩 Scroll listener + Observer + Loop ตรวจ scrollWidth จริง
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    el.addEventListener('scroll', checkScroll);
+    const updateAfterLoad = () => checkScroll();
+    setTimeout(updateAfterLoad, 0);
+
+    const resizeObs = new ResizeObserver(() => checkScroll());
+    resizeObs.observe(el);
+
+    const mutationObs = new MutationObserver(() => checkScroll());
+    mutationObs.observe(el, { childList: true, subtree: true });
+
+    window.addEventListener('resize', updateAfterLoad);
+
+    // ✅ NEW: loop ตรวจ scrollWidth เปลี่ยน (เช็กทุก frame)
+    let lastScrollWidth = el.scrollWidth;
+    const loopCheck = () => {
+      if (el.scrollWidth !== lastScrollWidth) {
+        lastScrollWidth = el.scrollWidth;
         checkScroll();
-        return () => container.removeEventListener('scroll', checkScroll);
-    }, []);
-
-    const scrollLeftByOne = () => {
-        if (!ref.current) return;
-        const { scrollLeft } = ref.current;
-        if (scrollLeft <= itemWidth + 100) {
-            ref.current.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-            ref.current.scrollBy({ left: -itemWidth, behavior: 'smooth' });
-        }
+      }
+      requestAnimationFrame(loopCheck);
     };
+    requestAnimationFrame(loopCheck);
 
-    const scrollRightByOne = () => {
-        if (!ref.current) return;
-        const { scrollLeft, scrollWidth, clientWidth } = ref.current;
-        const maxScrollLeft = scrollWidth - clientWidth;
-        if (scrollLeft + itemWidth >= maxScrollLeft - 100) {
-            ref.current.scrollTo({ left: maxScrollLeft, behavior: 'smooth' });
-        } else {
-            ref.current.scrollBy({ left: itemWidth, behavior: 'smooth' });
-        }
+    // ✅ ตรวจหลังภาพโหลด
+    const imgs = el.querySelectorAll("img");
+    if (imgs.length > 0) {
+      let loaded = 0;
+      const handleImgLoad = () => {
+        loaded++;
+        if (loaded === imgs.length) setTimeout(checkScroll, 200);
+      };
+      imgs.forEach((img) => {
+        if (img.complete) handleImgLoad();
+        else img.addEventListener("load", handleImgLoad);
+      });
+    }
+
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', updateAfterLoad);
+      resizeObs.disconnect();
+      mutationObs.disconnect();
     };
+  }, []);
 
-    return { ref, canLeft, canRight, scrollLeftByOne, scrollRightByOne };
+  // 🧩 Scroll control
+  const scrollLeftByOne = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+    waitForScrollEnd(el, checkScroll);
+  };
+
+  const scrollRightByOne = () => {
+    const el = ref.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    const tolerance = 5;
+
+    if (scrollLeft + itemWidth >= maxScrollLeft - tolerance) {
+      el.scrollTo({ left: maxScrollLeft, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: itemWidth, behavior: 'smooth' });
+    }
+    waitForScrollEnd(el, checkScroll);
+  };
+
+  function waitForScrollEnd(el: HTMLElement, callback: () => void, timeout = 100) {
+    let isScrolling: NodeJS.Timeout;
+    el.addEventListener("scroll", () => {
+      clearTimeout(isScrolling);
+      isScrolling = setTimeout(() => callback(), timeout);
+    });
+  }
+
+  return { ref, canLeft, canRight, scrollLeftByOne, scrollRightByOne , checkScroll };
 }
+

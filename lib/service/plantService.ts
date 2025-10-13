@@ -1,5 +1,5 @@
 import { getBaseUrl } from '@/lib/helpers/getBaseUrl';
-import { Plant, plant_more_image, plant_pot_options, SinglePlantWithPotInCard } from '@/lib/types/types';
+import { Plant, plant_more_image, plant_pot_options,plant_review_pic, SinglePlantWithPotInCard } from '@/lib/types/types';
 
 export async function getAllPlant(): Promise<Plant[]> {
   const res = await fetch(`${getBaseUrl()}/api/plant`);
@@ -158,7 +158,27 @@ export async function addNewPlantMoreImage(data: plant_more_image): Promise<plan
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newData),
   });
-  if (!res.ok) throw new Error('Failed to add plant');
+  if (!res.ok) throw new Error('Failed to add plant more image');
+  return res.json();
+}
+
+//New Plant_Review_Pic
+export async function addNewPlantReviewPic(data: plant_review_pic): Promise<plant_review_pic> {
+
+  const newData = { 
+    plant_id : data.plant_id,
+    url: data.url,
+  };
+  console.log("newData");
+  console.log(newData);
+  console.log(JSON.stringify(newData));
+  
+  const res = await fetch(`${getBaseUrl()}/api/plant_review_pic`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newData),
+  });
+  if (!res.ok) throw new Error('Failed to add plant review pic');
   return res.json();
 }
 
@@ -171,7 +191,7 @@ export async function updatePlantPotOption(data: plant_pot_options): Promise<pla
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update plant');
+  if (!res.ok) throw new Error('Failed to update plant pot option');
   return res.json();
 }
 
@@ -184,7 +204,20 @@ export async function updatePlantMoreImage(data: plant_more_image): Promise<plan
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update plant');
+  if (!res.ok) throw new Error('Failed to update plant more image');
+  return res.json();
+}
+
+// ✅ UPDATE Plant Review Pic
+export async function updatePlantReviewPic(data: plant_review_pic): Promise<plant_review_pic> {
+  console.log("data" + data);
+  //Edit plant Info
+  const res = await fetch(`${getBaseUrl()}/api/plant_review_pic/${data.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update plant review pic');
   return res.json();
 }
 
@@ -194,7 +227,7 @@ export async function deletePlantPotOption(id: string): Promise<void> {
     method: 'DELETE',
     credentials: 'include',
   });
-  if (!res.ok) throw new Error('Failed to delete plant');
+  if (!res.ok) throw new Error('Failed to delete plant pot option');
 }
 
 // ✅ DELETE Plant More Image
@@ -203,5 +236,14 @@ export async function deletePlantMoreImage(id: string): Promise<void> {
     method: 'DELETE',
     credentials: 'include',
   });
-  if (!res.ok) throw new Error('Failed to delete plant');
+  if (!res.ok) throw new Error('Failed to delete plant more image');
+}
+
+// ✅ DELETE Plant Review Pic
+export async function deletePlantReviewPic(id: string): Promise<void> {
+  const res = await fetch(`${getBaseUrl()}/api/plant_review_pic/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Failed to delete plant review pic');
 }

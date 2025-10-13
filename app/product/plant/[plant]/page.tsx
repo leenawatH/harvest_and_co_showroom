@@ -1,13 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-import { Color, Plant, plant_pot_options } from '@/lib/types/types';
+import { Color, Plant, plant_pot_options, plant_review_pic } from '@/lib/types/types';
 import { getPlantById } from '@/lib/service/plantService';
 import { getPotById } from '@/lib/service/potService';
 import { useLoading } from '@/components/LoadingProvider/LoadingProvider';
+
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import HorizontalScroll from '@/components/HorizontalScroll';
 
 type ColorChip = { color: Color; url: string };
 
@@ -37,10 +41,14 @@ export default function PlantDetail() {
   const [selectedPotId, setSelectedPotId] = useState<string | null>(null);
   const [selectedColorUrl, setSelectedColorUrl] = useState<string | null>(null);
 
+  const [plantReviewPic, setPlantReviewPic] = useState<plant_review_pic[]>([]);
+
   const [similar_plant, setSimilar_plant] = useState<SimilarPlant[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const { setLoading } = useLoading();
+
+  const reviewPicScroll = HorizontalScroll(850 , 2);
 
   // โหลดข้อมูล plant ตาม id, และ group options → PlantPot[]
   useEffect(() => {
@@ -55,22 +63,23 @@ export default function PlantDetail() {
 
         const data = await getPlantById(id);
         setPlant(data);
+        setPlantReviewPic(data.plant_review_pic ?? []);
 
-        const grouped = await groupOptionsByPotId(data.plant_pot_options ?? []);
+        const potPair = await groupOptionsByPotId(data.plant_pot_options ?? []);
 
         const suggestedPotId =
           (data.plant_pot_options ?? []).find(o => Boolean(o.is_suggested))?.pot_id ?? null;
 
-        grouped.sort((a, b) =>
+        potPair.sort((a, b) =>
           Number(b.pot_id === suggestedPotId) - Number(a.pot_id === suggestedPotId)
         );
 
-        setPlantPots(grouped);
+        setPlantPots(potPair);
 
 
-        if (grouped.length > 0) {
-          setSelectedPotId(grouped[0].pot_id);
-          setSelectedColorUrl(grouped[0].colors[0]?.url ?? null);
+        if (potPair.length > 0) {
+          setSelectedPotId(potPair[0].pot_id);
+          setSelectedColorUrl(potPair[0].colors[0]?.url ?? null);
         }
 
         // ก่อนเริ่มโหลด similar ล้าง state เก่าไว้กันซ้อน
@@ -110,7 +119,13 @@ export default function PlantDetail() {
       }
     };
     setUp();
+
   }, [params]);
+
+  useEffect(() => {
+    console.log("review : " ,reviewPicScroll.ref.current);
+    reviewPicScroll.checkScroll();
+  },[plantReviewPic]);
 
   // สร้างลิสต์ใหม่จาก plant_pot_options ให้เป็น PlantPot[]
   async function groupOptionsByPotId(options: plant_pot_options[]): Promise<PlantPot[]> {
@@ -304,6 +319,54 @@ export default function PlantDetail() {
               <div className="text-gray-400">No image available</div>
             )}
           </div>
+          {/* Thumbnails ของทุกกระถาง + More Images */}
+          <section className="w-full max-w-6xl mx-auto mt-8 px-5">
+            <div className="flex flex-wrap justify-center gap-4">
+              {/* กระถาง */}
+              {plantPots.map((pot) =>
+                pot.colors.map((c, idx) => (
+                  <div
+                    key={`${pot.pot_id}-${idx}`}
+                    className={`w-20 h-20 border rounded overflow-hidden cursor-pointer ${selectedPotId === pot.pot_id && selectedColorUrl === c.url
+                      ? 'ring-2 ring-green-500'
+                      : ''
+                      }`}
+                    onClick={() => {
+                      // เปลี่ยน selected pot + selected color
+                      setSelectedPotId(pot.pot_id);
+                      setSelectedColorUrl(c.url);
+                    }}
+                  >
+                    <img
+                      src={c.url}
+                      alt={`${pot.pot_name} - ${c.color}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))
+              )}
+
+              {/* More Images */}
+              {plant.plant_more_image?.map((plant, idx) => (
+                <div
+                  key={`more-${idx}`}
+                  className={`w-20 h-20 border rounded overflow-hidden cursor-pointer ${imageUrl === plant.url ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                  onClick={() => {
+                    setSelectedPotId(null);
+                    setSelectedColorUrl(plant.url);
+                  }}
+                >
+                  <img
+                    src={plant.url}
+                    alt={`More image ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
         </div>
       </div>
 
@@ -319,30 +382,54 @@ export default function PlantDetail() {
       </section>
 
       {/* รูปตัวอย่าง 2 รูป */}
-      <div className="w-full max-w-6xl flex flex-col md:flex-row gap-10 bg-white mt-10 rounded-xl">
-        <div className="flex-1 flex flex-col items-center">
-          <div className="flex flex-row gap-4 w-full justify-center">
-            {[0, 1].map((i) => {
-              const url = plant.addition_img?.[i] ?? null;
-              return (
-                <div
-                  key={i}
-                  className="w-full rounded-lg flex items-center justify-center mb-4 overflow-hidden"
-                >
-                  {url ? (
-                    <img
-                      src={url}
-                      alt={plant.name}
-                      className="w-full object-contain object-bottom transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="text-gray-400">No image available</div>
-                  )}
+      <div className="w-full h-full max-w-6xl bg-white mt-10 p-4 relative">
+        <div
+          ref={reviewPicScroll.ref}
+          className="flex md:gap-10 w-max max-w-full sm:px-2 md:px-1 overflow-x-auto scroll-smooth"
+        >
+          {plantReviewPic.map((img, idx) => (
+            <div
+              key={idx}
+              className="flex-none min-w-[50%] sm:min-w-[50%] md:min-w-[50%] h-64 rounded-lg overflow-hidden border"
+            >
+              {img.url ? (
+                <img
+                  src={img.url}
+                  alt={`Review ${idx + 1}`}
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  No image
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </div>
+          ))}
         </div>
+
+        {/* Arrow buttons */}
+       <button
+                                   onClick={reviewPicScroll.scrollLeftByOne}
+                                   disabled={!reviewPicScroll.canLeft}
+                                   className={`absolute -left-1 top-1/2 -translate-y-1/2 z-10 
+                       text-black transition-transform duration-200 ease-in-out
+                       ${reviewPicScroll.canLeft ? 'opacity-100' : 'opacity-30 cursor-default'}
+                       scale-70 hover:scale-125 active:scale-125
+                     `}
+                               >
+                                   <ArrowBackIosNewIcon fontSize="small" />
+                               </button>
+                               <button
+                                   onClick={reviewPicScroll.scrollRightByOne}
+                                   disabled={!reviewPicScroll.canRight}
+                                   className={`absolute -right-1 top-1/2 -translate-y-1/2 z-10 
+                       text-black transition-transform duration-200 ease-in-out
+                       ${reviewPicScroll.canRight ? 'opacity-100' : 'opacity-30 cursor-default'}
+                       scale-70 hover:scale-125 active:scale-125
+                     `}
+                               >
+                                   <ArrowForwardIosIcon fontSize="small" />
+                               </button>
       </div>
 
       {/* Similar (demo) */}

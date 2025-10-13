@@ -30,6 +30,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           ),
           plant_more_image(
             id,
+            url),
+          plant_review_pic(
+            id,
             url)
           `)
     .eq('id', id).single();
@@ -91,21 +94,31 @@ export async function DELETE(request: Request) {
   if (!id) {
     return NextResponse.json({ error: "Missing ID" }, { status: 400 });
   }
-  
+
   const { error: error1 } = await supabase
+    .from("plant_more_image")
+    .delete()
+    .eq("plant_id", id);
+
+  const { error: error2 } = await supabase
+    .from("plant_review_pic")
+    .delete()
+    .eq("plant_id", id);
+  
+  const { error: error3 } = await supabase
     .from("plant_pot_options")
     .delete()
     .eq("plant_id", id);
 
   // ลบจาก plant
-  const { error: error2 } = await supabase
+  const { error: error4 } = await supabase
     .from("plant")
     .delete()
     .eq("id", id);
 
   // ตรวจสอบข้อผิดพลาดทั้งสอง
-  if (error1 || error2) {
-    return NextResponse.json({ error: error1?.message || error2?.message }, { status: 400 });
+  if (error1 || error2 || error3 || error4) {
+    return NextResponse.json({ error: error1?.message || error2?.message || error3?.message || error4?.message }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });

@@ -21,6 +21,7 @@ export interface Plant {
     addition_img: string[];
     plant_pot_options: plant_pot_options[];
     plant_more_image: plant_more_image[];
+    plant_review_pic: plant_review_pic[];
 }
 
 export interface SinglePlantWithPotInCard {
@@ -68,6 +69,13 @@ export interface plant_pot_options {
 }
 
 export interface plant_more_image {
+    id: string;
+    plant_id: string;
+    url: string;
+    file: File | null; 
+}
+
+export interface plant_review_pic {
     id: string;
     plant_id: string;
     url: string;
