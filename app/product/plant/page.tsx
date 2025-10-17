@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAllSinglePlantWithPotInCard } from '@/lib/service/plantService';
 import PlantFilterClient from '@/components/FilterClient/PlantFilterClient';
 
