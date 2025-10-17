@@ -15,5 +15,5 @@ export const getBaseUrl = () => {
   }
 
   // ✅ fallback สำหรับ local (เช่น npm run dev)
-  return "https://localhost:3000";
+  return "http://localhost:3000";
 };
