@@ -37,6 +37,7 @@ export async function getPotById(id: string): Promise<Pot> {
 
 // ✅ ดึงข้อมูล ที่ is_suggested = true
 export async function getSuggestedPots() {
+  console.log("Base url : " + getBaseUrl());
   try {
     const res = await fetch(`${getBaseUrl()}/api/pot?is_suggested=true`);
 
