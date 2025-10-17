@@ -1,6 +1,7 @@
+'use client';
+
 export const dynamic = "force-dynamic";
 
-'use client';
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { SinglePortInCard } from '@/lib/types/types';
