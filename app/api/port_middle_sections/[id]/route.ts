@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
     console.log('Fetching port middle sections from port ID:', params.id);
     const supabase = await createClient();
     const { data, error } = await supabase.from('port_middle_sections').select('*').eq('port_id', params.id);
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json(data);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: any) {
     const supabase = await createClient();
     const { id } = await params;
     const body = await req.json();
