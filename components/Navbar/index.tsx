@@ -140,7 +140,7 @@ export default function Navbar() {
         zIndex: 1100,
         backdropFilter: isTop ? 'none' : 'blur(6px)',
         bgcolor: isTop ? 'transparent' : 'rgba(255,255,255,0.95)',
-        borderBottom: isTop ? 'none' : '1px solid rgba(0,0,0,0.05)',
+        //borderBottom: isTop ? 'none' : '1px solid rgba(0,0,0,0.05)',
         transition: 'background-color 0.3s ease, border-color 0.3s ease',
         justifyContent: 'space-between',
       }}
