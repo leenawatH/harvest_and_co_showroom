@@ -306,7 +306,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
           </div>
 
           {/* ✅ Mobile Card View */}
-          <div className="md:hidden space-y-4 p-3 bg-gray-50">
+          <div className="md:hidden space-y-4 p-3">
             {filteredRows.map((item) => (
               <div key={item.id} className="border rounded-xl p-4 bg-white shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-center">

@@ -284,7 +284,7 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
           </div>
 
           {/* ✅ Mobile Card View */}
-          <div className="md:hidden space-y-4 p-3 bg-gray-50">
+          <div className="md:hidden space-y-4 p-3">
             {filteredRows.map((item) => (
               <div
                 key={item.id}
