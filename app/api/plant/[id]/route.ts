@@ -1,14 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type RouteContext = {
-  params: { id: string };
-};
-
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, { params }: any) {
   const supabase = await createClient();
-  
-  const { id } = await context.params
+  const { id } = params;
 
   const { data, error } = await supabase
     .from('plant')
@@ -43,10 +38,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   return NextResponse.json(data);
 }
 
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(req: NextRequest, { params }: any) {
   const supabase = await createClient();
-  const { id } = context.params;
-  const body = await request.json();
+  const { id } = params;
+  const body = await req.json();
 
   console.log("🔧 Updating plant with ID:", id, "Raw Data:", body);
 
