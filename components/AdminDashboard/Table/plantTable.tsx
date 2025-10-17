@@ -1,18 +1,20 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { getAllSinglePlantWithPotInCard, 
-         deletePlant, 
-         updatePlant, 
-         addPlant, 
-         addNewPlantPotOption, 
-         updatePlantPotOption, 
-         deletePlantPotOption, 
-         addNewPlantMoreImage, 
-         updatePlantMoreImage, 
-         deletePlantMoreImage,
-         addNewPlantReviewPic,
-         updatePlantReviewPic,
-         deletePlantReviewPic } from '@/lib/service/plantService';
+import { 
+  getAllSinglePlantWithPotInCard, 
+  deletePlant, 
+  updatePlant, 
+  addPlant, 
+  addNewPlantPotOption, 
+  updatePlantPotOption, 
+  deletePlantPotOption, 
+  addNewPlantMoreImage, 
+  updatePlantMoreImage, 
+  deletePlantMoreImage,
+  addNewPlantReviewPic,
+  updatePlantReviewPic,
+  deletePlantReviewPic 
+} from '@/lib/service/plantService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
 import { SinglePlantWithPotInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
@@ -22,22 +24,17 @@ import { CircularProgress } from '@mui/material';
 export default function PlantTable({ plants, refreshData }: { plants: SinglePlantWithPotInCard[], refreshData: () => Promise<void>; }) {
 
   const [plantsData, setPlantsData] = useState<SinglePlantWithPotInCard[]>(plants);
-
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedName, setSelectedName] = useState<string[]>([]);
   const [singleDelete, setSingleDelete] = useState<boolean>(true);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetId, setTargetId] = useState<string>("");
   const [targetName, setTargetName] = useState<string>("");
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlantId, seteditingPlantId] = useState<string>("");
-
   const [isPending, setIsPending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   const [search, setSearch] = useState('');
 
   const toggleSelect = (id: string, name: string) => {
@@ -79,7 +76,6 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
     setIsRefreshing(false);
   };
 
-
   const confirmDelete = async () => {
     if (!singleDelete) {
       if (selected.length > 0) {
@@ -118,213 +114,60 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
           <CircularProgress />
         </div>
       )}
+
       {isFormOpen ? (
         <PlantForm
           initialData={editingPlantId}
-          onSubmit={async ({ finalUpdatePlantData, 
-                             newPotOptions, 
-                             updatedPotOptions, 
-                             deletedPotOptionIds, 
-                             newPlantMoreImage, 
-                             updatedPlantMoreImage, 
-                             deletedPlantMoreImageIds,
-                             newPlantReviewPic, 
-                             updatedPlantReviewPic, 
-                             deletedPlantReviewPicIds ,  
-                            }) => {
+          onSubmit={async ({
+            finalUpdatePlantData, 
+            newPotOptions, 
+            updatedPotOptions, 
+            deletedPotOptionIds, 
+            newPlantMoreImage, 
+            updatedPlantMoreImage, 
+            deletedPlantMoreImageIds,
+            newPlantReviewPic, 
+            updatedPlantReviewPic, 
+            deletedPlantReviewPicIds 
+          }) => {
             setIsLoading(true);
+            // สร้าง / อัปเดต plant + images + pots
             if (finalUpdatePlantData) {
               if (editingPlantId === "") {
-                // สร้าง Plant ใหม่
                 const plant = await addPlant(finalUpdatePlantData);
-
-                // ตั้งค่า plant_id ให้กับ newPotOptions หลังจากสร้าง Plant
-                if (newPotOptions != null) {
-                  for (const pair of newPotOptions) {
-                    pair.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
-                    try {
-                      await addNewPlantPotOption(pair);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-
-                if (newPlantMoreImage != null) {
-                  for (const plantMoreImage of newPlantMoreImage) {
-                    plantMoreImage.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
-                    try {
-                      await addNewPlantMoreImage(plantMoreImage);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-
-                if (newPlantReviewPic != null) {
-                  for (const plantReviewPic of newPlantReviewPic) {
-                    plantReviewPic.plant_id = plant.id; // ใช้ id ที่ได้จากการสร้าง Plant
-                    try {
-                      await addNewPlantReviewPic(plantReviewPic);
-                    } catch (error) {
-                      console.error("Error adding new plant review pic:", error);
-                    }
-                  }
-                }
+                if (newPotOptions) for (const pair of newPotOptions) { pair.plant_id = plant.id; await addNewPlantPotOption(pair); }
+                if (newPlantMoreImage) for (const img of newPlantMoreImage) { img.plant_id = plant.id; await addNewPlantMoreImage(img); }
+                if (newPlantReviewPic) for (const pic of newPlantReviewPic) { pic.plant_id = plant.id; await addNewPlantReviewPic(pic); }
               } else {
-                // อัปเดต Plant ที่มีอยู่แล้ว
                 await updatePlant(editingPlantId, finalUpdatePlantData);
-
-                // ตั้งค่า plant_id ของ newPotOptions โดยใช้ editingPlantId
-                if (newPotOptions != null) {
-                  for (const pair of newPotOptions) {
-                    pair.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                    try {
-                      await addNewPlantPotOption(pair);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-
-                if (newPlantMoreImage != null) {
-                  for (const plantMoreImage of newPlantMoreImage) {
-                    plantMoreImage.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                    try {
-                      await addNewPlantMoreImage(plantMoreImage);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
-                  }
-                }
-
-                if (newPlantReviewPic != null) {
-                  for (const plantReviewPic of newPlantReviewPic) {
-                    plantReviewPic.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                    try {
-                      await addNewPlantReviewPic(plantReviewPic);
-                    } catch (error) {
-                      console.error("Error adding new pot review:", error);
-                    }
-                  }
-                }
-              }
-            } else {
-              // ถ้าไม่มีการอัปเดต Plant ก็ใช้ editingPlantId สำหรับ plant_id
-              if (newPotOptions != null) {
-                for (const pair of newPotOptions) {
-                  pair.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                  try {
-                    await addNewPlantPotOption(pair);
-                  } catch (error) {
-                    console.error("Error adding new pot option:", error);
-                  }
-                }
-              }
-              if (newPlantMoreImage != null) {
-                for (const plantMoreImage of newPlantMoreImage) {
-                  plantMoreImage.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                  try {
-                    await addNewPlantMoreImage(plantMoreImage);
-                  } catch (error) {
-                    console.error("Error adding new pot option:", error);
-                  }
-                }
-              }
-
-              if (newPlantReviewPic != null) {
-                for (const plantReviewPic of newPlantReviewPic) {
-                  plantReviewPic.plant_id = editingPlantId; // ใช้ id ที่เป็น editingPlantId
-                  try {
-                    await addNewPlantReviewPic(plantReviewPic);
-                  } catch (error) {
-                    console.error("Error adding new plant review pic :", error);
-                  }
-                }
+                if (newPotOptions) for (const pair of newPotOptions) { pair.plant_id = editingPlantId; await addNewPlantPotOption(pair); }
+                if (newPlantMoreImage) for (const img of newPlantMoreImage) { img.plant_id = editingPlantId; await addNewPlantMoreImage(img); }
+                if (newPlantReviewPic) for (const pic of newPlantReviewPic) { pic.plant_id = editingPlantId; await addNewPlantReviewPic(pic); }
               }
             }
-            if (updatedPotOptions != null) {
-              for (const pair of updatedPotOptions) {
-                try {
-                  await updatePlantPotOption(pair);
-                }
-                catch (error) {
-                  console.error("Error updating pot option:", error);
-                }
-              }
-            }
-
-            if (updatedPlantMoreImage != null) {
-              for (const plantMoreImage of updatedPlantMoreImage) {
-                try {
-                  await updatePlantMoreImage(plantMoreImage);
-                }
-                catch (error) {
-                  console.error("Error updating plant more image:", error);
-                }
-              }
-            }
-
-            if (updatedPlantReviewPic != null) {
-              for (const plantReviewPic of updatedPlantReviewPic) {
-                try {
-                  await updatePlantReviewPic(plantReviewPic);
-                }
-                catch (error) {
-                  console.error("Error updating plant review pic:", error);
-                }
-              }
-            }
-
-            if (deletedPotOptionIds != null) {
-              for (const id of deletedPotOptionIds) {
-                try {
-                  await deletePlantPotOption(id);
-                }
-                catch (error) {
-                  console.error("Error deleting pot option:", error);
-                }
-              }
-            }
-
-            if (deletedPlantMoreImageIds != null) {
-              for (const id of deletedPlantMoreImageIds) {
-                try {
-                  await deletePlantMoreImage(id);
-                }
-                catch (error) {
-                  console.error("Error deleting plant more image:", error);
-                }
-              }
-            }
-
-            if (deletedPlantReviewPicIds != null) {
-              for (const id of deletedPlantReviewPicIds) {
-                try {
-                  await deletePlantReviewPic(id);
-                }
-                catch (error) {
-                  console.error("Error deleting plant review pic:", error);
-                }
-              }
-            }
+            if (updatedPotOptions) for (const pair of updatedPotOptions) await updatePlantPotOption(pair);
+            if (updatedPlantMoreImage) for (const img of updatedPlantMoreImage) await updatePlantMoreImage(img);
+            if (updatedPlantReviewPic) for (const pic of updatedPlantReviewPic) await updatePlantReviewPic(pic);
+            if (deletedPotOptionIds) for (const id of deletedPotOptionIds) await deletePlantPotOption(id);
+            if (deletedPlantMoreImageIds) for (const id of deletedPlantMoreImageIds) await deletePlantMoreImage(id);
+            if (deletedPlantReviewPicIds) for (const id of deletedPlantReviewPicIds) await deletePlantReviewPic(id);
 
             await refresh();
             await refreshData();
             setIsFormOpen(false);
             seteditingPlantId("");
             setIsLoading(false);
-          }
-          }
+          }}
           onCancel={() => {
             setIsFormOpen(false);
             seteditingPlantId("");
-          }} />
+          }}
+        />
       ) : (
         <>
           {/* ✅ Top Bar */}
-          <div className="sticky top-0 z-10 bg-white py-4">
-            <div className="flex justify-between items-center mb-2 px-2">
+          <div className="sticky top-0 z-10 bg-white py-4 px-2">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
               <h2 className="text-xl font-bold">Plant List</h2>
 
               {/* 🔎 Search bar */}
@@ -346,7 +189,8 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                 )}
               </div>
 
-              <div className="flex gap-4">
+              {/* 🔘 Actions */}
+              <div className="flex flex-wrap gap-3">
                 {selected.length > 0 && (
                   <button
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -356,8 +200,7 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                   </button>
                 )}
                 <button
-                  className={`px-4 py-2 rounded text-white ${isRefreshing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'
-                    }`}
+                  className={`px-4 py-2 rounded text-white ${isRefreshing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'}`}
                   disabled={isRefreshing}
                   onClick={refresh}
                 >
@@ -376,13 +219,13 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
             </div>
           </div>
 
-          {/* ✅ Scrollable Table */}
-          <div className="overflow-y-auto max-h-[70vh] bg-white">
+          {/* ✅ Desktop Table */}
+          <div className="overflow-y-auto max-h-[70vh] bg-white hidden md:block">
             <table className="min-w-full bg-white">
               <thead className="text-left text-gray-700 text-base">
                 <tr>
                   <th className="p-4 w-[50px]"></th>
-                  <th className="p-4 w-[200px]">Cover Image</th>
+                  <th className="p-4 w-[200px]">Cover</th>
                   <th className="p-4 w-[200px]">Name</th>
                   <th className="p-4 text-center w-32">Height</th>
                   <th className="p-4 text-center w-32">Price</th>
@@ -405,7 +248,7 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                           <img
                             src={item.url}
                             alt={item.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded-md"
                           />
                         ) : (
                           <span className="text-gray-400 text-xs">no data</span>
@@ -419,16 +262,16 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => {
-                            seteditingPlantId(item.id);      // กรณี Edit
+                            seteditingPlantId(item.id);
                             setIsFormOpen(true);
                           }}
-                          className="px-4 py-3 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                          className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteClick(item.id!, item.name)}
-                          className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                          className="px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                         >
                           Delete
                         </button>
@@ -438,25 +281,80 @@ export default function PlantTable({ plants, refreshData }: { plants: SinglePlan
                 ))}
               </tbody>
             </table>
-            {/* 🔴 Modal */}
-            <ConfirmModal
-              open={confirmOpen}
-              title="Confirm Delete"
-              message={
-                !singleDelete && selected.length > 1
-                  ? `Are you sure you want to delete ${selected.length} items?`
-                  : `Are you sure you want to delete "${targetName}"?`
-              }
-              onCancel={() => setConfirmOpen(false)}
-              onConfirm={confirmDelete}
-              isPending={isPending}
-            />
-
           </div>
+
+          {/* ✅ Mobile Card View */}
+          <div className="md:hidden space-y-4 p-3 bg-gray-50">
+            {filteredRows.map((item) => (
+              <div
+                key={item.id}
+                className="border rounded-xl p-4 shadow-sm bg-white flex flex-col gap-3"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={item.id ? selected.includes(item.id) : false}
+                      onChange={() => item.id && toggleSelect(item.id, item.name)}
+                      className="w-5 h-5"
+                    />
+                    <h3 className="text-lg font-semibold">{item.name}</h3>
+                  </div>
+                  <span className="text-gray-500 text-sm">฿{item.price}</span>
+                </div>
+
+                <div className="flex justify-center">
+                  {item.url ? (
+                    <img
+                      src={item.url}
+                      alt={item.name}
+                      className="w-48 h-48 rounded-md object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-xs">no image</span>
+                  )}
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  Height: {item.height} cm
+                </div>
+
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => {
+                      seteditingPlantId(item.id);
+                      setIsFormOpen(true);
+                    }}
+                    className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(item.id!, item.name)}
+                    className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 🔴 Modal */}
+          <ConfirmModal
+            open={confirmOpen}
+            title="Confirm Delete"
+            message={
+              !singleDelete && selected.length > 1
+                ? `Are you sure you want to delete ${selected.length} items?`
+                : `Are you sure you want to delete "${targetName}"?`
+            }
+            onCancel={() => setConfirmOpen(false)}
+            onConfirm={confirmDelete}
+            isPending={isPending}
+          />
         </>
       )}
     </div>
   );
-
-  ;
 }

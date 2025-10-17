@@ -13,7 +13,7 @@ import {
   deletePortBottomGroups,
 } from '@/lib/service/portService';
 import { deleteFolder } from '@/lib/service/cloudinaryService';
-import { Port, SinglePortInCard } from '@/lib/types/types';
+import { SinglePortInCard } from '@/lib/types/types';
 import ConfirmModal from '@/components/AdminDashboard/ConfirmModal/ConfirmModal';
 import PortForm from "@/components/AdminDashboard/Form/portForm";
 import { CircularProgress } from '@mui/material';
@@ -21,7 +21,6 @@ import { CircularProgress } from '@mui/material';
 export default function PortTable({ ports, refreshData }: { ports: SinglePortInCard[], refreshData: () => Promise<void>; }) {
 
   const [portsData, setPortsData] = useState<SinglePortInCard[]>(ports);
-
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedName, setSelectedName] = useState<string[]>([]);
   const [singleDelete, setSingleDelete] = useState<boolean>(true);
@@ -31,12 +30,11 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
   const [targetName, setTargetName] = useState<string>("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPortId, seteditingPortId] = useState<string>("");
+  const [editingPortId, setEditingPortId] = useState<string>("");
 
   const [isPending, setIsPending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   const [search, setSearch] = useState('');
 
   const toggleSelect = (id: string, name: string) => {
@@ -78,7 +76,6 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
     setIsRefreshing(false);
   };
 
-
   const confirmDelete = async () => {
     if (!singleDelete) {
       if (selected.length > 0) {
@@ -96,7 +93,6 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
       if (targetId) {
         setIsPending(true);
         try {
-          console.log("Deleting Port with ID:", targetId, "and name:", targetName);
           await deleteFolder('Port/' + targetName);
           await deletePort(targetId);
         } catch (err) {
@@ -104,7 +100,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
         }
       }
     }
-    refresh();
+    await refresh();
     await refreshData();
     setIsPending(false);
     setConfirmOpen(false);
@@ -117,156 +113,83 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
           <CircularProgress />
         </div>
       )}
+
       {isFormOpen ? (
         <PortForm
           initialData={editingPortId}
-          onSubmit={async ({ finalUpdatePortData,
-            newPort_middle_sections,
-            updatedPort_middle_sections,
-            deletedPort_middle_sections,
-            newPort_bottom_group,
-            updatedPort_bottom_group,
-            deletedPort_bottom_group,
-          }) => {
+          onSubmit={async (data) => {
             setIsLoading(true);
+            const {
+              finalUpdatePortData,
+              newPort_middle_sections,
+              updatedPort_middle_sections,
+              deletedPort_middle_sections,
+              newPort_bottom_group,
+              updatedPort_bottom_group,
+              deletedPort_bottom_group,
+            } = data;
+
+            // ✅ Create or update
             if (finalUpdatePortData) {
-              if (editingPortId === "") {
-                // สร้าง Port ใหม่
-                const Port = await addNewPort(finalUpdatePortData);
-                console.log("Port created with ID:", Port.id);
-
-                // ตั้งค่า Port_id ให้กับ new port หลังจากสร้าง Port
-                if (newPort_middle_sections) {
-                  for (const midsection of newPort_middle_sections) {
-
-                    midsection.port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
-                    try {
-                      console.log("Adding new middle :", midsection);
-                      await addNewPortMiddleSections(midsection);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
+              if (!editingPortId) {
+                const newPort = await addNewPort(finalUpdatePortData);
+                if (newPort_middle_sections)
+                  for (const m of newPort_middle_sections) {
+                    m.port_id = newPort.id;
+                    await addNewPortMiddleSections(m);
                   }
-                }
-                if (newPort_bottom_group) {
-                  for (const botgroup of newPort_bottom_group) {
-                    botgroup.port_id = Port.id; // ใช้ id ที่ได้จากการสร้าง Port
-                    try {
-                      await addNewPortBottomGroups(botgroup);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
+                if (newPort_bottom_group)
+                  for (const g of newPort_bottom_group) {
+                    g.port_id = newPort.id;
+                    await addNewPortBottomGroups(g);
                   }
-                }
               } else {
-                // อัปเดต Port ที่มีอยู่แล้ว
                 await updatePort(editingPortId, finalUpdatePortData);
-
-                if (newPort_middle_sections != null) {
-                  for (const midsection of newPort_middle_sections) {
-                    midsection.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
-                    try {
-                      await addNewPortMiddleSections(midsection);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
+                if (newPort_middle_sections)
+                  for (const m of newPort_middle_sections) {
+                    m.port_id = editingPortId;
+                    await addNewPortMiddleSections(m);
                   }
-                }
-                if (newPort_bottom_group) {
-                  for (const botgroup of newPort_bottom_group) {
-                    botgroup.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
-                    try {
-                      await addNewPortBottomGroups(botgroup);
-                    } catch (error) {
-                      console.error("Error adding new pot option:", error);
-                    }
+                if (newPort_bottom_group)
+                  for (const g of newPort_bottom_group) {
+                    g.port_id = editingPortId;
+                    await addNewPortBottomGroups(g);
                   }
-                }
-
-              }
-            } else {
-              // ถ้าไม่มีการอัปเดต Port ก็ใช้ editingPortId สำหรับ Port_id
-              if (newPort_middle_sections) {
-                for (const midsection of newPort_middle_sections) {
-                  midsection.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
-                  try {
-                    await addNewPortMiddleSections(midsection);
-                  } catch (error) {
-                    console.error("Error adding new pot option:", error);
-                  }
-                }
-              }
-              if (newPort_bottom_group) {
-                for (const botgroup of newPort_bottom_group) {
-                  botgroup.port_id = editingPortId; // ใช้ id ที่ได้จากการสร้าง Port
-                  try {
-                    await addNewPortBottomGroups(botgroup);
-                  } catch (error) {
-                    console.error("Error adding new pot option:", error);
-                  }
-                }
               }
             }
-            if (updatedPort_middle_sections) {
-              for (const midsection of updatedPort_middle_sections) {
-                try {
-                  await updatePortMiddleSections(midsection);
-                }
-                catch (error) {
-                  console.error("Error updating pot option:", error);
-                }
-              }
 
-            }
-            if (updatedPort_bottom_group) {
-              for (const botgroup of updatedPort_bottom_group) {
-                try {
-                  await updatePortBottomGroups(botgroup);
-                }
-                catch (error) {
-                  console.error("Error updating pot option:", error);
-                }
-              }
+            // ✅ Updates
+            if (updatedPort_middle_sections)
+              for (const m of updatedPort_middle_sections)
+                await updatePortMiddleSections(m);
+            if (updatedPort_bottom_group)
+              for (const g of updatedPort_bottom_group)
+                await updatePortBottomGroups(g);
 
-            }
-            if (deletedPort_middle_sections != null) {
-              for (const id of deletedPort_middle_sections) {
-                try {
-                  await deletePortMiddleSections(id);
-                }
-                catch (error) {
-                  console.error("Error deleting pot option:", error);
-                }
-              }
+            // ✅ Deletes
+            if (deletedPort_middle_sections)
+              for (const id of deletedPort_middle_sections)
+                await deletePortMiddleSections(id);
+            if (deletedPort_bottom_group)
+              for (const id of deletedPort_bottom_group)
+                await deletePortBottomGroups(id);
 
-            }
-            if (deletedPort_bottom_group != null) {
-              for (const id of deletedPort_bottom_group) {
-                try {
-                  await deletePortBottomGroups(id);
-                }
-                catch (error) {
-                  console.error("Error deleting pot option:", error);
-                }
-              }
-
-            }
             await refresh();
             await refreshData();
             setIsFormOpen(false);
-            seteditingPortId("");
+            setEditingPortId("");
             setIsLoading(false);
-          }
-          }
+          }}
           onCancel={() => {
             setIsFormOpen(false);
-            seteditingPortId("");
-          }} />
+            setEditingPortId("");
+          }}
+        />
       ) : (
         <>
           {/* ✅ Top Bar */}
-          <div className="sticky top-0 z-10 bg-white py-4">
-            <div className="flex justify-between items-center mb-2 px-2">
+          <div className="sticky top-0 z-10 bg-white py-4 px-2">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
               <h2 className="text-xl font-bold">Port List</h2>
 
               {/* 🔎 Search bar */}
@@ -287,8 +210,8 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                   </button>
                 )}
               </div>
-              
-              <div className="flex gap-4">
+
+              <div className="flex flex-wrap gap-3">
                 {selected.length > 0 && (
                   <button
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -298,7 +221,9 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                   </button>
                 )}
                 <button
-                  className={`px-4 py-2 rounded text-white ${isRefreshing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'
+                  className={`px-4 py-2 rounded text-white ${isRefreshing
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gray-600 hover:bg-gray-700'
                     }`}
                   disabled={isRefreshing}
                   onClick={refresh}
@@ -308,7 +233,7 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                 <button
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   onClick={() => {
-                    seteditingPortId("");
+                    setEditingPortId("");
                     setIsFormOpen(true);
                   }}
                 >
@@ -318,13 +243,13 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
             </div>
           </div>
 
-          {/* ✅ Scrollable Table */}
-          <div className="overflow-y-auto max-h-[70vh] bg-white">
+          {/* ✅ Desktop Table */}
+          <div className="overflow-y-auto max-h-[70vh] bg-white hidden md:block">
             <table className="min-w-full bg-white">
               <thead className="text-left text-gray-700 text-base">
                 <tr>
                   <th className="p-4 w-[50px]"></th>
-                  <th className="p-4 w-[200px]">Cover Image</th>
+                  <th className="p-4 w-[200px]">Cover</th>
                   <th className="p-4 w-[180px]">Title</th>
                   <th className="p-4 text-center w-[220px]">Location</th>
                   <th className="p-4 text-center w-[100px]">Action</th>
@@ -336,39 +261,39 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                     <td className="p-4 text-center align-middle">
                       <input
                         type="checkbox"
-                        checked={item.id ? selected.includes(item.id) : false}
-                        onChange={() => item.id && toggleSelect(item.id, item.title)}
+                        checked={selected.includes(item.id)}
+                        onChange={() => toggleSelect(item.id, item.title)}
                       />
                     </td>
-                    <td className="p-4 ">
+                    <td className="p-4">
                       <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
                         {item.image_cover ? (
                           <img
                             src={item.image_cover}
                             alt={item.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded"
                           />
                         ) : (
                           <span className="text-gray-400 text-xs">no data</span>
                         )}
                       </div>
                     </td>
-                    <td className="p-4 align-middle">{item.title}</td>
-                    <td className="p-4 text-center align-middle">{item.location}</td>
-                    <td className="p-4 text-center align-middle">
+                    <td className="p-4">{item.title}</td>
+                    <td className="p-4 text-center">{item.location}</td>
+                    <td className="p-4 text-center">
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => {
-                            seteditingPortId(item.id);      // กรณี Edit
+                            setEditingPortId(item.id);
                             setIsFormOpen(true);
                           }}
-                          className="px-4 py-3 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(item.id!, item.title)}
-                          className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                          onClick={() => handleDeleteClick(item.id, item.title)}
+                          className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                         >
                           Delete
                         </button>
@@ -378,25 +303,73 @@ export default function PortTable({ ports, refreshData }: { ports: SinglePortInC
                 ))}
               </tbody>
             </table>
-            {/* 🔴 Modal */}
-            <ConfirmModal
-              open={confirmOpen}
-              title="Confirm Delete"
-              message={
-                !singleDelete && selected.length > 1
-                  ? `Are you sure you want to delete ${selected.length} items?`
-                  : `Are you sure you want to delete "${targetName}"?`
-              }
-              onCancel={() => setConfirmOpen(false)}
-              onConfirm={confirmDelete}
-              isPending={isPending}
-            />
-
           </div>
+
+          {/* ✅ Mobile Card View */}
+          <div className="md:hidden space-y-4 p-3 bg-gray-50">
+            {filteredRows.map((item) => (
+              <div key={item.id} className="border rounded-xl p-4 bg-white shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(item.id)}
+                      onChange={() => toggleSelect(item.id, item.title)}
+                      className="w-5 h-5"
+                    />
+                    <h3 className="text-lg font-semibold">{item.title}</h3>
+                  </div>
+                  <span className="text-gray-500 text-sm">{item.location}</span>
+                </div>
+
+                <div className="flex justify-center">
+                  {item.image_cover ? (
+                    <img
+                      src={item.image_cover}
+                      alt={item.title}
+                      className="w-48 h-48 object-cover rounded-md"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-xs">no image</span>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => {
+                      setEditingPortId(item.id);
+                      setIsFormOpen(true);
+                    }}
+                    className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(item.id, item.title)}
+                    className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 🔴 Confirm Modal */}
+          <ConfirmModal
+            open={confirmOpen}
+            title="Confirm Delete"
+            message={
+              !singleDelete && selected.length > 1
+                ? `Are you sure you want to delete ${selected.length} items?`
+                : `Are you sure you want to delete "${targetName}"?`
+            }
+            onCancel={() => setConfirmOpen(false)}
+            onConfirm={confirmDelete}
+            isPending={isPending}
+          />
         </>
       )}
     </div>
   );
-
-  ;
 }
