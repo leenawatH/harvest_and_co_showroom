@@ -16,7 +16,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import AddIcon from "@mui/icons-material/Add";
 
 import {
   DndContext,
@@ -54,6 +53,7 @@ type Props = {
 
 type SlotItem = SinglePlantWithPotInCard | SinglePotInCard | SinglePortInCard | null;
 
+// 🔹 Card สำหรับ Desktop
 function SortableItem({
   item,
   index,
@@ -98,7 +98,7 @@ function SortableItem({
               No image
             </Box>
           )}
-          <Typography align="center" fontWeight="bold" fontSize={14} sx={{ p: 1 }}>
+          <Typography align="center" fontSize={14} sx={{ p: 1 }}>
             {"name" in item ? item.name : item.title}
           </Typography>
           <IconButton
@@ -181,7 +181,7 @@ export default function HomeContent({
     onSave: () => void
   ) => (
     <>
-      <Typography variant="h6" mt={3} mb={1}>{title}</Typography>
+      <Typography variant="h6" fontWeight="bold" mt={3} mb={1}>{title}</Typography>
       <Box>
         {items.map((item, i) => (
           <Box
@@ -213,16 +213,9 @@ export default function HomeContent({
                       style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
                     />
                   ) : (
-                    <Box
-                      sx={{
-                        width: 50,
-                        height: 50,
-                        bgcolor: "#eee",
-                        borderRadius: 1,
-                      }}
-                    />
+                    <Box sx={{ width: 50, height: 50, bgcolor: "#eee", borderRadius: 1 }} />
                   )}
-                  <Typography fontSize={13} fontWeight="bold">
+                  <Typography fontSize={13} color="text.primary">
                     {"name" in item ? item.name : item.title}
                   </Typography>
                 </>
@@ -232,18 +225,10 @@ export default function HomeContent({
             </Box>
 
             <Box>
-              <IconButton
-                size="small"
-                disabled={i === 0}
-                onClick={() => moveItem(items, i, i - 1, setItems)}
-              >
+              <IconButton size="small" disabled={i === 0} onClick={() => moveItem(items, i, i - 1, setItems)}>
                 <ArrowUpwardIcon fontSize="small" />
               </IconButton>
-              <IconButton
-                size="small"
-                disabled={i === items.length - 1}
-                onClick={() => moveItem(items, i, i + 1, setItems)}
-              >
+              <IconButton size="small" disabled={i === items.length - 1} onClick={() => moveItem(items, i, i + 1, setItems)}>
                 <ArrowDownwardIcon fontSize="small" />
               </IconButton>
               <IconButton size="small" color="error" onClick={() => {
@@ -301,7 +286,7 @@ export default function HomeContent({
     onSave: () => void
   ) => (
     <>
-      <Typography variant="h6" mt={4}>{title}</Typography>
+      <Typography variant="h6" fontWeight="bold" mt={4}>{title}</Typography>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -352,9 +337,10 @@ export default function HomeContent({
         </Box>
       ) : (
         <>
+          {/* 🔹 หัวข้อใหญ่เท่านั้นที่เป็น bold */}
           <Typography variant="h5" fontWeight="bold" mb={2}>Home Content</Typography>
 
-          {/* 🔹 Tab menu */}
+          {/* 🔹 Tabs เมนู */}
           <Tabs
             value={tab}
             onChange={(_, v) => setTab(v)}
@@ -367,7 +353,6 @@ export default function HomeContent({
             <Tab value="port" label="Port" />
           </Tabs>
 
-          {/* 🔹 Render based on screen size */}
           {isMobile
             ? renderMobileList(currentSet.title, currentSet.items, currentSet.set, currentSet.available, currentSet.save)
             : renderDesktopGrid(currentSet.title, currentSet.items, currentSet.set, currentSet.available, currentSet.save)}
