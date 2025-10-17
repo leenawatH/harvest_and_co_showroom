@@ -1,9 +1,23 @@
 'use client';
 import { useState } from "react";
-import { Box, Typography, IconButton, Button, MenuItem, Select, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  MenuItem,
+  Select,
+  Tabs,
+  Tab,
+  useMediaQuery,
+  CircularProgress,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
-import { CircularProgress } from '@mui/material';
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import AddIcon from "@mui/icons-material/Add";
+
 import {
   DndContext,
   closestCenter,
@@ -14,11 +28,16 @@ import {
 import {
   arrayMove,
   SortableContext,
-  useSortable,
   rectSortingStrategy,
+  useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SinglePlantWithPotInCard, SinglePortInCard, SinglePotInCard } from "@/lib/types/types";
+
+import {
+  SinglePlantWithPotInCard,
+  SinglePortInCard,
+  SinglePotInCard,
+} from "@/lib/types/types";
 import { updateSuggestedPlant } from "@/lib/service/plantService";
 import { updateSuggestedPot } from "@/lib/service/potService";
 import { updateSuggestedPort } from "@/lib/service/portService";
@@ -39,23 +58,13 @@ function SortableItem({
   item,
   index,
   onDelete,
-  onAdd,
-  available,
 }: {
   item: SlotItem;
   index: number;
   onDelete: (index: number) => void;
-  onAdd: (index: number, item: any) => void;
-  available: SinglePlantWithPotInCard[] | SinglePotInCard[] | SinglePortInCard[];
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: `slot-${index}` });
-
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: `slot-${index}` });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -68,52 +77,30 @@ function SortableItem({
       {...listeners}
       style={style}
       sx={{
-        flex: { xs: "0 1 calc(50% - 8px)", sm: "0 1 calc(33.3% - 10px)", md: "0 1 calc(16.6% - 10px)" },
+        flex: "0 1 calc(16.6% - 10px)",
         borderRadius: 2,
         overflow: "hidden",
         position: "relative",
         background: "white",
         cursor: "grab",
         boxShadow: 1,
-        "&:hover": {
-          transform: "scale(1.02)",
-          boxShadow: 6,
-        },
+        "&:hover": { boxShadow: 5 },
       }}
     >
       {item ? (
         <>
           {"url" in item && item.url ? (
-            <img
-              src={item.url}
-              alt={item.name}
-              className="w-full object-cover"
-              style={{ height: 140 }}
-            />
+            <img src={item.url} alt={item.name} style={{ width: "100%", height: 140, objectFit: "cover" }} />
           ) : "image_cover" in item && item.image_cover ? (
-            <img
-              src={item.image_cover}
-              alt={item.title}
-              className="w-full object-cover"
-              style={{ height: 140 }}
-            />
+            <img src={item.image_cover} alt={item.title} style={{ width: "100%", height: 140, objectFit: "cover" }} />
           ) : (
-            <Box sx={{ height: 140, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#eee" }}>
-              <Typography variant="caption" color="textSecondary">No image</Typography>
+            <Box sx={{ height: 140, bgcolor: "#eee", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              No image
             </Box>
           )}
-          <Box sx={{ p: 1 }}>
-            <Typography align="center" fontWeight="bold" fontSize={14}>
-              {"name" in item ? item.name : item.title}
-            </Typography>
-            <Typography align="center" fontSize={12} color="textSecondary">
-              {"price" in item
-                ? `ราคา ${item.price} บาท`
-                : "location" in item
-                ? item.location
-                : ""}
-            </Typography>
-          </Box>
+          <Typography align="center" fontWeight="bold" fontSize={14} sx={{ p: 1 }}>
+            {"name" in item ? item.name : item.title}
+          </Typography>
           <IconButton
             onClick={() => onDelete(index)}
             size="small"
@@ -123,74 +110,57 @@ function SortableItem({
           </IconButton>
         </>
       ) : (
-        <Box sx={{ p: 2 }}>
-          <Typography variant="body2" textAlign="center" mb={1}>Add New</Typography>
-          <Select
-            displayEmpty
-            fullWidth
-            onChange={(e) => {
-              const selected = available.find(p => p.id === e.target.value);
-              if (selected) onAdd(index, selected);
-            }}
-            value=""
-            sx={{ fontSize: 14 }}
-          >
-            <MenuItem disabled value="">-- เลือก --</MenuItem>
-            {available.map(p => (
-              <MenuItem key={p.id} value={p.id}>{"name" in p ? p.name : p.title}</MenuItem>
-            ))}
-          </Select>
-        </Box>
+        <Box sx={{ p: 2, textAlign: "center", color: "gray" }}>ว่าง</Box>
       )}
     </Box>
   );
 }
 
 export default function HomeContent({
-  suggest_plant, plants,
-  suggest_pot, pots,
-  suggest_port, ports,
-  refreshData
+  suggest_plant,
+  plants,
+  suggest_pot,
+  pots,
+  suggest_port,
+  ports,
+  refreshData,
 }: Props) {
-
   const isMobile = useMediaQuery("(max-width:768px)");
-  const [plantItems, setPlantItems] = useState<SlotItem[]>(() => {
-    const filled = Array(6).fill(null);
-    for (const plant of suggest_plant) {
-      const i = plant.is_suggested - 1;
-      if (i >= 0 && i < 6) filled[i] = plant;
-    }
-    return filled;
-  });
-
-  const [potItems, setPotItems] = useState<SlotItem[]>(() => {
-    const filled = Array(6).fill(null);
-    for (const pot of suggest_pot) {
-      const i = pot.is_suggested - 1;
-      if (i >= 0 && i < 6) filled[i] = pot;
-    }
-    return filled;
-  });
-
-  const [portItems, setPortItems] = useState<SlotItem[]>(() => {
-    const filled = Array(6).fill(null);
-    for (const port of suggest_port) {
-      const i = port.is_suggested - 1;
-      if (i >= 0 && i < 6) filled[i] = port;
-    }
-    return filled;
-  });
-
+  const [tab, setTab] = useState<"plant" | "pot" | "port">("plant");
   const [isLoading, setIsLoading] = useState(false);
+
+  const initSlot = (arr: any[]) => {
+    const filled = Array(6).fill(null);
+    for (const a of arr) {
+      const i = a.is_suggested - 1;
+      if (i >= 0 && i < 6) filled[i] = a;
+    }
+    return filled;
+  };
+
+  const [plantItems, setPlantItems] = useState<SlotItem[]>(() => initSlot(suggest_plant));
+  const [potItems, setPotItems] = useState<SlotItem[]>(() => initSlot(suggest_pot));
+  const [portItems, setPortItems] = useState<SlotItem[]>(() => initSlot(suggest_port));
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const handleSave = async (type: "plant" | "pot" | "port", items: SlotItem[], original: any[], updateFn: any) => {
+  const moveItem = (arr: SlotItem[], from: number, to: number, setter: any) => {
+    const newArr = [...arr];
+    const [moved] = newArr.splice(from, 1);
+    newArr.splice(to, 0, moved);
+    setter(newArr);
+  };
+
+  const handleSave = async (
+    type: "plant" | "pot" | "port",
+    items: SlotItem[],
+    original: any[],
+    updateFn: any
+  ) => {
     setIsLoading(true);
     const payload = items
       .map((i, idx) => i && { id: i.id, is_suggested: idx + 1 })
       .filter(Boolean);
-
     for (const p of payload) {
       if (!p) continue;
       const old = original.find((o) => o.id === p.id);
@@ -202,7 +172,8 @@ export default function HomeContent({
     setIsLoading(false);
   };
 
-  const renderSection = (
+  // 📱 Mobile List View
+  const renderMobileList = (
     title: string,
     items: SlotItem[],
     setItems: (arr: SlotItem[]) => void,
@@ -210,27 +181,139 @@ export default function HomeContent({
     onSave: () => void
   ) => (
     <>
-      <Typography variant="h6" fontWeight="bold" mt={4}>{title}</Typography>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => {
-        const { active, over } = e;
-        if (!over || active.id === over.id) return;
-        const from = parseInt(String(active.id).replace("slot-", ""));
-        const to = parseInt(String(over.id).replace("slot-", ""));
-        setItems(arrayMove(items, from, to));
-      }}>
-        <SortableContext
-          items={items.map((_, index) => `slot-${index}`)}
-          strategy={rectSortingStrategy}
-        >
+      <Typography variant="h6" mt={3} mb={1}>{title}</Typography>
+      <Box>
+        {items.map((item, i) => (
           <Box
+            key={i}
             sx={{
               display: "flex",
-              flexWrap: "wrap",
-              justifyContent: isMobile ? "center" : "space-between",
-              gap: 1.5,
-              mt: 2,
+              alignItems: "center",
+              justifyContent: "space-between",
+              bgcolor: "#fff",
+              borderRadius: 2,
+              mb: 1,
+              p: 1.5,
+              boxShadow: 1,
             }}
           >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {item ? (
+                <>
+                  {"url" in item && item.url ? (
+                    <img
+                      src={item.url}
+                      alt={item.name}
+                      style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
+                    />
+                  ) : "image_cover" in item && item.image_cover ? (
+                    <img
+                      src={item.image_cover}
+                      alt={item.title}
+                      style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        bgcolor: "#eee",
+                        borderRadius: 1,
+                      }}
+                    />
+                  )}
+                  <Typography fontSize={13} fontWeight="bold">
+                    {"name" in item ? item.name : item.title}
+                  </Typography>
+                </>
+              ) : (
+                <Typography fontSize={13} color="gray">ช่องว่าง</Typography>
+              )}
+            </Box>
+
+            <Box>
+              <IconButton
+                size="small"
+                disabled={i === 0}
+                onClick={() => moveItem(items, i, i - 1, setItems)}
+              >
+                <ArrowUpwardIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                disabled={i === items.length - 1}
+                onClick={() => moveItem(items, i, i + 1, setItems)}
+              >
+                <ArrowDownwardIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" color="error" onClick={() => {
+                const newArr = [...items];
+                newArr[i] = null;
+                setItems(newArr);
+              }}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        ))}
+
+        {/* Add new item */}
+        <Select
+          displayEmpty
+          fullWidth
+          onChange={(e) => {
+            const selected = available.find((p) => p.id === e.target.value);
+            if (selected) {
+              const idx = items.findIndex((i) => i === null);
+              if (idx >= 0) {
+                const newArr = [...items];
+                newArr[idx] = selected;
+                setItems(newArr);
+              }
+            }
+          }}
+          value=""
+          sx={{ mt: 1 }}
+        >
+          <MenuItem disabled value="">➕ เพิ่มใหม่</MenuItem>
+          {available.map((p) => (
+            <MenuItem key={p.id} value={p.id}>
+              {"name" in p ? p.name : p.title}
+            </MenuItem>
+          ))}
+        </Select>
+
+        <Box sx={{ textAlign: "center", mt: 2 }}>
+          <Button variant="contained" startIcon={<SaveIcon />} onClick={onSave}>
+            Save
+          </Button>
+        </Box>
+      </Box>
+    </>
+  );
+
+  // 💻 Desktop Drag & Drop
+  const renderDesktopGrid = (
+    title: string,
+    items: SlotItem[],
+    setItems: (arr: SlotItem[]) => void,
+    available: any[],
+    onSave: () => void
+  ) => (
+    <>
+      <Typography variant="h6" mt={4}>{title}</Typography>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={({ active, over }) => {
+          if (!over || active.id === over.id) return;
+          const from = parseInt(String(active.id).replace("slot-", ""));
+          const to = parseInt(String(over.id).replace("slot-", ""));
+          setItems(arrayMove(items, from, to));
+        }}
+      >
+        <SortableContext items={items.map((_, i) => `slot-${i}`)} strategy={rectSortingStrategy}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mt: 2 }}>
             {items.map((item, index) => (
               <SortableItem
                 key={`slot-${index}`}
@@ -241,12 +324,6 @@ export default function HomeContent({
                   updated[i] = null;
                   setItems(updated);
                 }}
-                onAdd={(i, newItem) => {
-                  const updated = [...items];
-                  updated[i] = newItem;
-                  setItems(updated);
-                }}
-                available={available}
               />
             ))}
           </Box>
@@ -254,52 +331,46 @@ export default function HomeContent({
       </DndContext>
 
       <Box sx={{ textAlign: "center", mt: 3 }}>
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={onSave}
-          sx={{
-            fontSize: isMobile ? 12 : 14,
-            px: isMobile ? 2 : 4,
-            py: isMobile ? 1 : 1.5,
-          }}
-        >
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={onSave}>
           Save
         </Button>
       </Box>
     </>
   );
 
+  const currentSet = {
+    plant: { items: plantItems, set: setPlantItems, available: plants, title: "Plant Suggestion", save: () => handleSave("plant", plantItems, suggest_plant, updateSuggestedPlant) },
+    pot: { items: potItems, set: setPotItems, available: pots, title: "Pot Suggestion", save: () => handleSave("pot", potItems, suggest_pot, updateSuggestedPot) },
+    port: { items: portItems, set: setPortItems, available: ports, title: "Port Suggestion", save: () => handleSave("port", portItems, suggest_port, updateSuggestedPort) },
+  }[tab];
+
   return (
-    <Box sx={{ px: { xs: 1, md: 3 }, py: 3, minHeight: "calc(100vh - 120px)", overflowY: "auto" }}>
+    <Box sx={{ px: 2, py: 3, minHeight: "calc(100vh - 120px)" }}>
       {isLoading ? (
         <Box className="flex justify-center items-center h-[50vh]">
           <CircularProgress />
         </Box>
       ) : (
         <>
-          <Typography variant="h5" fontWeight="bold">Home Content</Typography>
-          {renderSection(
-            "Plant Suggestion",
-            plantItems,
-            setPlantItems,
-            plants,
-            () => handleSave("plant", plantItems, suggest_plant, updateSuggestedPlant)
-          )}
-          {renderSection(
-            "Pot Suggestion",
-            potItems,
-            setPotItems,
-            pots,
-            () => handleSave("pot", potItems, suggest_pot, updateSuggestedPot)
-          )}
-          {renderSection(
-            "Port Suggestion",
-            portItems,
-            setPortItems,
-            ports,
-            () => handleSave("port", portItems, suggest_port, updateSuggestedPort)
-          )}
+          <Typography variant="h5" fontWeight="bold" mb={2}>Home Content</Typography>
+
+          {/* 🔹 Tab menu */}
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            textColor="primary"
+            indicatorColor="primary"
+            variant="fullWidth"
+          >
+            <Tab value="plant" label="Plant" />
+            <Tab value="pot" label="Pot" />
+            <Tab value="port" label="Port" />
+          </Tabs>
+
+          {/* 🔹 Render based on screen size */}
+          {isMobile
+            ? renderMobileList(currentSet.title, currentSet.items, currentSet.set, currentSet.available, currentSet.save)
+            : renderDesktopGrid(currentSet.title, currentSet.items, currentSet.set, currentSet.available, currentSet.save)}
         </>
       )}
     </Box>
