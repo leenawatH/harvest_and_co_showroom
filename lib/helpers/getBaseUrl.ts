@@ -4,13 +4,7 @@ export const getBaseUrl = () => {
     if (window.location.hostname === "localhost") {
       return "http://localhost:3000";
     }
-    return window.location.origin;
-  }
-
-  // 🔹 ฝั่ง server (ตอน build / SSR)
-  if (process.env.VERCEL_URL) {
-    // ตัวนี้จะมีค่าเฉพาะตอน deploy บน Vercel
-    return `https://${process.env.VERCEL_URL}`;
+    return process.env.NEXT_PUBLIC_API_URL;
   }
 
   // 🔹 กรณีรัน production local (เช่น next start)
