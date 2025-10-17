@@ -681,11 +681,11 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                 </button>
             </div>
 
-            <h3 className="text-lg font-semibold mb-2 mt-6">Image with Environment</h3>
+            {/* <h3 className="text-lg font-semibold mb-2 mt-6">Image with Environment</h3>
             <div className="space-y-6">
                 <h3 className="text-lg font-semibold mb-4">Upload Images</h3>
                 <div className="flex space-x-4">
-                    {/* First Image */}
+                   
                     <div className="w-1/2">
                         <label className="block text-sm font-medium mb-2">Image 1</label>
                         <input
@@ -707,7 +707,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                         </div>
                     </div>
 
-                    {/* Second Image */}
+                 
                     <div className="w-1/2">
                         <label className="block text-sm font-medium mb-2">Image 2</label>
                         <input
@@ -729,7 +729,7 @@ export default function PlantForm({ initialData, onSubmit, onCancel }: PlantForm
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
             <h3 className="text-lg font-semibold mb-2 mt-6">Similar Plant</h3>
             <FormControl sx={{ width: 300 }}>
                 <InputLabel>Similar Plants</InputLabel>

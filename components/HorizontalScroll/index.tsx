@@ -17,7 +17,6 @@ export default function HorizontalScroll(baseItemWidth: number, numOfItem: numbe
     const tolerance = 5;
     setCanLeft(scrollLeft > tolerance);
     setCanRight(scrollLeft < maxScrollLeft - tolerance);
-    console.log({ scrollLeft, scrollWidth, clientWidth, maxScrollLeft, canLeft, canRight })
   };
 
   // 🧩 Resize listener ปรับ itemWidth และตรวจ scroll

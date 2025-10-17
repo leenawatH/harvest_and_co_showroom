@@ -123,7 +123,6 @@ export default function PlantDetail() {
   }, [params]);
 
   useEffect(() => {
-    console.log("review : " ,reviewPicScroll.ref.current);
     reviewPicScroll.checkScroll();
   },[plantReviewPic]);
 
